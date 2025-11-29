@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { TimelineView, TimelineState, MonthData, WeekData } from '@models/timeline.model';
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, getDay, getDaysInMonth, format } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
@@ -9,7 +9,7 @@ import { fr, enUS } from 'date-fns/locale';
 })
 export class TimelineService {
   private stateSubject = new BehaviorSubject<TimelineState>({
-    view: 'month',
+    view: 'annual',
     currentDate: new Date()
   });
 
@@ -68,7 +68,12 @@ export class TimelineService {
 
   goToToday(): void {
     this.setCurrentDate(new Date());
+    // Émettre un événement pour déclencher le scroll
+    this.scrollToTodaySubject.next();
   }
+
+  private scrollToTodaySubject = new Subject<void>();
+  public scrollToToday$ = this.scrollToTodaySubject.asObservable();
 
   getMonthData(date: Date, locale: 'fr' | 'en' = 'fr'): MonthData {
     const year = date.getFullYear();

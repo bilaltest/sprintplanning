@@ -8,7 +8,11 @@
       "Bash(npm --version:*)",
       "Bash(echo:*)",
       "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npm install)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npx prisma db push)",
+      "Bash(source ~/.zshrc)",
+      "Bash(export PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\")"
     ],
     "deny": [],
     "ask": []

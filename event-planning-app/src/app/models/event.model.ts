@@ -1,32 +1,11 @@
-export type EventCategory =
-  | 'mep'           // Mise en production
-  | 'hotfix'        // Hotfix
-  | 'maintenance'   // Maintenance
-  | 'pi_planning'   // PI Planning
-  | 'sprint_start'  // Début de sprint
-  | 'code_freeze'   // Freeze du code
-  | 'psi'           // PSI
-  | 'other';        // Autre
+// Catégories par défaut + catégories personnalisées (IDs dynamiques)
+export type EventCategory = string; // Accepte les catégories par défaut ET les IDs personnalisés
 
-export type EventColor =
-  | '#22c55e'  // mep - vert
-  | '#ef4444'  // hotfix - rouge
-  | '#6b7280'  // maintenance - gris
-  | '#eab308'  // pi_planning - jaune
-  | '#06b6d4'  // sprint_start - turquoise
-  | '#f97316'  // code_freeze - orange
-  | '#1f2937'  // psi - noir
-  | '#8b5cf6'; // other - violet
+// Couleurs par défaut pour les catégories prédéfinies
+export type EventColor = string; // Accepte n'importe quelle couleur hex pour les catégories personnalisées
 
-export type EventIcon =
-  | 'rocket_launch'           // mep
-  | 'bug_report'              // hotfix
-  | 'build'                   // maintenance
-  | 'groups'                  // pi_planning
-  | 'flag'                    // sprint_start
-  | 'ac_unit'                 // code_freeze (gel)
-  | 'block'                   // psi (stop)
-  | 'event';                  // other (agenda)
+// Icônes Material par défaut pour les catégories prédéfinies
+export type EventIcon = string; // Accepte n'importe quelle icône Material pour les catégories personnalisées
 
 export interface Event {
   id?: string;
@@ -53,7 +32,7 @@ export interface EventTemplate {
   createdAt: string;
 }
 
-export const EVENT_CATEGORY_LABELS: Record<EventCategory, string> = {
+export const EVENT_CATEGORY_LABELS: Record<string, string> = {
   mep: 'Mise en production',
   hotfix: 'Hotfix',
   maintenance: 'Maintenance',
@@ -64,7 +43,7 @@ export const EVENT_CATEGORY_LABELS: Record<EventCategory, string> = {
   other: 'Autre'
 };
 
-export const CATEGORY_DEFAULTS: Record<EventCategory, { color: EventColor; icon: EventIcon }> = {
+export const CATEGORY_DEFAULTS: Record<string, { color: string; icon: string }> = {
   mep: { color: '#22c55e', icon: 'rocket_launch' },
   hotfix: { color: '#ef4444', icon: 'bug_report' },
   maintenance: { color: '#6b7280', icon: 'build' },
@@ -76,7 +55,7 @@ export const CATEGORY_DEFAULTS: Record<EventCategory, { color: EventColor; icon:
 };
 
 // Couleurs adaptées pour le dark mode (versions plus claires/vibrantes)
-export const CATEGORY_COLORS_DARK: Record<EventCategory, string> = {
+export const CATEGORY_COLORS_DARK: Record<string, string> = {
   mep: '#4ade80',        // vert plus clair
   hotfix: '#f87171',     // rouge plus clair
   maintenance: '#9ca3af', // gris plus clair

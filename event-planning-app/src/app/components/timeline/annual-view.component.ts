@@ -21,13 +21,10 @@ import { fr } from 'date-fns/locale';
           class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
         >
           <!-- En-tête mois -->
-          <div class="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-3 py-2 flex items-center justify-between">
+          <div class="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-3 py-2">
             <h3 class="text-sm font-semibold">
               {{ getMonthName(month) }}
             </h3>
-            <span class="text-xs opacity-80">
-              {{ getEventCountForMonth(month) }} evt{{ getEventCountForMonth(month) > 1 ? 's' : '' }}
-            </span>
           </div>
 
           <!-- Grille compacte des jours du mois -->
@@ -103,7 +100,7 @@ import { fr } from 'date-fns/locale';
       <!-- Panneau latéral détails du jour -->
       <div
         *ngIf="selectedDay"
-        class="fixed right-4 top-20 w-80 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 p-4 shadow-xl animate-slide-in-right z-50"
+        class="fixed right-4 top-20 w-80 border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-50 dark:bg-gray-900 p-4 shadow-xl animate-slide-in-right z-50"
       >
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -221,13 +218,17 @@ export class AnnualViewComponent implements AfterViewInit {
       this.isDarkMode = prefs.theme === 'dark';
       this.updateDaysOfWeek(prefs.weekStart === 'monday');
     });
+
+    // Écouter le signal de scroll vers aujourd'hui
+    this.timelineService.scrollToToday$.subscribe(() => {
+      setTimeout(() => {
+        this.scrollToCurrentMonth();
+      }, 100);
+    });
   }
 
   ngAfterViewInit(): void {
-    // Auto-scroll to current month after view initialization
-    setTimeout(() => {
-      this.scrollToCurrentMonth();
-    }, 100);
+    // Ne plus faire de scroll automatique au chargement
   }
 
   private updateDaysOfWeek(startMonday: boolean): void {
@@ -247,7 +248,8 @@ export class AnnualViewComponent implements AfterViewInit {
   }
 
   getMonthName(month: Date): string {
-    return format(month, 'MMMM yyyy', { locale: fr });
+    const monthName = format(month, 'MMMM yyyy', { locale: fr });
+    return monthName.charAt(0).toUpperCase() + monthName.slice(1);
   }
 
   getDaysInMonth(month: Date): Date[] {

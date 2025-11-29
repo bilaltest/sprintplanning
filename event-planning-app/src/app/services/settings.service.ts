@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
-import { UserPreferences, DEFAULT_PREFERENCES, Theme, Language, WeekStart, ColorCustomization } from '@models/settings.model';
+import { UserPreferences, DEFAULT_PREFERENCES, Theme, Language, WeekStart, ColorCustomization, CustomCategory } from '@models/settings.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -22,6 +22,7 @@ export class SettingsService {
       const prefs = await firstValueFrom(
         this.http.get<UserPreferences>(this.apiUrl)
       );
+      console.log('SettingsService - Préférences chargées depuis le backend:', prefs);
       this.preferencesSubject.next(prefs);
       this.applyTheme(prefs.theme);
     } catch (error) {
@@ -93,6 +94,10 @@ export class SettingsService {
 
   getCurrentPreferences(): UserPreferences {
     return this.preferencesSubject.value;
+  }
+
+  async updatePreferences(preferences: UserPreferences): Promise<void> {
+    await this.savePreferences(preferences);
   }
 
   toggleTheme(): void {

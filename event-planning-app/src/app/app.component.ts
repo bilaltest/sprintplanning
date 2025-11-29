@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SettingsService } from '@services/settings.service';
+import { AuthService } from '@services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,7 @@ import { SettingsService } from '@services/settings.service';
   template: `
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <!-- Header -->
-      <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <header *ngIf="isAuthenticated$ | async" class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex items-center justify-between h-16">
             <!-- Logo -->
@@ -57,16 +58,29 @@ import { SettingsService } from '@services/settings.service';
               </a>
             </nav>
 
-            <!-- Theme toggle -->
-            <button
-              (click)="toggleTheme()"
-              class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="Changer de thème"
-            >
-              <span class="material-icons text-gray-600 dark:text-gray-300">
-                {{ isDarkMode ? 'light_mode' : 'dark_mode' }}
-              </span>
-            </button>
+            <!-- Actions -->
+            <div class="flex items-center space-x-2">
+              <!-- Theme toggle -->
+              <button
+                (click)="toggleTheme()"
+                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Changer de thème"
+              >
+                <span class="material-icons text-gray-600 dark:text-gray-300">
+                  {{ isDarkMode ? 'light_mode' : 'dark_mode' }}
+                </span>
+              </button>
+
+              <!-- Logout button -->
+              <button
+                (click)="logout()"
+                class="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center space-x-2"
+                title="Déconnexion"
+              >
+                <span class="material-icons text-lg">logout</span>
+                <span>Déconnexion</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -85,8 +99,13 @@ import { SettingsService } from '@services/settings.service';
 })
 export class AppComponent {
   isDarkMode = false;
+  isAuthenticated$ = this.authService.isAuthenticated$;
 
-  constructor(private settingsService: SettingsService) {
+  constructor(
+    private settingsService: SettingsService,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.settingsService.preferences$.subscribe(prefs => {
       this.isDarkMode = prefs.theme === 'dark';
     });
@@ -94,5 +113,10 @@ export class AppComponent {
 
   toggleTheme(): void {
     this.settingsService.toggleTheme();
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

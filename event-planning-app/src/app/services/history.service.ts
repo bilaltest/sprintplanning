@@ -13,8 +13,12 @@ export class HistoryService {
   private historySubject = new BehaviorSubject<HistoryEntry[]>([]);
   public history$: Observable<HistoryEntry[]> = this.historySubject.asObservable();
 
+  private refreshIntervalId?: number;
+
   constructor(private http: HttpClient) {
     this.loadHistory();
+    // Rafraîchir automatiquement toutes les 2 secondes
+    this.startAutoRefresh();
   }
 
   private async loadHistory(): Promise<void> {
@@ -55,5 +59,20 @@ export class HistoryService {
   // Rafraîchir l'historique
   async refresh(): Promise<void> {
     await this.loadHistory();
+  }
+
+  // Démarrer le rafraîchissement automatique
+  private startAutoRefresh(): void {
+    this.refreshIntervalId = window.setInterval(() => {
+      this.loadHistory();
+    }, 2000); // Rafraîchir toutes les 2 secondes
+  }
+
+  // Arrêter le rafraîchissement automatique (utile pour ngOnDestroy)
+  stopAutoRefresh(): void {
+    if (this.refreshIntervalId) {
+      clearInterval(this.refreshIntervalId);
+      this.refreshIntervalId = undefined;
+    }
   }
 }

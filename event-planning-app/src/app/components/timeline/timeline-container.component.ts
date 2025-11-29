@@ -153,6 +153,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
           [events]="filteredEvents$ | async"
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
+          (deleteEventClick)="handleDeleteEvent($event)"
         ></app-month-view>
       </div>
 

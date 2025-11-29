@@ -17,13 +17,14 @@ export const getSettings = async (req, res, next) => {
       });
     }
 
-    // Parser customColors de String vers Array
-    const settingsWithParsedColors = {
+    // Parser customColors et customCategories de String vers Array
+    const settingsWithParsedData = {
       ...settings,
-      customColors: JSON.parse(settings.customColors)
+      customColors: JSON.parse(settings.customColors),
+      customCategories: JSON.parse(settings.customCategories || '[]')
     };
 
-    res.json(settingsWithParsedColors);
+    res.json(settingsWithParsedData);
   } catch (error) {
     next(error);
   }
@@ -32,10 +33,11 @@ export const getSettings = async (req, res, next) => {
 // PUT /api/settings - Mettre à jour les paramètres
 export const updateSettings = async (req, res, next) => {
   try {
-    const { theme, language, weekStart, customColors } = req.body;
+    const { theme, language, weekStart, customColors, customCategories } = req.body;
 
-    // Convertir customColors en String JSON
+    // Convertir customColors et customCategories en String JSON
     const customColorsString = JSON.stringify(customColors || []);
+    const customCategoriesString = JSON.stringify(customCategories || []);
 
     let settings = await prisma.settings.findFirst();
 
@@ -46,7 +48,8 @@ export const updateSettings = async (req, res, next) => {
           theme,
           language,
           weekStart,
-          customColors: customColorsString
+          customColors: customColorsString,
+          customCategories: customCategoriesString
         }
       });
     } else {
@@ -57,18 +60,20 @@ export const updateSettings = async (req, res, next) => {
           theme,
           language,
           weekStart,
-          customColors: customColorsString
+          customColors: customColorsString,
+          customCategories: customCategoriesString
         }
       });
     }
 
-    // Retourner avec customColors parsé
-    const settingsWithParsedColors = {
+    // Retourner avec customColors et customCategories parsés
+    const settingsWithParsedData = {
       ...settings,
-      customColors: JSON.parse(settings.customColors)
+      customColors: JSON.parse(settings.customColors),
+      customCategories: JSON.parse(settings.customCategories)
     };
 
-    res.json(settingsWithParsedColors);
+    res.json(settingsWithParsedData);
   } catch (error) {
     next(error);
   }

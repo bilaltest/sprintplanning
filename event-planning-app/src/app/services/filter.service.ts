@@ -28,6 +28,15 @@ export class FilterService {
   private applyFilters(events: Event[], filter: EventFilter): Event[] {
     let filtered = [...events];
 
+    // Filter by search text
+    if (filter.searchText && filter.searchText.trim()) {
+      const searchLower = filter.searchText.toLowerCase();
+      filtered = filtered.filter(event =>
+        event.title.toLowerCase().includes(searchLower) ||
+        event.description?.toLowerCase().includes(searchLower)
+      );
+    }
+
     // Filter by categories
     if (filter.categories.length > 0) {
       filtered = filtered.filter(event =>
@@ -43,15 +52,6 @@ export class FilterService {
       filtered = filtered.filter(event => event.date <= filter.dateTo!);
     }
 
-    // Filter by search text
-    if (filter.searchText.trim()) {
-      const searchLower = filter.searchText.toLowerCase().trim();
-      filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(searchLower) ||
-        event.description?.toLowerCase().includes(searchLower)
-      );
-    }
-
     return filtered;
   }
 
@@ -62,14 +62,6 @@ export class FilterService {
 
   setCategoryFilter(categories: EventCategory[]): void {
     this.setFilter({ categories });
-  }
-
-  setDateRangeFilter(dateFrom?: string, dateTo?: string): void {
-    this.setFilter({ dateFrom, dateTo });
-  }
-
-  setSearchText(searchText: string): void {
-    this.setFilter({ searchText });
   }
 
   toggleCategory(category: EventCategory): void {
@@ -86,6 +78,14 @@ export class FilterService {
     this.setCategoryFilter(categories);
   }
 
+  setSearchText(searchText: string): void {
+    this.setFilter({ searchText });
+  }
+
+  setDateRangeFilter(dateFrom?: string, dateTo?: string): void {
+    this.setFilter({ dateFrom, dateTo });
+  }
+
   resetFilters(): void {
     this.filterSubject.next(DEFAULT_FILTER);
   }
@@ -96,11 +96,9 @@ export class FilterService {
 
   hasActiveFilters(): boolean {
     const filter = this.filterSubject.value;
-    return (
-      filter.categories.length > 0 ||
-      !!filter.dateFrom ||
-      !!filter.dateTo ||
-      filter.searchText.trim() !== ''
-    );
+    return filter.categories.length > 0 ||
+           (filter.searchText && filter.searchText.trim().length > 0) ||
+           !!filter.dateFrom ||
+           !!filter.dateTo;
   }
 }

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Event, CATEGORY_COLORS_DARK } from '@models/event.model';
+import { Event, CATEGORY_COLORS_DARK, EVENT_CATEGORY_LABELS, EventCategory } from '@models/event.model';
 import { TimelineService } from '@services/timeline.service';
 import { SettingsService } from '@services/settings.service';
 import { format, isSameDay, isToday, parseISO } from 'date-fns';
@@ -38,7 +38,7 @@ import { fr } from 'date-fns/locale';
           [class.ring-2]="isToday(day)"
           [class.ring-primary-500]="isToday(day)"
           class="aspect-square border border-gray-200 dark:border-gray-700 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative group"
-          (click)="onDayClick(day)"
+          (click)="handleDayClick(day)"
         >
           <div class="flex flex-col h-full">
             <!-- Day number -->
@@ -84,6 +84,93 @@ import { fr } from 'date-fns/locale';
           </div>
         </div>
       </div>
+
+      <!-- Panneau latéral détails du jour -->
+      <div
+        *ngIf="selectedDay"
+        class="fixed right-4 top-20 w-80 border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-50 dark:bg-gray-900 p-4 shadow-xl animate-slide-in-right z-50"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+            {{ formatSelectedDay() }}
+          </h3>
+          <button
+            (click)="closeDetails()"
+            class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+          >
+            <span class="material-icons text-gray-500 dark:text-gray-400 text-xl">close</span>
+          </button>
+        </div>
+
+        <div *ngIf="getEventsForDay(selectedDay).length === 0" class="text-center py-8">
+          <span class="material-icons text-gray-300 dark:text-gray-600 text-5xl mb-2">event_busy</span>
+          <p class="text-gray-500 dark:text-gray-400 text-sm">Aucun événement ce jour</p>
+
+          <!-- Add event button in detail panel -->
+          <button
+            (click)="onAddEventFromPanel(selectedDay)"
+            class="btn btn-primary mt-4"
+          >
+            <span class="material-icons text-sm">add</span>
+            Créer un événement
+          </button>
+        </div>
+
+        <div *ngIf="getEventsForDay(selectedDay).length > 0">
+          <!-- Add event button in detail panel when events exist -->
+          <button
+            (click)="onAddEventFromPanel(selectedDay)"
+            class="btn btn-primary w-full mb-3"
+          >
+            <span class="material-icons text-sm">add</span>
+            Créer un événement
+          </button>
+
+          <div class="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto custom-scrollbar">
+            <div
+              *ngFor="let event of getEventsForDay(selectedDay)"
+              [style.border-left-color]="getEventColor(event)"
+              class="border-l-4 pl-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-r hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+            >
+              <div class="flex items-start space-x-2">
+                <span
+                  class="material-icons text-lg mt-0.5 cursor-pointer"
+                  [style.color]="getEventColor(event)"
+                  (click)="onEventClickFromPanel(event)"
+                >
+                  {{ event.icon }}
+                </span>
+                <div class="flex-1 min-w-0 cursor-pointer" (click)="onEventClickFromPanel(event)">
+                  <h4 class="font-medium text-gray-900 dark:text-white text-sm">
+                    {{ event.title }}
+                  </h4>
+                  <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                    <span class="inline-flex items-center space-x-1">
+                      <span class="material-icons" style="font-size: 14px;">label</span>
+                      <span>{{ getCategoryLabel(event.category) }}</span>
+                    </span>
+                  </p>
+                  <p *ngIf="event.startTime" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    <span class="material-icons" style="font-size: 14px;">schedule</span>
+                    {{ event.startTime }}
+                    <span *ngIf="event.endTime"> - {{ event.endTime }}</span>
+                  </p>
+                  <p *ngIf="event.description" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {{ event.description }}
+                  </p>
+                </div>
+                <button
+                  (click)="onDeleteEvent($event, event)"
+                  class="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors opacity-0 group-hover:opacity-100"
+                  title="Supprimer cet événement"
+                >
+                  <span class="material-icons text-red-600 dark:text-red-400 text-lg">delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -100,11 +187,13 @@ export class MonthViewComponent implements OnChanges {
   @Input() events: Event[] | null = [];
   @Output() eventClick = new EventEmitter<Event>();
   @Output() addEventClick = new EventEmitter<string>();
+  @Output() deleteEventClick = new EventEmitter<Event>();
 
   daysOfWeek: string[] = [];
   days: Date[] = [];
   emptyDays: number[] = [];
   isDark = false;
+  selectedDay: Date | null = null;
 
   private currentMonth!: Date;
 
@@ -165,8 +254,33 @@ export class MonthViewComponent implements OnChanges {
     return isToday(day);
   }
 
+  handleDayClick(day: Date): void {
+    const dayEvents = this.getEventsForDay(day);
+    if (dayEvents.length > 0) {
+      // If there are events, show the detail panel
+      this.selectedDay = day;
+    } else {
+      // If no events, directly add an event
+      const dateStr = format(day, 'yyyy-MM-dd');
+      this.addEventClick.emit(dateStr);
+    }
+  }
+
   onDayClick(day: Date): void {
-    this.timelineService.selectDate(day);
+    this.selectedDay = day;
+  }
+
+  closeDetails(): void {
+    this.selectedDay = null;
+  }
+
+  formatSelectedDay(): string {
+    if (!this.selectedDay) return '';
+    return format(this.selectedDay, 'EEEE d MMMM yyyy', { locale: fr });
+  }
+
+  getCategoryLabel(category: EventCategory): string {
+    return EVENT_CATEGORY_LABELS[category];
   }
 
   onEventClick(mouseEvent: MouseEvent, event: Event): void {
@@ -174,10 +288,29 @@ export class MonthViewComponent implements OnChanges {
     this.eventClick.emit(event);
   }
 
+  onEventClickFromPanel(event: Event): void {
+    this.eventClick.emit(event);
+  }
+
   onAddEvent(mouseEvent: MouseEvent, day: Date): void {
     mouseEvent.stopPropagation();
     const dateStr = format(day, 'yyyy-MM-dd');
     this.addEventClick.emit(dateStr);
+  }
+
+  onAddEventFromPanel(day: Date): void {
+    const dateStr = format(day, 'yyyy-MM-dd');
+    this.addEventClick.emit(dateStr);
+  }
+
+  onDeleteEvent(mouseEvent: MouseEvent, event: Event): void {
+    mouseEvent.stopPropagation();
+    const confirmed = confirm(
+      `Voulez-vous vraiment supprimer l'événement "${event.title}" ?`
+    );
+    if (confirmed) {
+      this.deleteEventClick.emit(event);
+    }
   }
 
   getEventColor(event: Event): string {

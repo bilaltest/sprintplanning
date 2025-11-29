@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Event, EventCategory, EventColor, EventIcon, EVENT_CATEGORY_LABELS, CATEGORY_DEFAULTS } from '@models/event.model';
 import { EventService } from '@services/event.service';
+import { CategoryService, CategoryInfo } from '@services/category.service';
 
 @Component({
   selector: 'app-event-modal',
@@ -90,21 +91,21 @@ import { EventService } from '@services/event.service';
             </label>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <button
-                *ngFor="let cat of categories"
+                *ngFor="let cat of allCategories"
                 type="button"
-                (click)="selectCategory(cat)"
-                [class.ring-2]="formData.category === cat"
-                [class.ring-primary-500]="formData.category === cat"
+                (click)="selectCategory(cat.id)"
+                [class.ring-2]="formData.category === cat.id"
+                [class.ring-primary-500]="formData.category === cat.id"
                 class="flex items-center space-x-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <span
                   class="material-icons text-lg"
-                  [style.color]="getCategoryDefaults(cat).color"
+                  [style.color]="cat.color"
                 >
-                  {{ getCategoryDefaults(cat).icon }}
+                  {{ cat.icon }}
                 </span>
                 <span class="text-sm text-gray-700 dark:text-gray-300">
-                  {{ getCategoryLabel(cat) }}
+                  {{ cat.label }}
                 </span>
               </button>
             </div>
@@ -174,26 +175,30 @@ export class EventModalComponent implements OnInit {
   @Output() save = new EventEmitter<Event>();
 
   isEditMode = false;
+  allCategories: CategoryInfo[] = [];
 
   formData = {
     title: '',
     date: '',
     startTime: '',
     endTime: '',
-    category: 'mep' as EventCategory,
-    color: '#22c55e' as EventColor,
-    icon: 'rocket_launch' as EventIcon,
+    category: 'mep' as string,
+    color: '#22c55e',
+    icon: 'rocket_launch',
     description: ''
   };
 
-  categories: EventCategory[] = [
-    'mep', 'hotfix', 'maintenance', 'pi_planning',
-    'sprint_start', 'code_freeze', 'psi', 'other'
-  ];
-
-  constructor(private eventService: EventService) {}
+  constructor(
+    private eventService: EventService,
+    private categoryService: CategoryService
+  ) {}
 
   ngOnInit(): void {
+    // Charger les catégories
+    this.categoryService.allCategories$.subscribe(categories => {
+      this.allCategories = categories;
+    });
+
     if (this.event) {
       this.isEditMode = true;
       this.formData = {
@@ -212,19 +217,13 @@ export class EventModalComponent implements OnInit {
     }
   }
 
-  selectCategory(category: EventCategory): void {
-    this.formData.category = category;
-    const defaults = CATEGORY_DEFAULTS[category];
-    this.formData.color = defaults.color;
-    this.formData.icon = defaults.icon;
-  }
-
-  getCategoryLabel(category: EventCategory): string {
-    return EVENT_CATEGORY_LABELS[category];
-  }
-
-  getCategoryDefaults(category: EventCategory) {
-    return CATEGORY_DEFAULTS[category];
+  selectCategory(categoryId: string): void {
+    this.formData.category = categoryId;
+    const category = this.categoryService.getCategoryById(categoryId);
+    if (category) {
+      this.formData.color = category.color;
+      this.formData.icon = category.icon;
+    }
   }
 
   isFormValid(): boolean {
