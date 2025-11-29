@@ -138,20 +138,20 @@ import { Theme, Language, WeekStart, UserPreferences } from '@models/settings.mo
         <!-- Default Categories Display -->
         <div class="mb-6">
           <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Catégories par défaut</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div class="flex flex-wrap gap-2">
             <div
               *ngFor="let category of getDefaultCategories()"
-              class="flex items-center justify-center space-x-2 px-3 py-3 border-2 rounded-lg h-12"
+              class="inline-flex items-center space-x-2 px-3 py-2 border-2 rounded-lg"
               [style.border-color]="category.color"
               [style.background-color]="category.color + '15'"
             >
               <span
-                class="material-icons text-sm flex-shrink-0"
+                class="material-icons text-sm"
                 [style.color]="category.color"
               >
                 {{ category.icon }}
               </span>
-              <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {{ category.label }}
               </span>
             </div>
@@ -234,28 +234,24 @@ import { Theme, Language, WeekStart, UserPreferences } from '@models/settings.mo
         <!-- Custom Categories List -->
         <div *ngIf="preferences.customCategories.length > 0" class="mt-6">
           <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Catégories personnalisées</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div class="space-y-2">
             <div
               *ngFor="let category of preferences.customCategories"
-              class="group relative flex items-center justify-center space-x-2 px-3 py-3 border-2 rounded-lg h-12"
-              [style.border-color]="category.color"
-              [style.background-color]="category.color + '15'"
+              class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg"
             >
-              <span
-                class="material-icons text-sm flex-shrink-0"
-                [style.color]="category.color"
-              >
-                {{ category.icon }}
-              </span>
-              <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
-                {{ category.label }}
-              </span>
+              <div class="flex items-center space-x-3">
+                <span class="material-icons" [style.color]="category.color">{{ category.icon }}</span>
+                <div>
+                  <div class="font-medium text-gray-900 dark:text-white">{{ category.label }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ category.color }}</div>
+                </div>
+              </div>
               <button
                 (click)="deleteCustomCategory(category.id)"
-                class="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
+                class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                 title="Supprimer"
               >
-                <span class="material-icons" style="font-size: 14px;">close</span>
+                <span class="material-icons text-sm">delete</span>
               </button>
             </div>
           </div>

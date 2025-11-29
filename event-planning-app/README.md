@@ -32,10 +32,11 @@ Application de planning événementiel moderne développée en Angular 20+ pour 
   - Bouton ajout au survol de chaque jour
 - **Navigation intuitive** : Boutons en haut ET en bas de page, flèches clavier (← →), bouton "Aujourd'hui"
 
-### 🔍 Filtres
+### 🔍 Filtres Avancés
 
+- **Recherche texte** : Titre + description (debounce 300ms)
 - **Filtre par catégorie** : Multi-sélection avec icônes Material
-- **Position sticky** : Barre de filtres qui suit le scroll (top-2)
+- **Filtre par période** : Date début/fin
 - **Bouton réinitialiser** : Efface tous les filtres
 - **Couleur PSI adaptée** : Gris clair en mode sombre pour meilleure lisibilité
 
@@ -56,9 +57,9 @@ Application de planning événementiel moderne développée en Angular 20+ pour 
 ### ⚙️ Paramètres
 
 - **Thème** : Clair/Sombre avec persistance
-- **Catégories personnalisées** : Création de catégories avec nom, couleur et icône
-- **Grille responsive** : 8 catégories par ligne (responsive)
-- **Séparation visuelle** : Catégories par défaut et personnalisées séparées
+- **Langue** : FR (structure i18n prête pour EN)
+- **Premier jour semaine** : Lundi/Dimanche
+- **Couleurs personnalisées** : Palette de couleurs ajustable
 
 ## 🏗️ Stack Technique
 
@@ -218,11 +219,13 @@ model Event {
 }
 
 model Settings {
-  id               String   @id @default(cuid())
-  theme            String   @default("light")
-  customCategories String   @default("[]")  // JSON en String pour SQLite
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id           String   @id @default(cuid())
+  theme        String   @default("light")
+  language     String   @default("fr")
+  weekStart    String   @default("monday")
+  customColors String   @default("[]")  // JSON en String pour SQLite
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model History {
@@ -283,9 +286,11 @@ model History {
 
 ### Filtrer les Événements
 
-1. La barre de filtres suit automatiquement le scroll (sticky)
-2. **Catégories** : Cliquer sur les badges avec icônes pour filtrer
-3. **Réinitialiser** : Bouton pour tout effacer
+1. Ouvrir la barre de filtres
+2. **Recherche** : Taper du texte (debounce 300ms)
+3. **Catégories** : Cliquer sur les badges avec icônes
+4. **Période** : Sélectionner date début/fin
+5. **Réinitialiser** : Bouton pour tout effacer
 
 ### Annuler une Action
 
@@ -321,6 +326,19 @@ previousData Json?
 # 4. Regénérer le client et créer la base
 npx prisma generate
 npx prisma db push
+```
+
+### Modifier les Couleurs du Thème
+
+```javascript
+// tailwind.config.js
+colors: {
+  primary: {
+    500: '#339966', // Vert principal
+    600: '#2d8659',
+    // ...
+  }
+}
 ```
 
 ## 🧪 Tests
@@ -401,21 +419,7 @@ npx prisma studio
 
 ## 📝 Changelog
 
-### Version 2.1.0 (Current)
-- ✅ Nettoyage et simplification (Janvier 2025)
-  - Suppression recherche textuelle des filtres
-  - Suppression filtres par dates (dateFrom, dateTo)
-  - Suppression paramètre de langue
-  - Suppression paramètre premier jour semaine (hardcodé lundi)
-  - Suppression couleurs personnalisées
-- ✅ Améliorations UI
-  - Catégories en grille 8 colonnes (responsive)
-  - Séparateur entre catégories par défaut et personnalisées
-  - Bouton renommé "Ajouter une catégorie"
-  - Filtres sticky (top-2)
-  - Export dropdown z-index corrigé
-
-### Version 2.0.0
+### Version 2.0.0 (Current)
 - ✅ Backend Node.js + Express + Prisma
 - ✅ Base de données SQLite (dev) / PostgreSQL (prod)
 - ✅ Renommage quarter-view → annual-view
