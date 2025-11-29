@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  date        String   // ISO format YYYY-MM-DD
+  startTime   String?  // HH:mm format
+  endTime     String?  // HH:mm format
+  color       String
+  icon        String
+  category    String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+  @@index([category])
+}
+
+model Settings {
+  id           String   @id @default(cuid())
+  theme        String   @default("light")
+  language     String   @default("fr")
+  weekStart    String   @default("monday")
+  customColors String   @default("[]")  // JSON stocké en String pour SQLite
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model History {
+  id              String   @id @default(cuid())
+  action          String   // 'create', 'update', 'delete'
+  eventId         String?
+  eventData       String   // Snapshot de l'événement (JSON en String pour SQLite)
+  previousData    String?  // Pour rollback (JSON en String pour SQLite)
+  timestamp       DateTime @default(now())
+
+  @@index([timestamp])
+}

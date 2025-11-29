@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ng version:*)",
+      "Bash(npm install:*)",
+      "Bash(node --version:*)",
+      "Bash(cd:*)",
+      "Bash(npm --version:*)",
+      "Bash(echo:*)",
+      "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npm install)",
+      "Bash(npx tsc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

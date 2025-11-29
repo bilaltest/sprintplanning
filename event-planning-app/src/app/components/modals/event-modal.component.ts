@@ -1,0 +1,280 @@
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Event, EventCategory, EventColor, EventIcon, EVENT_CATEGORY_LABELS, CATEGORY_DEFAULTS } from '@models/event.model';
+import { EventService } from '@services/event.service';
+
+@Component({
+  selector: 'app-event-modal',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <div class="modal-overlay" (click)="onOverlayClick($event)">
+      <div class="modal-content fade-in-scale" (click)="$event.stopPropagation()">
+        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+            {{ isEditMode ? "Modifier l'événement" : "Nouvel événement" }}
+          </h2>
+          <button
+            (click)="close.emit()"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+          >
+            <span class="material-icons text-gray-500 dark:text-gray-400">close</span>
+          </button>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" class="p-6 space-y-6">
+          <!-- Title -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Titre <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="formData.title"
+              name="title"
+              maxlength="30"
+              required
+              class="input"
+              placeholder="Nom de l'événement"
+            />
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {{ formData.title.length }}/30 caractères
+            </div>
+          </div>
+
+          <!-- Date and time -->
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Date <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                [(ngModel)]="formData.date"
+                name="date"
+                required
+                class="input"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Heure début
+              </label>
+              <input
+                type="time"
+                [(ngModel)]="formData.startTime"
+                name="startTime"
+                class="input"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Heure fin
+              </label>
+              <input
+                type="time"
+                [(ngModel)]="formData.endTime"
+                name="endTime"
+                class="input"
+              />
+            </div>
+          </div>
+
+          <!-- Category -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Catégorie <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <button
+                *ngFor="let cat of categories"
+                type="button"
+                (click)="selectCategory(cat)"
+                [class.ring-2]="formData.category === cat"
+                [class.ring-primary-500]="formData.category === cat"
+                class="flex items-center space-x-2 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span
+                  class="material-icons text-lg"
+                  [style.color]="getCategoryDefaults(cat).color"
+                >
+                  {{ getCategoryDefaults(cat).icon }}
+                </span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">
+                  {{ getCategoryLabel(cat) }}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Description
+            </label>
+            <textarea
+              [(ngModel)]="formData.description"
+              name="description"
+              maxlength="500"
+              rows="4"
+              class="input resize-none"
+              placeholder="Description optionnelle..."
+            ></textarea>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {{ (formData.description || '').length }}/500 caractères
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div>
+              <button
+                *ngIf="isEditMode"
+                type="button"
+                (click)="onDelete()"
+                class="btn btn-danger"
+              >
+                Supprimer
+              </button>
+            </div>
+
+            <div class="flex items-center space-x-3">
+              <button
+                type="button"
+                (click)="close.emit()"
+                class="btn btn-secondary"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                [disabled]="!isFormValid()"
+                class="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ isEditMode ? 'Enregistrer' : 'Créer' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  `,
+  styles: [`
+    :host {
+      display: block;
+    }
+  `]
+})
+export class EventModalComponent implements OnInit {
+  @Input() event?: Event;
+  @Output() close = new EventEmitter<void>();
+  @Output() save = new EventEmitter<Event>();
+
+  isEditMode = false;
+
+  formData = {
+    title: '',
+    date: '',
+    startTime: '',
+    endTime: '',
+    category: 'mep' as EventCategory,
+    color: '#22c55e' as EventColor,
+    icon: 'rocket_launch' as EventIcon,
+    description: ''
+  };
+
+  categories: EventCategory[] = [
+    'mep', 'hotfix', 'maintenance', 'pi_planning',
+    'sprint_start', 'code_freeze', 'psi', 'other'
+  ];
+
+  constructor(private eventService: EventService) {}
+
+  ngOnInit(): void {
+    if (this.event) {
+      this.isEditMode = true;
+      this.formData = {
+        title: this.event.title,
+        date: this.event.date,
+        startTime: this.event.startTime || '',
+        endTime: this.event.endTime || '',
+        category: this.event.category,
+        color: this.event.color,
+        icon: this.event.icon,
+        description: this.event.description || ''
+      };
+    } else {
+      // Set default date to today
+      this.formData.date = new Date().toISOString().split('T')[0];
+    }
+  }
+
+  selectCategory(category: EventCategory): void {
+    this.formData.category = category;
+    const defaults = CATEGORY_DEFAULTS[category];
+    this.formData.color = defaults.color;
+    this.formData.icon = defaults.icon;
+  }
+
+  getCategoryLabel(category: EventCategory): string {
+    return EVENT_CATEGORY_LABELS[category];
+  }
+
+  getCategoryDefaults(category: EventCategory) {
+    return CATEGORY_DEFAULTS[category];
+  }
+
+  isFormValid(): boolean {
+    return this.formData.title.trim() !== '' && this.formData.date !== '';
+  }
+
+  async onSubmit(): Promise<void> {
+    if (!this.isFormValid()) return;
+
+    try {
+      const eventData = {
+        title: this.formData.title.trim(),
+        date: this.formData.date,
+        startTime: this.formData.startTime || undefined,
+        endTime: this.formData.endTime || undefined,
+        category: this.formData.category,
+        color: this.formData.color,
+        icon: this.formData.icon,
+        description: this.formData.description.trim() || undefined
+      };
+
+      if (this.isEditMode && this.event?.id) {
+        await this.eventService.updateEvent(this.event.id, eventData);
+      } else {
+        await this.eventService.createEvent(eventData);
+      }
+
+      this.save.emit();
+    } catch (error) {
+      console.error('Error saving event:', error);
+      alert('Erreur lors de la sauvegarde de l\'événement');
+    }
+  }
+
+  async onDelete(): Promise<void> {
+    if (!this.event?.id) return;
+
+    const confirmed = confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');
+    if (!confirmed) return;
+
+    try {
+      await this.eventService.deleteEvent(this.event.id);
+      this.save.emit();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      alert('Erreur lors de la suppression de l\'événement');
+    }
+  }
+
+  onOverlayClick(event: MouseEvent): void {
+    this.close.emit();
+  }
+}
