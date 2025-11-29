@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '@services/settings.service';
 import { CategoryService } from '@services/category.service';
-import { Theme, UserPreferences } from '@models/settings.model';
+import { Theme, Language, WeekStart, UserPreferences } from '@models/settings.model';
 
 @Component({
   selector: 'app-settings',
@@ -52,6 +52,76 @@ import { Theme, UserPreferences } from '@models/settings.model';
         </div>
       </div>
 
+      <!-- Language -->
+      <div class="card p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Langue
+        </h2>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Langue de l'interface
+            </label>
+            <div class="flex space-x-4">
+              <button
+                (click)="setLanguage('fr')"
+                [class.ring-2]="preferences.language === 'fr'"
+                [class.ring-primary-500]="preferences.language === 'fr'"
+                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
+              >
+                <span class="text-2xl">🇫🇷</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Français</span>
+              </button>
+
+              <button
+                (click)="setLanguage('en')"
+                [class.ring-2]="preferences.language === 'en'"
+                [class.ring-primary-500]="preferences.language === 'en'"
+                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
+              >
+                <span class="text-2xl">🇬🇧</span>
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">English</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="card p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Calendrier
+        </h2>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Premier jour de la semaine
+            </label>
+            <div class="flex space-x-4">
+              <button
+                (click)="setWeekStart('monday')"
+                [class.ring-2]="preferences.weekStart === 'monday'"
+                [class.ring-primary-500]="preferences.weekStart === 'monday'"
+                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
+              >
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Lundi</span>
+              </button>
+
+              <button
+                (click)="setWeekStart('sunday')"
+                [class.ring-2]="preferences.weekStart === 'sunday'"
+                [class.ring-primary-500]="preferences.weekStart === 'sunday'"
+                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
+              >
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Dimanche</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Categories -->
       <div class="card p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
@@ -61,65 +131,35 @@ import { Theme, UserPreferences } from '@models/settings.model';
             class="btn btn-primary btn-sm flex items-center space-x-1"
           >
             <span class="material-icons text-sm">add</span>
-            <span>Ajouter une catégorie</span>
+            <span>Ajouter une catégorie personnalisée</span>
           </button>
         </h2>
 
-        <!-- Categories Grid -->
-        <div class="space-y-6">
-          <!-- Default Categories -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
+        <!-- Default Categories Display -->
+        <div class="mb-6">
+          <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Catégories par défaut</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <div
               *ngFor="let category of getDefaultCategories()"
-              class="inline-flex items-center justify-center space-x-2 px-3 py-2 border-2 rounded-lg"
+              class="flex items-center justify-center space-x-2 px-3 py-3 border-2 rounded-lg h-12"
               [style.border-color]="category.color"
               [style.background-color]="category.color + '15'"
             >
               <span
-                class="material-icons text-sm"
+                class="material-icons text-sm flex-shrink-0"
                 [style.color]="category.color"
               >
                 {{ category.icon }}
               </span>
-              <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
                 {{ category.label }}
               </span>
-            </div>
-          </div>
-
-          <!-- Separator if custom categories exist -->
-          <div *ngIf="preferences.customCategories.length > 0" class="border-t border-gray-200 dark:border-gray-700"></div>
-
-          <!-- Custom Categories -->
-          <div *ngIf="preferences.customCategories.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
-            <div
-              *ngFor="let category of preferences.customCategories"
-              class="group relative inline-flex items-center justify-center space-x-2 px-3 py-2 border-2 rounded-lg"
-              [style.border-color]="category.color"
-              [style.background-color]="category.color + '15'"
-            >
-              <span
-                class="material-icons text-sm"
-                [style.color]="category.color"
-              >
-                {{ category.icon }}
-              </span>
-              <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
-                {{ category.label }}
-              </span>
-              <button
-                (click)="deleteCustomCategory(category.id)"
-                class="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
-                title="Supprimer"
-              >
-                <span class="material-icons" style="font-size: 14px;">close</span>
-              </button>
             </div>
           </div>
         </div>
 
         <!-- Add Category Form -->
-        <div *ngIf="showAddCategoryForm" class="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+        <div *ngIf="showAddCategoryForm" class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
           <div class="space-y-3">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -191,6 +231,41 @@ import { Theme, UserPreferences } from '@models/settings.model';
           </div>
         </div>
 
+        <!-- Custom Categories List -->
+        <div *ngIf="preferences.customCategories.length > 0" class="mt-6">
+          <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Catégories personnalisées</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div
+              *ngFor="let category of preferences.customCategories"
+              class="group relative flex items-center justify-center space-x-2 px-3 py-3 border-2 rounded-lg h-12"
+              [style.border-color]="category.color"
+              [style.background-color]="category.color + '15'"
+            >
+              <span
+                class="material-icons text-sm flex-shrink-0"
+                [style.color]="category.color"
+              >
+                {{ category.icon }}
+              </span>
+              <span class="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+                {{ category.label }}
+              </span>
+              <button
+                (click)="deleteCustomCategory(category.id)"
+                class="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
+                title="Supprimer"
+              >
+                <span class="material-icons" style="font-size: 14px;">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="preferences.customCategories.length === 0 && !showAddCategoryForm" class="mt-4 text-center py-6 text-gray-500 dark:text-gray-400">
+          <span class="material-icons text-4xl mb-2">category</span>
+          <p class="text-sm">Aucune catégorie personnalisée</p>
+          <p class="text-xs">Cliquez sur "Ajouter" pour créer une catégorie</p>
+        </div>
       </div>
 
       <!-- Actions -->
@@ -223,6 +298,9 @@ import { Theme, UserPreferences } from '@models/settings.model';
 export class SettingsComponent implements OnInit {
   preferences: UserPreferences = {
     theme: 'light',
+    language: 'fr',
+    weekStart: 'monday',
+    customColors: [],
     customCategories: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -270,6 +348,14 @@ export class SettingsComponent implements OnInit {
 
   async setTheme(theme: Theme): Promise<void> {
     await this.settingsService.setTheme(theme);
+  }
+
+  async setLanguage(language: Language): Promise<void> {
+    await this.settingsService.setLanguage(language);
+  }
+
+  async setWeekStart(weekStart: WeekStart): Promise<void> {
+    await this.settingsService.setWeekStart(weekStart);
   }
 
   async resetToDefaults(): Promise<void> {
