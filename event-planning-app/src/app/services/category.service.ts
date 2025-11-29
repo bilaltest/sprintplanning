@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, combineLatest, map } from 'rxjs';
+import { BehaviorSubject, Observable, map } from 'rxjs';
 import { SettingsService } from './settings.service';
 import {
   EventCategory,

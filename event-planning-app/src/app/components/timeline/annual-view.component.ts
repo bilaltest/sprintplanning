@@ -216,7 +216,7 @@ export class AnnualViewComponent implements AfterViewInit {
     // Détecter le mode sombre
     this.settingsService.preferences$.subscribe(prefs => {
       this.isDarkMode = prefs.theme === 'dark';
-      this.updateDaysOfWeek(prefs.weekStart === 'monday');
+      this.updateDaysOfWeek(true); // Toujours commencer par lundi
     });
 
     // Écouter le signal de scroll vers aujourd'hui
@@ -263,11 +263,8 @@ export class AnnualViewComponent implements AfterViewInit {
     const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
     const startDayOfWeek = firstDay.getDay();
 
-    // Adjust for week start
-    const prefs = this.settingsService.getCurrentPreferences();
-    const offset = prefs.weekStart === 'monday'
-      ? (startDayOfWeek === 0 ? 6 : startDayOfWeek - 1)
-      : startDayOfWeek;
+    // Ajuster pour commencer par lundi
+    const offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
 
     return Array(offset).fill(0);
   }

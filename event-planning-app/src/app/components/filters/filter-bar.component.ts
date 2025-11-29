@@ -27,26 +27,7 @@ import { EventFilter } from '@models/filter.model';
         </button>
       </div>
 
-      <div class="space-y-4">
-        <!-- Search -->
-        <div>
-          <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-            Recherche
-          </label>
-          <div class="relative">
-            <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
-              search
-            </span>
-            <input
-              type="text"
-              [(ngModel)]="searchText"
-              (ngModelChange)="onSearchChange()"
-              placeholder="Rechercher un événement..."
-              class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-        </div>
-
+      <div>
         <!-- Categories -->
         <div>
           <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
@@ -76,33 +57,6 @@ import { EventFilter } from '@models/filter.model';
             </button>
           </div>
         </div>
-
-        <!-- Date range -->
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-              Date de début
-            </label>
-            <input
-              type="date"
-              [(ngModel)]="dateFrom"
-              (ngModelChange)="onDateChange()"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm"
-            />
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-              Date de fin
-            </label>
-            <input
-              type="date"
-              [(ngModel)]="dateTo"
-              (ngModelChange)="onDateChange()"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white text-sm"
-            />
-          </div>
-        </div>
       </div>
     </div>
   `,
@@ -114,10 +68,6 @@ import { EventFilter } from '@models/filter.model';
 })
 export class FilterBarComponent implements OnInit {
   allCategories: CategoryInfo[] = [];
-
-  searchText = '';
-  dateFrom = '';
-  dateTo = '';
   selectedCategories: string[] = [];
   hasActiveFilters = false;
   hasSelectedCategories = false;
@@ -136,9 +86,6 @@ export class FilterBarComponent implements OnInit {
 
     // S'abonner aux filtres
     this.filterService.filter$.subscribe(filter => {
-      this.searchText = filter.searchText;
-      this.dateFrom = filter.dateFrom || '';
-      this.dateTo = filter.dateTo || '';
       this.selectedCategories = filter.categories;
       this.hasActiveFilters = this.filterService.hasActiveFilters();
       this.hasSelectedCategories = this.selectedCategories.length > 0;
@@ -153,21 +100,7 @@ export class FilterBarComponent implements OnInit {
     return this.selectedCategories.includes(categoryId);
   }
 
-  onSearchChange(): void {
-    this.filterService.setSearchText(this.searchText);
-  }
-
-  onDateChange(): void {
-    this.filterService.setDateRangeFilter(
-      this.dateFrom || undefined,
-      this.dateTo || undefined
-    );
-  }
-
   resetFilters(): void {
     this.filterService.resetFilters();
-    this.searchText = '';
-    this.dateFrom = '';
-    this.dateTo = '';
   }
 }

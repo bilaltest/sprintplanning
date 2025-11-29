@@ -112,9 +112,6 @@ type EventCategory =
 interface UserPreferences {
   id?: string;
   theme: 'light' | 'dark';
-  language: 'fr' | 'en';
-  weekStart: 'monday' | 'sunday';
-  customColors: ColorCustomization[];
   customCategories: CustomCategory[];
   createdAt: string;
   updatedAt: string;
@@ -187,7 +184,7 @@ interface CustomCategory {
 ### 4. Filtres
 
 #### Filter Bar
-- **Position**: Sticky sous le header (top-16)
+- **Position**: Sticky en haut de page (top-2) avec z-index 30
 - **Transparence**: bg-gray-50/80 avec backdrop-blur
 - **Filtres disponibles**: Par catégorie uniquement
 - **Badge cliquable**: Toggle catégorie
@@ -205,18 +202,13 @@ interface CustomCategory {
 - Toggle dans header + page paramètres
 - Application automatique via SettingsService
 
-#### Calendrier
-- **Premier jour**: Lundi/Dimanche
-- Affecte toutes les vues
-
 #### Catégories
 - **Affichage en grille**: 8 par ligne sur grands écrans (responsive)
-- **Catégories prédéfinies**: 8 catégories par défaut (lecture seule)
-- **Catégories personnalisées**: Création avec nom, icône, couleur
+- **Catégories prédéfinies**: 8 catégories par défaut en première ligne (lecture seule)
+- **Séparateur**: Ligne de séparation entre catégories par défaut et personnalisées
+- **Catégories personnalisées**: Affichées en dessous, même format en grille de 8
+- **Création**: Formulaire avec nom, couleur (sélection visuelle), icône Material
 - **Suppression**: Bouton × au survol (uniquement custom)
-
-#### Langue
-- Français/Anglais (interface préparée)
 
 **Composants**:
 - `settings.component.ts` - Page paramètres
@@ -261,10 +253,9 @@ preferences$: Observable<UserPreferences>
 
 // Modifications
 setTheme(theme: Theme): Promise<void>
-setLanguage(language: Language): Promise<void>
-setWeekStart(weekStart: WeekStart): Promise<void>
-addCustomCategory(category: CustomCategory): Promise<void>
-removeCustomCategory(id: string): Promise<void>
+resetToDefaults(): Promise<void>
+toggleTheme(): void
+updatePreferences(preferences: UserPreferences): Promise<void>
 ```
 
 ### FilterService
@@ -338,10 +329,7 @@ model Event {
 model Settings {
   id               String   @id @default(cuid())
   theme            String   @default("light")
-  language         String   @default("fr")
-  weekStart        String   @default("monday")
-  customColors     String   @default("[]")
-  customCategories String   @default("[]")
+  customCategories String   @default("[]")  // JSON stocké en String pour SQLite
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
@@ -418,11 +406,17 @@ constructor(private settingsService: SettingsService) {
 - Utilise un `Subject` (pas `BehaviorSubject`) pour éviter émission initiale
 
 ### 2. Filter Sticky
-- Position: `sticky top-16` (64px pour header)
+- Position: `sticky top-2` (8px de marge minimale en haut)
 - Transparence: `/80` avec `backdrop-blur-md`
-- Z-index: `40` pour rester au-dessus du contenu
+- Z-index: `30` pour rester au-dessus du contenu
+- Export dropdown: Z-index `50` pour s'afficher au-dessus des filtres
 
-### 3. Capitalisation Mois
+### 3. Premier Jour de Semaine
+- **Toujours lundi**: Hardcodé dans les vues annuelle et mensuelle
+- Pas de paramètre utilisateur (fonctionnalité retirée)
+- Calcul offset: `startDayOfWeek === 0 ? 6 : startDayOfWeek - 1`
+
+### 4. Capitalisation Mois
 ```typescript
 getMonthName(month: Date): string {
   const monthName = format(month, 'MMMM yyyy', { locale: fr });
@@ -430,12 +424,12 @@ getMonthName(month: Date): string {
 }
 ```
 
-### 4. Catégories Personnalisées
+### 5. Catégories Personnalisées
 - Stockées en JSON dans SQLite (stringify/parse)
 - ID généré: `custom_${Date.now()}`
 - Validation: name en snake_case
 
-### 5. Dark Mode
+### 6. Dark Mode
 - Application via classe `.dark` sur `<html>`
 - Gestion dans `SettingsService.applyTheme()`
 - Persistance en base de données
@@ -499,26 +493,30 @@ npx prisma studio     # Interface admin DB
 
 ### Version Actuelle
 
-#### Suppression Mode "Wow"
-- ✅ Supprimé `design-wow.css`
-- ✅ Retiré type `DesignMode`
-- ✅ Nettoyé backend (schema + controller)
-- ✅ Migration DB effectuée
-
-#### Ajustements Couleurs "Sobre"
-- ✅ Background: `bg-gray-100` (au lieu de `bg-gray-50`)
-- ✅ Cards: `bg-gray-50` (au lieu de `bg-white`)
-- ✅ Meilleur contraste entre éléments
-
-#### Corrections Bugs
-- ✅ Auto-scroll annuel: `BehaviorSubject` → `Subject`
-- ✅ Panneau détail: Rétabli sur month-view
+#### Nettoyage et Simplification (Janvier 2025)
+- ✅ Supprimé recherche textuelle des filtres (searchText)
+- ✅ Supprimé filtres par dates (dateFrom, dateTo)
+- ✅ Supprimé paramètre de langue (language)
+- ✅ Supprimé paramètre premier jour semaine (weekStart → hardcodé lundi)
+- ✅ Supprimé couleurs personnalisées (customColors)
+- ✅ Nettoyé imports et méthodes inutilisés
+- ✅ Migration DB: Retrait colonnes obsolètes
+- ✅ Documentation mise à jour
 
 #### Améliorations UI
 - ✅ Catégories settings: Grille 8 colonnes (responsive)
-- ✅ Filter sticky: `top-16` avec transparence `/80`
+- ✅ Séparateur visuel entre catégories par défaut et personnalisées
+- ✅ Bouton renommé: "Ajouter une catégorie"
+- ✅ Filter sticky: Position `top-2` (marge minimale)
+- ✅ Export dropdown: Z-index `50` (au-dessus des filtres)
 - ✅ Noms mois: Capitalisés
 - ✅ Compteur événements: Supprimé
+
+#### Corrections Bugs Antérieures
+- ✅ Auto-scroll annuel: `BehaviorSubject` → `Subject`
+- ✅ Panneau détail: Rétabli sur month-view
+- ✅ Mode "Wow": Supprimé complètement
+- ✅ Couleurs sobres: Background `bg-gray-100`, Cards `bg-gray-50`
 
 ## Améliorations Futures Possibles
 

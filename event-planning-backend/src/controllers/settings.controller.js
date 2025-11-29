@@ -10,17 +10,14 @@ export const getSettings = async (req, res, next) => {
       settings = await prisma.settings.create({
         data: {
           theme: 'light',
-          language: 'fr',
-          weekStart: 'monday',
-          customColors: '[]'
+          customCategories: '[]'
         }
       });
     }
 
-    // Parser customColors et customCategories de String vers Array
+    // Parser customCategories de String vers Array
     const settingsWithParsedData = {
       ...settings,
-      customColors: JSON.parse(settings.customColors),
       customCategories: JSON.parse(settings.customCategories || '[]')
     };
 
@@ -33,10 +30,9 @@ export const getSettings = async (req, res, next) => {
 // PUT /api/settings - Mettre à jour les paramètres
 export const updateSettings = async (req, res, next) => {
   try {
-    const { theme, language, weekStart, customColors, customCategories } = req.body;
+    const { theme, customCategories } = req.body;
 
-    // Convertir customColors et customCategories en String JSON
-    const customColorsString = JSON.stringify(customColors || []);
+    // Convertir customCategories en String JSON
     const customCategoriesString = JSON.stringify(customCategories || []);
 
     let settings = await prisma.settings.findFirst();
@@ -46,9 +42,6 @@ export const updateSettings = async (req, res, next) => {
       settings = await prisma.settings.create({
         data: {
           theme,
-          language,
-          weekStart,
-          customColors: customColorsString,
           customCategories: customCategoriesString
         }
       });
@@ -58,18 +51,14 @@ export const updateSettings = async (req, res, next) => {
         where: { id: settings.id },
         data: {
           theme,
-          language,
-          weekStart,
-          customColors: customColorsString,
           customCategories: customCategoriesString
         }
       });
     }
 
-    // Retourner avec customColors et customCategories parsés
+    // Retourner avec customCategories parsé
     const settingsWithParsedData = {
       ...settings,
-      customColors: JSON.parse(settings.customColors),
       customCategories: JSON.parse(settings.customCategories)
     };
 

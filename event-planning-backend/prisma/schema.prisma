@@ -30,9 +30,6 @@ model Event {
 model Settings {
   id               String   @id @default(cuid())
   theme            String   @default("light")
-  language         String   @default("fr")
-  weekStart        String   @default("monday")
-  customColors     String   @default("[]")  // JSON stocké en String pour SQLite
   customCategories String   @default("[]")  // JSON stocké en String pour SQLite
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

@@ -28,28 +28,11 @@ export class FilterService {
   private applyFilters(events: Event[], filter: EventFilter): Event[] {
     let filtered = [...events];
 
-    // Filter by search text
-    if (filter.searchText && filter.searchText.trim()) {
-      const searchLower = filter.searchText.toLowerCase();
-      filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(searchLower) ||
-        event.description?.toLowerCase().includes(searchLower)
-      );
-    }
-
     // Filter by categories
     if (filter.categories.length > 0) {
       filtered = filtered.filter(event =>
         filter.categories.includes(event.category)
       );
-    }
-
-    // Filter by date range
-    if (filter.dateFrom) {
-      filtered = filtered.filter(event => event.date >= filter.dateFrom!);
-    }
-    if (filter.dateTo) {
-      filtered = filtered.filter(event => event.date <= filter.dateTo!);
     }
 
     return filtered;
@@ -78,14 +61,6 @@ export class FilterService {
     this.setCategoryFilter(categories);
   }
 
-  setSearchText(searchText: string): void {
-    this.setFilter({ searchText });
-  }
-
-  setDateRangeFilter(dateFrom?: string, dateTo?: string): void {
-    this.setFilter({ dateFrom, dateTo });
-  }
-
   resetFilters(): void {
     this.filterSubject.next(DEFAULT_FILTER);
   }
@@ -96,9 +71,6 @@ export class FilterService {
 
   hasActiveFilters(): boolean {
     const filter = this.filterSubject.value;
-    return filter.categories.length > 0 ||
-           (filter.searchText && filter.searchText.trim().length > 0) ||
-           !!filter.dateFrom ||
-           !!filter.dateTo;
+    return filter.categories.length > 0;
   }
 }

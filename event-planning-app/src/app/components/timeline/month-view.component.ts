@@ -208,7 +208,7 @@ export class MonthViewComponent implements OnChanges {
 
     this.settingsService.preferences$.subscribe(prefs => {
       this.isDark = prefs.theme === 'dark';
-      this.updateDaysOfWeek(prefs.weekStart === 'monday');
+      this.updateDaysOfWeek(true); // Toujours commencer par lundi
     });
   }
 
@@ -236,9 +236,8 @@ export class MonthViewComponent implements OnChanges {
     const startDayOfWeek = firstDay.getDay();
     const daysInMonth = lastDay.getDate();
 
-    // Adjust for week start
-    const prefs = this.settingsService.getCurrentPreferences();
-    const offset = prefs.weekStart === 'monday' ? (startDayOfWeek === 0 ? 6 : startDayOfWeek - 1) : startDayOfWeek;
+    // Ajuster pour commencer par lundi
+    const offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
 
     this.emptyDays = Array(offset).fill(0);
     this.days = Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1));

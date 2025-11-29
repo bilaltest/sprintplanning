@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
-import { UserPreferences, DEFAULT_PREFERENCES, Theme, Language, WeekStart, ColorCustomization, CustomCategory } from '@models/settings.model';
+import { UserPreferences, DEFAULT_PREFERENCES, Theme } from '@models/settings.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -49,28 +49,6 @@ export class SettingsService {
     const current = this.preferencesSubject.value;
     await this.savePreferences({ ...current, theme });
     this.applyTheme(theme);
-  }
-
-  async setLanguage(language: Language): Promise<void> {
-    const current = this.preferencesSubject.value;
-    await this.savePreferences({ ...current, language });
-  }
-
-  async setWeekStart(weekStart: WeekStart): Promise<void> {
-    const current = this.preferencesSubject.value;
-    await this.savePreferences({ ...current, weekStart });
-  }
-
-  async addCustomColor(color: ColorCustomization): Promise<void> {
-    const current = this.preferencesSubject.value;
-    const customColors = [...current.customColors, color];
-    await this.savePreferences({ ...current, customColors });
-  }
-
-  async removeCustomColor(name: string): Promise<void> {
-    const current = this.preferencesSubject.value;
-    const customColors = current.customColors.filter(c => c.name !== name);
-    await this.savePreferences({ ...current, customColors });
   }
 
   async resetToDefaults(): Promise<void> {

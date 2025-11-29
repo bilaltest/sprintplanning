@@ -99,7 +99,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
 
               <div
                 *ngIf="showExportMenu"
-                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10 fade-in-scale"
+                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 fade-in-scale"
               >
                 <button
                   (click)="exportAsPDF()"
@@ -136,7 +136,9 @@ import { EventModalComponent } from '../modals/event-modal.component';
       </div>
 
       <!-- Filter bar -->
-      <app-filter-bar></app-filter-bar>
+      <div class="sticky top-2 z-30">
+        <app-filter-bar></app-filter-bar>
+      </div>
 
       <!-- Timeline view -->
       <div id="timeline-export" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
