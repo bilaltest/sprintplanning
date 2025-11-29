@@ -165,9 +165,15 @@ Récupère les préférences utilisateur.
 {
   "id": "clxxx...",
   "theme": "dark",
-  "language": "fr",
-  "weekStart": "monday",
-  "customColors": ["#ff0000", "#00ff00"],
+  "customCategories": [
+    {
+      "id": "custom_123",
+      "name": "reunion_client",
+      "label": "Réunion client",
+      "color": "#3b82f6",
+      "icon": "meeting_room"
+    }
+  ],
   "createdAt": "2025-11-29T10:00:00.000Z",
   "updatedAt": "2025-11-29T10:00:00.000Z"
 }
@@ -180,9 +186,15 @@ Met à jour les préférences.
 ```json
 {
   "theme": "dark",
-  "language": "fr",
-  "weekStart": "monday",
-  "customColors": ["#ff0000", "#00ff00"]
+  "customCategories": [
+    {
+      "id": "custom_123",
+      "name": "reunion_client",
+      "label": "Réunion client",
+      "color": "#3b82f6",
+      "icon": "meeting_room"
+    }
+  ]
 }
 ```
 
@@ -254,13 +266,11 @@ model Event {
 }
 
 model Settings {
-  id           String   @id @default(cuid())
-  theme        String   @default("light")
-  language     String   @default("fr")
-  weekStart    String   @default("monday")
-  customColors String   @default("[]")  // JSON en String pour SQLite
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               String   @id @default(cuid())
+  theme            String   @default("light")
+  customCategories String   @default("[]")  // JSON en String pour SQLite
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model History {
@@ -294,7 +304,7 @@ datasource db {
 }
 
 model Settings {
-  customColors Json @default([])  // Au lieu de String
+  customCategories Json @default([])  // Au lieu de String
 }
 
 model History {
@@ -479,7 +489,14 @@ pm2 save
 
 ## 📝 Changelog
 
-### Version 1.0.0 (Current)
+### Version 1.1.0 (Current)
+- ✅ Nettoyage du schéma Settings (Janvier 2025)
+  - Suppression colonnes language et weekStart
+  - Suppression colonne customColors
+  - Ajout support customCategories (JSON)
+- ✅ Migration base de données effectuée
+
+### Version 1.0.0
 - ✅ API REST complète (événements, paramètres, historique)
 - ✅ Base de données SQLite (dev)
 - ✅ Support PostgreSQL (prod)
