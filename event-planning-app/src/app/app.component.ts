@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SettingsService } from '@services/settings.service';
 import { AuthService } from '@services/auth.service';
 
@@ -106,9 +107,12 @@ export class AppComponent {
     private authService: AuthService,
     private router: Router
   ) {
-    this.settingsService.preferences$.subscribe(prefs => {
-      this.isDarkMode = prefs.theme === 'dark';
-    });
+    // Utilisation de takeUntilDestroyed pour éviter les memory leaks
+    this.settingsService.preferences$
+      .pipe(takeUntilDestroyed())
+      .subscribe(prefs => {
+        this.isDarkMode = prefs.theme === 'dark';
+      });
   }
 
   toggleTheme(): void {

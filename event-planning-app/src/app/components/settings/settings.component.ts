@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SettingsService } from '@services/settings.service';
 import { CategoryService } from '@services/category.service';
 import { Theme, UserPreferences } from '@models/settings.model';
@@ -257,20 +258,27 @@ export class SettingsComponent implements OnInit {
     { hex: '#f59e0b', label: 'Ambre' }
   ];
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private settingsService: SettingsService,
     private categoryService: CategoryService
   ) {}
 
   ngOnInit(): void {
-    this.settingsService.preferences$.subscribe(prefs => {
-      this.preferences = prefs;
-    });
+    // Subscriptions avec cleanup automatique
+    this.settingsService.preferences$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(prefs => {
+        this.preferences = prefs;
+      });
 
     // Charger toutes les catégories (défaut + personnalisées)
-    this.categoryService.allCategories$.subscribe(categories => {
-      this.allCategories = categories;
-    });
+    this.categoryService.allCategories$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(categories => {
+        this.allCategories = categories;
+      });
   }
 
   async setTheme(theme: Theme): Promise<void> {
@@ -307,7 +315,6 @@ export class SettingsComponent implements OnInit {
       this.newCategoryIcon = 'event';
       this.showAddCategoryForm = false;
     } catch (error) {
-      console.error('Error adding custom category:', error);
       alert('Erreur lors de l\'ajout de la catégorie');
     }
   }
@@ -325,7 +332,6 @@ export class SettingsComponent implements OnInit {
       try {
         await this.categoryService.deleteCustomCategory(id);
       } catch (error) {
-        console.error('Error deleting custom category:', error);
         alert('Erreur lors de la suppression de la catégorie');
       }
     }

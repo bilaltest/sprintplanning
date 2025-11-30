@@ -1,5 +1,6 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TimelineService } from '@services/timeline.service';
 import { EventService } from '@services/event.service';
 import { FilterService } from '@services/filter.service';
@@ -32,13 +33,13 @@ import { EventModalComponent } from '../modals/event-modal.component';
             <button
               *ngFor="let view of views"
               (click)="setView(view.value)"
-              [class.bg-white]="(currentView$ | async) === view.value && !(isDark$ | async)"
+              [class.bg-white]="(currentView$ | async) === view.value"
               [class.dark:bg-gray-600]="(currentView$ | async) === view.value"
               [class.shadow-sm]="(currentView$ | async) === view.value"
               class="px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2"
-              [class.text-primary-600]="(currentView$ | async) === view.value && !(isDark$ | async)"
+              [class.text-primary-600]="(currentView$ | async) === view.value"
               [class.dark:text-primary-400]="(currentView$ | async) === view.value"
-              [class.text-gray-600]="(currentView$ | async) !== view.value && !(isDark$ | async)"
+              [class.text-gray-600]="(currentView$ | async) !== view.value"
               [class.dark:text-gray-300]="(currentView$ | async) !== view.value"
             >
               <span class="material-icons text-lg">{{ view.icon }}</span>
@@ -215,7 +216,6 @@ export class TimelineContainerComponent implements OnInit {
 
   currentView$!: Observable<TimelineView>;
   filteredEvents$!: Observable<Event[]>;
-  isDark$ = new Observable<boolean>();
 
   showEventModal = false;
   selectedEvent?: Event;
@@ -226,16 +226,22 @@ export class TimelineContainerComponent implements OnInit {
     private eventService: EventService,
     private filterService: FilterService,
     private exportService: ExportService
-  ) {}
+  ) {
+    // Initialisation avec cleanup automatique dans le constructor
+    this.filteredEvents$ = this.filterService.filteredEvents$;
+
+    // Déplacer la création de currentView$ dans le constructor
+    this.currentView$ = new Observable(observer => {
+      this.timelineService.state$
+        .pipe(takeUntilDestroyed())
+        .subscribe(state => {
+          observer.next(state.view);
+        });
+    });
+  }
 
   ngOnInit(): void {
-    this.currentView$ = new Observable(observer => {
-      this.timelineService.state$.subscribe(state => {
-        observer.next(state.view);
-      });
-    });
-
-    this.filteredEvents$ = this.filterService.filteredEvents$;
+    // Rien à initialiser ici
   }
 
   setView(view: TimelineView): void {
@@ -311,7 +317,6 @@ export class TimelineContainerComponent implements OnInit {
     try {
       await this.eventService.deleteEvent(event.id);
     } catch (error) {
-      console.error('Delete event error:', error);
       alert('Erreur lors de la suppression de l\'événement');
     }
   }
@@ -325,7 +330,7 @@ export class TimelineContainerComponent implements OnInit {
       await this.exportService.exportAsPDF('timeline-export', 'planning');
       this.showExportMenu = false;
     } catch (error) {
-      console.error('Export PDF error:', error);
+      // Erreur silencieuse ou notification utilisateur
     }
   }
 
@@ -334,7 +339,7 @@ export class TimelineContainerComponent implements OnInit {
       await this.exportService.exportAsPNG('timeline-export', 'planning');
       this.showExportMenu = false;
     } catch (error) {
-      console.error('Export PNG error:', error);
+      // Erreur silencieuse ou notification utilisateur
     }
   }
 
@@ -343,7 +348,7 @@ export class TimelineContainerComponent implements OnInit {
       await this.exportService.exportAsJSON();
       this.showExportMenu = false;
     } catch (error) {
-      console.error('Export JSON error:', error);
+      // Erreur silencieuse ou notification utilisateur
     }
   }
 
@@ -352,7 +357,7 @@ export class TimelineContainerComponent implements OnInit {
       await this.exportService.exportAsCSV();
       this.showExportMenu = false;
     } catch (error) {
-      console.error('Export CSV error:', error);
+      // Erreur silencieuse ou notification utilisateur
     }
   }
 

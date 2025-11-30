@@ -1,8 +1,10 @@
 import { Component, Input, Output, EventEmitter, AfterViewInit, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Event, EVENT_CATEGORY_LABELS, EventCategory, CATEGORY_COLORS_DARK } from '@models/event.model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Event, EventCategory, CATEGORY_COLORS_DARK } from '@models/event.model';
 import { TimelineService } from '@services/timeline.service';
 import { SettingsService } from '@services/settings.service';
+import { CategoryService } from '@services/category.service';
 import { format, getDaysInMonth, getDay, isToday, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -205,26 +207,34 @@ export class AnnualViewComponent implements AfterViewInit {
   constructor(
     private timelineService: TimelineService,
     private settingsService: SettingsService,
+    private categoryService: CategoryService,
     private elementRef: ElementRef
   ) {
-    this.timelineService.state$.subscribe(state => {
-      // Afficher les 12 mois de l'année (vue annuelle)
-      const year = state.currentDate.getFullYear();
-      this.months = Array.from({ length: 12 }, (_, i) => new Date(year, i, 1));
-    });
+    // Subscriptions avec cleanup automatique
+    this.timelineService.state$
+      .pipe(takeUntilDestroyed())
+      .subscribe(state => {
+        // Afficher les 12 mois de l'année (vue annuelle)
+        const year = state.currentDate.getFullYear();
+        this.months = Array.from({ length: 12 }, (_, i) => new Date(year, i, 1));
+      });
 
     // Détecter le mode sombre
-    this.settingsService.preferences$.subscribe(prefs => {
-      this.isDarkMode = prefs.theme === 'dark';
-      this.updateDaysOfWeek(true); // Toujours commencer par lundi
-    });
+    this.settingsService.preferences$
+      .pipe(takeUntilDestroyed())
+      .subscribe(prefs => {
+        this.isDarkMode = prefs.theme === 'dark';
+        this.updateDaysOfWeek(true); // Toujours commencer par lundi
+      });
 
     // Écouter le signal de scroll vers aujourd'hui
-    this.timelineService.scrollToToday$.subscribe(() => {
-      setTimeout(() => {
-        this.scrollToCurrentMonth();
-      }, 100);
-    });
+    this.timelineService.scrollToToday$
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        setTimeout(() => {
+          this.scrollToCurrentMonth();
+        }, 100);
+      });
   }
 
   ngAfterViewInit(): void {
@@ -280,16 +290,6 @@ export class AnnualViewComponent implements AfterViewInit {
     return this.events.filter(event => event.date === dateStr);
   }
 
-  getEventCountForMonth(month: Date): number {
-    if (!this.events) return 0;
-    const year = month.getFullYear();
-    const monthNum = month.getMonth();
-    return this.events.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate.getFullYear() === year && eventDate.getMonth() === monthNum;
-    }).length;
-  }
-
   isToday(day: Date): boolean {
     return isToday(day);
   }
@@ -311,10 +311,6 @@ export class AnnualViewComponent implements AfterViewInit {
     }
   }
 
-  onDayClick(day: Date): void {
-    this.selectedDay = day;
-  }
-
   closeDetails(): void {
     this.selectedDay = null;
   }
@@ -324,8 +320,8 @@ export class AnnualViewComponent implements AfterViewInit {
     return format(this.selectedDay, 'EEEE d MMMM yyyy', { locale: fr });
   }
 
-  getCategoryLabel(category: EventCategory): string {
-    return EVENT_CATEGORY_LABELS[category];
+  getCategoryLabel(categoryId: string): string {
+    return this.categoryService.getCategoryLabel(categoryId);
   }
 
   onEventClick(event: Event): void {

@@ -1,8 +1,10 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Event, CATEGORY_COLORS_DARK, EVENT_CATEGORY_LABELS, EventCategory } from '@models/event.model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Event, CATEGORY_COLORS_DARK, EventCategory } from '@models/event.model';
 import { TimelineService } from '@services/timeline.service';
 import { SettingsService } from '@services/settings.service';
+import { CategoryService } from '@services/category.service';
 import { format, isSameDay, isToday, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -199,17 +201,23 @@ export class MonthViewComponent implements OnChanges {
 
   constructor(
     private timelineService: TimelineService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private categoryService: CategoryService
   ) {
-    this.timelineService.state$.subscribe(state => {
-      this.currentMonth = state.currentDate;
-      this.generateCalendar();
-    });
+    // Subscriptions avec cleanup automatique
+    this.timelineService.state$
+      .pipe(takeUntilDestroyed())
+      .subscribe(state => {
+        this.currentMonth = state.currentDate;
+        this.generateCalendar();
+      });
 
-    this.settingsService.preferences$.subscribe(prefs => {
-      this.isDark = prefs.theme === 'dark';
-      this.updateDaysOfWeek(true); // Toujours commencer par lundi
-    });
+    this.settingsService.preferences$
+      .pipe(takeUntilDestroyed())
+      .subscribe(prefs => {
+        this.isDark = prefs.theme === 'dark';
+        this.updateDaysOfWeek(true); // Toujours commencer par lundi
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -265,10 +273,6 @@ export class MonthViewComponent implements OnChanges {
     }
   }
 
-  onDayClick(day: Date): void {
-    this.selectedDay = day;
-  }
-
   closeDetails(): void {
     this.selectedDay = null;
   }
@@ -278,8 +282,8 @@ export class MonthViewComponent implements OnChanges {
     return format(this.selectedDay, 'EEEE d MMMM yyyy', { locale: fr });
   }
 
-  getCategoryLabel(category: EventCategory): string {
-    return EVENT_CATEGORY_LABELS[category];
+  getCategoryLabel(categoryId: string): string {
+    return this.categoryService.getCategoryLabel(categoryId);
   }
 
   onEventClick(mouseEvent: MouseEvent, event: Event): void {

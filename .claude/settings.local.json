@@ -12,7 +12,22 @@
       "Bash(npx prisma db push:*)",
       "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npx prisma db push)",
       "Bash(source ~/.zshrc)",
-      "Bash(export PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\")"
+      "Bash(export PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\")",
+      "Bash(npm start)",
+      "Bash(npx ng serve)",
+      "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npm start)",
+      "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npm run dev)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git merge:*)",
+      "Bash(git push)",
+      "Bash(npx prisma:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run build:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

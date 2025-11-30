@@ -21,17 +21,6 @@ export interface Event {
   updatedAt: string; // ISO timestamp
 }
 
-export interface EventTemplate {
-  id?: string;
-  name: string;
-  title: string;
-  color: EventColor;
-  icon: EventIcon;
-  category: EventCategory;
-  description?: string;
-  createdAt: string;
-}
-
 export const EVENT_CATEGORY_LABELS: Record<string, string> = {
   mep: 'Mise en production',
   hotfix: 'Hotfix',

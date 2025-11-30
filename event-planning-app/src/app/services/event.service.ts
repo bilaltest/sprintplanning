@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { Event } from '@models/event.model';
 import { environment } from '../../environments/environment';
@@ -26,7 +26,6 @@ export class EventService {
       const events = await firstValueFrom(this.http.get<Event[]>(this.apiUrl));
       this.eventsSubject.next(events);
     } catch (error) {
-      console.error('Error loading events:', error);
       throw error;
     } finally {
       this.loadingSubject.next(false);
@@ -41,7 +40,6 @@ export class EventService {
       await this.loadEvents();
       return newEvent;
     } catch (error) {
-      console.error('Error creating event:', error);
       throw error;
     }
   }
@@ -54,7 +52,6 @@ export class EventService {
       await this.loadEvents();
       return updatedEvent;
     } catch (error) {
-      console.error('Error updating event:', error);
       throw error;
     }
   }
@@ -66,7 +63,6 @@ export class EventService {
       );
       await this.loadEvents();
     } catch (error) {
-      console.error('Error deleting event:', error);
       throw error;
     }
   }
@@ -86,7 +82,6 @@ export class EventService {
 
       return duplicatedEvent;
     } catch (error) {
-      console.error('Error duplicating event:', error);
       throw error;
     }
   }
@@ -106,7 +101,6 @@ export class EventService {
       );
       await this.loadEvents();
     } catch (error) {
-      console.error('Error clearing events:', error);
       throw error;
     }
   }
@@ -119,31 +113,11 @@ export class EventService {
       );
       await this.loadEvents();
     } catch (error) {
-      console.error('Error importing events:', error);
       throw error;
     }
   }
 
   async exportEvents(): Promise<Event[]> {
     return firstValueFrom(this.http.get<Event[]>(this.apiUrl));
-  }
-
-  // Méthode pour filtrer les événements (utilisée par FilterService)
-  async getFilteredEvents(params: {
-    category?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    search?: string;
-  }): Promise<Event[]> {
-    let httpParams = new HttpParams();
-
-    if (params.category) httpParams = httpParams.set('category', params.category);
-    if (params.dateFrom) httpParams = httpParams.set('dateFrom', params.dateFrom);
-    if (params.dateTo) httpParams = httpParams.set('dateTo', params.dateTo);
-    if (params.search) httpParams = httpParams.set('search', params.search);
-
-    return firstValueFrom(
-      this.http.get<Event[]>(this.apiUrl, { params: httpParams })
-    );
   }
 }

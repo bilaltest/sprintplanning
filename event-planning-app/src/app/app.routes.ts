@@ -37,5 +37,21 @@ export const routes: Routes = [
         m => m.HistoryComponent
       ),
     canActivate: [authGuard]
+  },
+  {
+    path: 'releases',
+    loadComponent: () =>
+      import('./components/releases/releases-list.component').then(
+        m => m.ReleasesListComponent
+      ),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'releases/:id',
+    loadComponent: () =>
+      import('./components/releases/release-detail.component').then(
+        m => m.ReleaseDetailComponent
+      ),
+    canActivate: [authGuard]
   }
 ];

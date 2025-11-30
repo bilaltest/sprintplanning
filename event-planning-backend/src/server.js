@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import eventRoutes from './routes/event.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import historyRoutes from './routes/history.routes.js';
+import releaseRoutes from './routes/release.routes.js';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 app.use('/api/events', eventRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/history', historyRoutes);
+app.use('/api/releases', releaseRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

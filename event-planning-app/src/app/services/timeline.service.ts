@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { TimelineView, TimelineState, MonthData, WeekData } from '@models/timeline.model';
-import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, getDay, getDaysInMonth, format } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
+import { TimelineView, TimelineState } from '@models/timeline.model';
 
 @Injectable({
   providedIn: 'root'
@@ -74,51 +72,6 @@ export class TimelineService {
 
   private scrollToTodaySubject = new Subject<void>();
   public scrollToToday$ = this.scrollToTodaySubject.asObservable();
-
-  getMonthData(date: Date, locale: 'fr' | 'en' = 'fr'): MonthData {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const daysInMonth = getDaysInMonth(firstDay);
-    const firstDayOfWeek = getDay(firstDay);
-
-    return {
-      year,
-      month,
-      name: format(firstDay, 'MMMM', { locale: locale === 'fr' ? fr : enUS }),
-      days: daysInMonth,
-      firstDayOfWeek
-    };
-  }
-
-  getWeeksInMonth(date: Date, weekStartsOnMonday: boolean = true): WeekData[] {
-    const start = startOfMonth(date);
-    const end = endOfMonth(date);
-    const days = eachDayOfInterval({ start, end });
-
-    const weeks: WeekData[] = [];
-    let currentWeek: Date[] = [];
-    let weekNumber = 1;
-
-    days.forEach((day, index) => {
-      const dayOfWeek = getDay(day);
-      const isStartOfWeek = weekStartsOnMonday ? dayOfWeek === 1 : dayOfWeek === 0;
-
-      if (isStartOfWeek && currentWeek.length > 0) {
-        weeks.push({ weekNumber, days: [...currentWeek] });
-        currentWeek = [];
-        weekNumber++;
-      }
-
-      currentWeek.push(day);
-
-      if (index === days.length - 1 && currentWeek.length > 0) {
-        weeks.push({ weekNumber, days: [...currentWeek] });
-      }
-    });
-
-    return weeks;
-  }
 
   getYearMonths(year: number): Date[] {
     return Array.from({ length: 12 }, (_, i) => new Date(year, i, 1));

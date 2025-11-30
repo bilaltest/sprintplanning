@@ -45,3 +45,91 @@ model History {
 
   @@index([timestamp])
 }
+
+// ===== RELEASE MANAGEMENT MODELS =====
+
+model Release {
+  id          String   @id @default(cuid())
+  name        String   // Ex: "Release v40.5 - Sprint 2024.12"
+  version     String   // Ex: "40.5"
+  releaseDate DateTime // Date prévue de la MEP
+  status      String   @default("draft") // draft, in_progress, completed, cancelled
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  squads      Squad[]
+
+  @@index([releaseDate])
+  @@index([status])
+}
+
+model Squad {
+  id          String   @id @default(cuid())
+  releaseId   String
+  squadNumber Int      // 1 à 6
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  release     Release  @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  features    Feature[]
+  actions     Action[]
+
+  @@index([releaseId])
+}
+
+model Feature {
+  id          String   @id @default(cuid())
+  squadId     String
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  squad       Squad    @relation(fields: [squadId], references: [id], onDelete: Cascade)
+
+  @@index([squadId])
+}
+
+model Action {
+  id          String   @id @default(cuid())
+  squadId     String
+  phase       String   // 'pre_mep' ou 'post_mep'
+  type        String   // 'topic_creation', 'database_update', 'vault_credentials', 'feature_flipping', 'other'
+  title       String
+  description String?
+  status      String   @default("pending") // pending, completed
+  order       Int      @default(0) // Pour ordonner les actions
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  squad       Squad    @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  flipping    FeatureFlipping?
+
+  @@index([squadId])
+  @@index([phase])
+  @@index([type])
+}
+
+model FeatureFlipping {
+  id          String   @id @default(cuid())
+  actionId    String   @unique
+  flippingType String  // 'memory_flipping', 'feature_flipping', extensible
+  ruleName    String   // Nom de la règle dans le référentiel
+  ruleAction  String   // 'create_rule', 'obsolete_rule', 'disable_rule', 'enable_rule'
+  ruleState   String?  // 'enabled', 'disabled' (deprecated, kept for backward compatibility)
+
+  // Périmètres (JSON stocké en String pour SQLite)
+  targetClients  String  @default("[]") // ["all"] ou liste de CAELs
+  targetCaisses  String? // Liste de caisses (texte libre)
+  targetOS       String  @default("[]") // ["ios", "android"] ou vide pour tous
+  targetVersions String  @default("[]") // Conditions de version [{"operator": ">=", "version": "38.5"}]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  action      Action   @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@index([actionId])
+  @@index([ruleName])
+}

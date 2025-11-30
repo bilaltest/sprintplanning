@@ -33,7 +33,6 @@ export class CategoryService {
     // Combiner les catégories par défaut et les catégories personnalisées
     this.allCategories$ = this.settingsService.preferences$.pipe(
       map(prefs => {
-        console.log('CategoryService - Préférences reçues:', prefs);
         const categories: CategoryInfo[] = [];
 
         // Ajouter les catégories par défaut
@@ -48,7 +47,6 @@ export class CategoryService {
         });
 
         // Ajouter les catégories personnalisées
-        console.log('CategoryService - Catégories personnalisées:', prefs.customCategories);
         prefs.customCategories.forEach(customCat => {
           categories.push({
             id: customCat.id,
@@ -59,7 +57,6 @@ export class CategoryService {
           });
         });
 
-        console.log('CategoryService - Toutes les catégories:', categories);
         return categories;
       })
     );

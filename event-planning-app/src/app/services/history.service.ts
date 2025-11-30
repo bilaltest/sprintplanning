@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { HistoryEntry } from '@models/history.model';
@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root'
 })
-export class HistoryService {
+export class HistoryService implements OnDestroy {
   private apiUrl = `${environment.apiUrl}/history`;
 
   private historySubject = new BehaviorSubject<HistoryEntry[]>([]);
@@ -21,6 +21,11 @@ export class HistoryService {
     this.startAutoRefresh();
   }
 
+  // Cleanup automatique lors de la destruction du service
+  ngOnDestroy(): void {
+    this.stopAutoRefresh();
+  }
+
   private async loadHistory(): Promise<void> {
     try {
       const entries = await firstValueFrom(
@@ -28,7 +33,7 @@ export class HistoryService {
       );
       this.historySubject.next(entries);
     } catch (error) {
-      console.error('Error loading history:', error);
+      // Erreur silencieuse - l'historique ne se chargera pas
     }
   }
 
@@ -39,7 +44,6 @@ export class HistoryService {
       );
       await this.loadHistory();
     } catch (error) {
-      console.error('Error rolling back:', error);
       throw error;
     }
   }
@@ -51,7 +55,6 @@ export class HistoryService {
       );
       await this.loadHistory();
     } catch (error) {
-      console.error('Error clearing history:', error);
       throw error;
     }
   }

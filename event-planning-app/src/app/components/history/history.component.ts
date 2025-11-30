@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HistoryService } from '@services/history.service';
 import { EventService } from '@services/event.service';
 import { HistoryEntry } from '@models/history.model';
@@ -125,15 +126,20 @@ import { fr } from 'date-fns/locale';
 export class HistoryComponent implements OnInit {
   history: HistoryEntry[] = [];
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private historyService: HistoryService,
     private eventService: EventService
   ) {}
 
   ngOnInit(): void {
-    this.historyService.history$.subscribe(entries => {
-      this.history = entries;
-    });
+    // Subscription avec cleanup automatique
+    this.historyService.history$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(entries => {
+        this.history = entries;
+      });
   }
 
   getActionIcon(action: string): string {
@@ -186,7 +192,6 @@ export class HistoryComponent implements OnInit {
       await this.historyService.refresh();
       alert('Action annulée avec succès');
     } catch (error) {
-      console.error('Rollback error:', error);
       alert('Erreur lors de l\'annulation');
     }
   }
@@ -201,7 +206,6 @@ export class HistoryComponent implements OnInit {
     try {
       await this.historyService.clearHistory();
     } catch (error) {
-      console.error('Clear history error:', error);
       alert('Erreur lors de l\'effacement de l\'historique');
     }
   }

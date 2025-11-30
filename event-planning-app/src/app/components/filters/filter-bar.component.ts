@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FilterService } from '@services/filter.service';
 import { CategoryService, CategoryInfo } from '@services/category.service';
-import { EventCategory, EVENT_CATEGORY_LABELS, CATEGORY_DEFAULTS } from '@models/event.model';
+import { EventCategory } from '@models/event.model';
 import { EventFilter } from '@models/filter.model';
 
 @Component({
@@ -72,24 +73,29 @@ export class FilterBarComponent implements OnInit {
   hasActiveFilters = false;
   hasSelectedCategories = false;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private filterService: FilterService,
     private categoryService: CategoryService
   ) {}
 
   ngOnInit(): void {
-    // S'abonner aux catégories (défaut + personnalisées)
-    this.categoryService.allCategories$.subscribe(categories => {
-      console.log('FilterBarComponent - Catégories reçues:', categories);
-      this.allCategories = categories;
-    });
+    // S'abonner aux catégories (défaut + personnalisées) avec cleanup automatique
+    this.categoryService.allCategories$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(categories => {
+        this.allCategories = categories;
+      });
 
-    // S'abonner aux filtres
-    this.filterService.filter$.subscribe(filter => {
-      this.selectedCategories = filter.categories;
-      this.hasActiveFilters = this.filterService.hasActiveFilters();
-      this.hasSelectedCategories = this.selectedCategories.length > 0;
-    });
+    // S'abonner aux filtres avec cleanup automatique
+    this.filterService.filter$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(filter => {
+        this.selectedCategories = filter.categories;
+        this.hasActiveFilters = this.filterService.hasActiveFilters();
+        this.hasSelectedCategories = this.selectedCategories.length > 0;
+      });
   }
 
   toggleCategory(categoryId: string): void {

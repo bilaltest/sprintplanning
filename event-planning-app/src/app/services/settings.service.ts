@@ -22,11 +22,9 @@ export class SettingsService {
       const prefs = await firstValueFrom(
         this.http.get<UserPreferences>(this.apiUrl)
       );
-      console.log('SettingsService - Préférences chargées depuis le backend:', prefs);
       this.preferencesSubject.next(prefs);
       this.applyTheme(prefs.theme);
     } catch (error) {
-      console.error('Error loading preferences:', error);
       // En cas d'erreur, utiliser les préférences par défaut
       this.preferencesSubject.next(DEFAULT_PREFERENCES);
       this.applyTheme(DEFAULT_PREFERENCES.theme);
@@ -40,7 +38,6 @@ export class SettingsService {
       );
       this.preferencesSubject.next(updated);
     } catch (error) {
-      console.error('Error saving preferences:', error);
       throw error;
     }
   }
