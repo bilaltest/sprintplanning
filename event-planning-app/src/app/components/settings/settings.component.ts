@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingsService } from '@services/settings.service';
 import { CategoryService } from '@services/category.service';
-import { Theme, Language, WeekStart, UserPreferences } from '@models/settings.model';
+import { Theme, UserPreferences } from '@models/settings.model';
 
 @Component({
   selector: 'app-settings',
@@ -46,76 +46,6 @@ import { Theme, Language, WeekStart, UserPreferences } from '@models/settings.mo
               >
                 <span class="material-icons text-gray-700 dark:text-gray-300">dark_mode</span>
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Sombre</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Language -->
-      <div class="card p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Langue
-        </h2>
-
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Langue de l'interface
-            </label>
-            <div class="flex space-x-4">
-              <button
-                (click)="setLanguage('fr')"
-                [class.ring-2]="preferences.language === 'fr'"
-                [class.ring-primary-500]="preferences.language === 'fr'"
-                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
-              >
-                <span class="text-2xl">🇫🇷</span>
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Français</span>
-              </button>
-
-              <button
-                (click)="setLanguage('en')"
-                [class.ring-2]="preferences.language === 'en'"
-                [class.ring-primary-500]="preferences.language === 'en'"
-                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
-              >
-                <span class="text-2xl">🇬🇧</span>
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">English</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Calendar -->
-      <div class="card p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Calendrier
-        </h2>
-
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Premier jour de la semaine
-            </label>
-            <div class="flex space-x-4">
-              <button
-                (click)="setWeekStart('monday')"
-                [class.ring-2]="preferences.weekStart === 'monday'"
-                [class.ring-primary-500]="preferences.weekStart === 'monday'"
-                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
-              >
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Lundi</span>
-              </button>
-
-              <button
-                (click)="setWeekStart('sunday')"
-                [class.ring-2]="preferences.weekStart === 'sunday'"
-                [class.ring-primary-500]="preferences.weekStart === 'sunday'"
-                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
-              >
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Dimanche</span>
               </button>
             </div>
           </div>
@@ -234,24 +164,28 @@ import { Theme, Language, WeekStart, UserPreferences } from '@models/settings.mo
         <!-- Custom Categories List -->
         <div *ngIf="preferences.customCategories.length > 0" class="mt-6">
           <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Catégories personnalisées</h3>
-          <div class="space-y-2">
+          <div class="flex flex-wrap gap-2">
             <div
               *ngFor="let category of preferences.customCategories"
-              class="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg"
+              class="group relative inline-flex items-center space-x-2 px-3 py-2 border-2 rounded-lg"
+              [style.border-color]="category.color"
+              [style.background-color]="category.color + '15'"
             >
-              <div class="flex items-center space-x-3">
-                <span class="material-icons" [style.color]="category.color">{{ category.icon }}</span>
-                <div>
-                  <div class="font-medium text-gray-900 dark:text-white">{{ category.label }}</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ category.color }}</div>
-                </div>
-              </div>
+              <span
+                class="material-icons text-sm"
+                [style.color]="category.color"
+              >
+                {{ category.icon }}
+              </span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {{ category.label }}
+              </span>
               <button
                 (click)="deleteCustomCategory(category.id)"
-                class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                 title="Supprimer"
               >
-                <span class="material-icons text-sm">delete</span>
+                <span class="material-icons" style="font-size: 14px;">close</span>
               </button>
             </div>
           </div>
@@ -294,9 +228,6 @@ import { Theme, Language, WeekStart, UserPreferences } from '@models/settings.mo
 export class SettingsComponent implements OnInit {
   preferences: UserPreferences = {
     theme: 'light',
-    language: 'fr',
-    weekStart: 'monday',
-    customColors: [],
     customCategories: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -344,14 +275,6 @@ export class SettingsComponent implements OnInit {
 
   async setTheme(theme: Theme): Promise<void> {
     await this.settingsService.setTheme(theme);
-  }
-
-  async setLanguage(language: Language): Promise<void> {
-    await this.settingsService.setLanguage(language);
-  }
-
-  async setWeekStart(weekStart: WeekStart): Promise<void> {
-    await this.settingsService.setWeekStart(weekStart);
   }
 
   async resetToDefaults(): Promise<void> {
