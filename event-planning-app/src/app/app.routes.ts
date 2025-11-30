@@ -11,47 +11,70 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'planning',
+    redirectTo: 'home',
     pathMatch: 'full'
   },
   {
-    path: 'planning',
+    path: 'home',
     loadComponent: () =>
-      import('./components/timeline/timeline-container.component').then(
-        m => m.TimelineContainerComponent
+      import('./components/home/home.component').then(
+        m => m.HomeComponent
       ),
     canActivate: [authGuard]
   },
   {
-    path: 'settings',
+    path: '',
     loadComponent: () =>
-      import('./components/settings/settings.component').then(
-        m => m.SettingsComponent
+      import('./layouts/planning-layout.component').then(
+        m => m.PlanningLayoutComponent
       ),
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'planning',
+        loadComponent: () =>
+          import('./components/timeline/timeline-container.component').then(
+            m => m.TimelineContainerComponent
+          )
+      },
+      {
+        path: 'settings',
+        loadComponent: () =>
+          import('./components/settings/settings.component').then(
+            m => m.SettingsComponent
+          )
+      },
+      {
+        path: 'history',
+        loadComponent: () =>
+          import('./components/history/history.component').then(
+            m => m.HistoryComponent
+          )
+      }
+    ]
   },
   {
-    path: 'history',
+    path: '',
     loadComponent: () =>
-      import('./components/history/history.component').then(
-        m => m.HistoryComponent
+      import('./layouts/releases-layout.component').then(
+        m => m.ReleasesLayoutComponent
       ),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'releases',
-    loadComponent: () =>
-      import('./components/releases/releases-list.component').then(
-        m => m.ReleasesListComponent
-      ),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'releases/:id',
-    loadComponent: () =>
-      import('./components/releases/release-detail.component').then(
-        m => m.ReleaseDetailComponent
-      ),
-    canActivate: [authGuard]
+    canActivate: [authGuard],
+    children: [
+      {
+        path: 'releases',
+        loadComponent: () =>
+          import('./components/releases/releases-list.component').then(
+            m => m.ReleasesListComponent
+          )
+      },
+      {
+        path: 'releases/:id',
+        loadComponent: () =>
+          import('./components/releases/release-detail.component').then(
+            m => m.ReleaseDetailComponent
+          )
+      }
+    ]
   }
 ];

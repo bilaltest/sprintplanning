@@ -1,12 +1,12 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TimelineService } from '@services/timeline.service';
 import { EventService } from '@services/event.service';
 import { FilterService } from '@services/filter.service';
 import { ExportService } from '@services/export.service';
 import { TimelineView } from '@models/timeline.model';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Event } from '@models/event.model';
 import { AnnualViewComponent } from './annual-view.component';
 import { MonthViewComponent } from './month-view.component';
@@ -227,17 +227,13 @@ export class TimelineContainerComponent implements OnInit {
     private filterService: FilterService,
     private exportService: ExportService
   ) {
-    // Initialisation avec cleanup automatique dans le constructor
+    // Initialisation des observables
     this.filteredEvents$ = this.filterService.filteredEvents$;
 
-    // Déplacer la création de currentView$ dans le constructor
-    this.currentView$ = new Observable(observer => {
-      this.timelineService.state$
-        .pipe(takeUntilDestroyed())
-        .subscribe(state => {
-          observer.next(state.view);
-        });
-    });
+    // Utiliser map pour extraire la vue de l'état
+    this.currentView$ = this.timelineService.state$.pipe(
+      map(state => state.view)
+    );
   }
 
   ngOnInit(): void {

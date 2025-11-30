@@ -409,3 +409,39 @@ export const deleteAction = async (req, res) => {
     res.status(500).json({ error: 'Failed to delete action' });
   }
 };
+
+// Update squad Tonton MEP
+export const updateSquadTontonMep = async (req, res) => {
+  try {
+    const { squadId } = req.params;
+    const { tontonMep } = req.body;
+
+    const squad = await prisma.squad.update({
+      where: { id: squadId },
+      data: { tontonMep }
+    });
+
+    res.json(squad);
+  } catch (error) {
+    console.error('Error updating Tonton MEP:', error);
+    res.status(500).json({ error: 'Failed to update Tonton MEP' });
+  }
+};
+
+// Toggle squad completion status
+export const updateSquadCompletion = async (req, res) => {
+  try {
+    const { squadId } = req.params;
+    const { isCompleted } = req.body;
+
+    const squad = await prisma.squad.update({
+      where: { id: squadId },
+      data: { isCompleted }
+    });
+
+    res.json(squad);
+  } catch (error) {
+    console.error('Error updating squad completion:', error);
+    res.status(500).json({ error: 'Failed to update squad completion' });
+  }
+};

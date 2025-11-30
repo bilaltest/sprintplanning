@@ -219,4 +219,38 @@ export class ReleaseService {
     const newStatus = currentStatus === 'pending' ? 'completed' : 'pending';
     await this.updateAction(actionId, { status: newStatus } as any);
   }
+
+  // ===== SQUAD UPDATES =====
+
+  async updateSquadTontonMep(squadId: string, tontonMep: string): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.put<void>(`${this.apiUrl}/squads/${squadId}/tonton-mep`, { tontonMep })
+      );
+
+      // Reload current release
+      if (this.currentReleaseSubject.value) {
+        await this.getRelease(this.currentReleaseSubject.value.id!);
+      }
+    } catch (error) {
+      console.error('Error updating Tonton MEP:', error);
+      throw error;
+    }
+  }
+
+  async toggleSquadCompletion(squadId: string, isCompleted: boolean): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.put<void>(`${this.apiUrl}/squads/${squadId}/completion`, { isCompleted })
+      );
+
+      // Reload current release
+      if (this.currentReleaseSubject.value) {
+        await this.getRelease(this.currentReleaseSubject.value.id!);
+      }
+    } catch (error) {
+      console.error('Error updating squad completion:', error);
+      throw error;
+    }
+  }
 }

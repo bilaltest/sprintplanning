@@ -10,7 +10,9 @@ import {
   deleteFeature,
   addAction,
   updateAction,
-  deleteAction
+  deleteAction,
+  updateSquadTontonMep,
+  updateSquadCompletion
 } from '../controllers/release.controller.js';
 
 const router = express.Router();
@@ -31,5 +33,9 @@ router.delete('/features/:id', deleteFeature);
 router.post('/squads/:squadId/actions', addAction);
 router.put('/actions/:id', updateAction);
 router.delete('/actions/:id', deleteAction);
+
+// Squad routes
+router.put('/squads/:squadId/tonton-mep', updateSquadTontonMep);
+router.put('/squads/:squadId/completion', updateSquadCompletion);
 
 export default router;

@@ -83,6 +83,8 @@ export interface Squad {
   id?: string;
   releaseId: string;
   squadNumber: number; // 1 à 6
+  tontonMep?: string; // Nom du Tonton MEP responsable de la squad
+  isCompleted: boolean; // Indique si la squad est complétée
   features: Feature[];
   actions: Action[];
   createdAt?: string;

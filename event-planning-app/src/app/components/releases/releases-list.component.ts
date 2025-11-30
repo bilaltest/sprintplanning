@@ -32,11 +32,20 @@ import { fr } from 'date-fns/locale';
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="(releases$ | async) as releases">
         <div
           *ngFor="let release of releases"
-          class="card p-6 hover:shadow-lg transition-shadow cursor-pointer"
+          class="card p-6 hover:shadow-lg transition-shadow cursor-pointer relative group"
           (click)="viewRelease(release.id!, release.version)"
         >
+          <!-- Delete Button -->
+          <button
+            (click)="deleteRelease($event, release)"
+            class="absolute top-4 right-4 p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+            title="Supprimer la release"
+          >
+            <span class="material-icons text-sm">delete</span>
+          </button>
+
           <!-- Header -->
-          <div class="flex items-start justify-between mb-4">
+          <div class="flex items-start justify-between mb-4 pr-8">
             <div class="flex-1">
               <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">
                 {{ release.name }}
@@ -261,6 +270,21 @@ export class ReleasesListComponent implements OnInit {
       alert('Erreur lors de la création de la release');
     } finally {
       this.isCreating = false;
+    }
+  }
+
+  async deleteRelease(event: Event, release: Release): Promise<void> {
+    event.stopPropagation(); // Empêcher la navigation vers le détail
+
+    const confirmed = confirm(`Êtes-vous sûr de vouloir supprimer la release "${release.name}" ?\n\nCette action est irréversible et supprimera toutes les squads, features et actions associées.`);
+
+    if (!confirmed) return;
+
+    try {
+      await this.releaseService.deleteRelease(release.id!);
+    } catch (error) {
+      console.error('Error deleting release:', error);
+      alert('Erreur lors de la suppression de la release');
     }
   }
 }

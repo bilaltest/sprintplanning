@@ -68,21 +68,59 @@ import { fr } from 'date-fns/locale';
       <div class="space-y-4">
         <div *ngFor="let squad of release.squads" class="card">
           <!-- Squad Header -->
-          <button
-            (click)="toggleSquad(squad.squadNumber)"
-            class="w-full p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          <div
+            class="p-6 border-b border-gray-200 dark:border-gray-700 transition-colors"
+            [ngClass]="{
+              'bg-green-100 dark:bg-green-900/30': squad.isCompleted,
+              'bg-orange-100/50 dark:bg-orange-900/20': !squad.isCompleted
+            }"
           >
-            <div class="flex items-center space-x-3">
-              <span class="material-icons text-primary-600 dark:text-primary-400">groups</span>
-              <h2 class="text-xl font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h2>
-              <span class="text-sm text-gray-500 dark:text-gray-400">
-                ({{ squad.features.length }} features, {{ squad.actions.length }} actions)
-              </span>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3 flex-1">
+                <span class="material-icons text-primary-600 dark:text-primary-400">groups</span>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h2>
+
+                <!-- Tonton MEP Field -->
+                <div class="flex items-center space-x-2 ml-4">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Tonton MEP:</span>
+                  <input
+                    type="text"
+                    [value]="squad.tontonMep || ''"
+                    (blur)="updateTontonMep(squad.id!, $event)"
+                    (click)="$event.stopPropagation()"
+                    placeholder="Non assigné"
+                    class="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <!-- Completion Indicator -->
+                <div class="flex items-center space-x-2 ml-4">
+                  <label class="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      [checked]="squad.isCompleted"
+                      (change)="toggleCompletion(squad.id!, $event)"
+                      (click)="$event.stopPropagation()"
+                      class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    />
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Complétée</span>
+                  </label>
+                  <span *ngIf="squad.isCompleted" class="material-icons text-green-600 dark:text-green-400 text-lg">
+                    check_circle
+                  </span>
+                </div>
+              </div>
+
+              <button
+                (click)="toggleSquad(squad.squadNumber)"
+                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
+              >
+                <span class="material-icons text-gray-500">
+                  {{ expandedSquads.has(squad.squadNumber) ? 'expand_less' : 'expand_more' }}
+                </span>
+              </button>
             </div>
-            <span class="material-icons text-gray-500">
-              {{ expandedSquads.has(squad.squadNumber) ? 'expand_less' : 'expand_more' }}
-            </span>
-          </button>
+          </div>
 
           <!-- Squad Content -->
           <div *ngIf="expandedSquads.has(squad.squadNumber)" class="p-6 pt-0 space-y-6">
@@ -335,26 +373,18 @@ import { fr } from 'date-fns/locale';
                     class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                   >
                     <div class="flex items-start justify-between">
-                      <div class="flex items-start space-x-3 flex-1">
-                        <input
-                          type="checkbox"
-                          [checked]="action.status === 'completed'"
-                          (change)="toggleActionStatus(action)"
-                          class="mt-1 rounded"
-                        />
-                        <div class="flex-1">
-                          <div class="flex items-center space-x-2">
-                            <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                              {{ getActionTypeLabel(action.type) }}
-                            </span>
-                            <h4 class="font-medium text-gray-900 dark:text-white" [class.line-through]="action.status === 'completed'">
-                              {{ action.title }}
-                            </h4>
-                          </div>
-                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" *ngIf="action.description">
-                            {{ action.description }}
-                          </p>
+                      <div class="flex-1">
+                        <div class="flex items-center space-x-2">
+                          <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
+                            {{ getActionTypeLabel(action.type) }}
+                          </span>
+                          <h4 class="font-medium text-gray-900 dark:text-white">
+                            {{ action.title }}
+                          </h4>
                         </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" *ngIf="action.description">
+                          {{ action.description }}
+                        </p>
                       </div>
                       <button
                         (click)="deleteAction(action.id!)"
@@ -372,7 +402,6 @@ import { fr } from 'date-fns/locale';
                   <table class="min-w-full text-xs border border-gray-300 dark:border-gray-600 rounded">
                     <thead class="bg-gray-100 dark:bg-gray-800">
                       <tr>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">✓</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Règle</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Action</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Clients</th>
@@ -384,14 +413,6 @@ import { fr } from 'date-fns/locale';
                     </thead>
                     <tbody class="bg-white dark:bg-gray-900">
                       <tr *ngFor="let action of entry.value" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td class="px-2 py-2">
-                          <input
-                            type="checkbox"
-                            [checked]="action.status === 'completed'"
-                            (change)="toggleActionStatus(action)"
-                            class="rounded"
-                          />
-                        </td>
                         <td class="px-2 py-2" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
@@ -607,26 +628,18 @@ import { fr } from 'date-fns/locale';
                     class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
                   >
                     <div class="flex items-start justify-between">
-                      <div class="flex items-start space-x-3 flex-1">
-                        <input
-                          type="checkbox"
-                          [checked]="action.status === 'completed'"
-                          (change)="toggleActionStatus(action)"
-                          class="mt-1 rounded"
-                        />
-                        <div class="flex-1">
-                          <div class="flex items-center space-x-2">
-                            <span class="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                              {{ getActionTypeLabel(action.type) }}
-                            </span>
-                            <h4 class="font-medium text-gray-900 dark:text-white" [class.line-through]="action.status === 'completed'">
-                              {{ action.title }}
-                            </h4>
-                          </div>
-                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" *ngIf="action.description">
-                            {{ action.description }}
-                          </p>
+                      <div class="flex-1">
+                        <div class="flex items-center space-x-2">
+                          <span class="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
+                            {{ getActionTypeLabel(action.type) }}
+                          </span>
+                          <h4 class="font-medium text-gray-900 dark:text-white">
+                            {{ action.title }}
+                          </h4>
                         </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" *ngIf="action.description">
+                          {{ action.description }}
+                        </p>
                       </div>
                       <button
                         (click)="deleteAction(action.id!)"
@@ -644,7 +657,6 @@ import { fr } from 'date-fns/locale';
                   <table class="min-w-full text-xs border border-gray-300 dark:border-gray-600 rounded">
                     <thead class="bg-gray-100 dark:bg-gray-800">
                       <tr>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">✓</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Règle</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Action</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Clients</th>
@@ -656,14 +668,6 @@ import { fr } from 'date-fns/locale';
                     </thead>
                     <tbody class="bg-white dark:bg-gray-900">
                       <tr *ngFor="let action of entry.value" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td class="px-2 py-2">
-                          <input
-                            type="checkbox"
-                            [checked]="action.status === 'completed'"
-                            (change)="toggleActionStatus(action)"
-                            class="rounded"
-                          />
-                        </td>
                         <td class="px-2 py-2" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
@@ -982,14 +986,6 @@ export class ReleaseDetailComponent implements OnInit {
     }
   }
 
-  async toggleActionStatus(action: Action): Promise<void> {
-    try {
-      await this.releaseService.toggleActionStatus(action.id!, action.status);
-    } catch (error) {
-      console.error('Error toggling action status:', error);
-      alert('Erreur lors de la mise à jour du statut');
-    }
-  }
 
   // Feature Flipping helpers
   toggleAllClients(): void {
@@ -1122,5 +1118,32 @@ export class ReleaseDetailComponent implements OnInit {
     }
 
     return versions;
+  }
+
+  // Squad management methods
+  async updateTontonMep(squadId: string, event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const tontonMep = input.value.trim();
+
+    try {
+      await this.releaseService.updateSquadTontonMep(squadId, tontonMep);
+      await this.loadRelease();
+    } catch (error) {
+      console.error('Error updating Tonton MEP:', error);
+      alert('Erreur lors de la mise à jour du Tonton MEP');
+    }
+  }
+
+  async toggleCompletion(squadId: string, event: Event): Promise<void> {
+    const checkbox = event.target as HTMLInputElement;
+    const isCompleted = checkbox.checked;
+
+    try {
+      await this.releaseService.toggleSquadCompletion(squadId, isCompleted);
+      await this.loadRelease();
+    } catch (error) {
+      console.error('Error toggling squad completion:', error);
+      alert('Erreur lors de la mise à jour de la complétude');
+    }
   }
 }

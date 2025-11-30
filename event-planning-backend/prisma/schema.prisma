@@ -68,6 +68,8 @@ model Squad {
   id          String   @id @default(cuid())
   releaseId   String
   squadNumber Int      // 1 à 6
+  tontonMep   String?  // Nom du Tonton MEP responsable de la squad
+  isCompleted Boolean  @default(false) // Indique si la squad est complétée
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
