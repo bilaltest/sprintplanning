@@ -1,4 +1,4 @@
-import { Component, OnInit, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -12,52 +12,64 @@ import { EventFilter } from '@models/filter.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="sticky top-6 z-20 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center space-x-2">
-          <span class="material-icons text-lg">filter_alt</span>
-          <span>Filtres</span>
-        </h3>
+    <div
+      class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300"
+      [style.height]="isCollapsed ? '0px' : 'auto'"
+      [style.overflow]="isCollapsed ? 'hidden' : 'visible'"
+      [class.p-3]="!isCollapsed"
+    >
+      <!-- Toggle button (visible only when sticky and scrolled) -->
+      <button
+        *ngIf="isSticky"
+        (click)="onToggleCollapse()"
+        class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-b-lg px-3 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-md z-30"
+        title="{{ isCollapsed ? 'Afficher les filtres' : 'Masquer les filtres' }}"
+      >
+        <span class="material-icons text-sm">
+          {{ isCollapsed ? 'expand_more' : 'expand_less' }}
+        </span>
+      </button>
 
+      <div class="flex items-center justify-between gap-4">
+        <!-- Label Catégories -->
+        <label class="text-xs font-medium text-gray-600 dark:text-gray-400 whitespace-nowrap">
+          Catégories
+        </label>
+
+        <!-- Categories badges -->
+        <div class="flex flex-wrap gap-2 flex-1">
+          <button
+            *ngFor="let category of allCategories"
+            (click)="toggleCategory(category.id)"
+            [class.ring-2]="isCategorySelected(category.id)"
+            [class.ring-offset-2]="isCategorySelected(category.id)"
+            [style.border-color]="category.color"
+            [class.opacity-50]="!isCategorySelected(category.id) && hasSelectedCategories"
+            class="inline-flex items-center space-x-1 px-3 py-1.5 border-2 rounded-full text-xs font-medium transition-all hover:opacity-100 hover:shadow-md cursor-pointer"
+            [style.background-color]="isCategorySelected(category.id) ? category.color + '20' : 'transparent'"
+            [class.shadow-sm]="!isCategorySelected(category.id)"
+          >
+            <span
+              class="material-icons"
+              style="font-size: 14px;"
+              [style.color]="category.color"
+            >
+              {{ category.icon }}
+            </span>
+            <span [class.text-white]="isCategorySelected(category.id)" class="text-gray-700 dark:text-gray-300">
+              {{ category.label }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Reset button -->
         <button
           *ngIf="hasActiveFilters"
           (click)="resetFilters()"
-          class="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+          class="text-xs text-primary-600 dark:text-primary-400 hover:underline whitespace-nowrap"
         >
           Réinitialiser
         </button>
-      </div>
-
-      <div>
-        <!-- Categories -->
-        <div>
-          <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-            Catégories
-          </label>
-          <div class="flex flex-wrap gap-2">
-            <button
-              *ngFor="let category of allCategories"
-              (click)="toggleCategory(category.id)"
-              [class.ring-2]="isCategorySelected(category.id)"
-              [class.ring-offset-2]="isCategorySelected(category.id)"
-              [style.border-color]="category.color"
-              [class.opacity-50]="!isCategorySelected(category.id) && hasSelectedCategories"
-              class="inline-flex items-center space-x-1 px-3 py-1.5 border-2 rounded-full text-xs font-medium transition-all hover:opacity-100"
-              [style.background-color]="isCategorySelected(category.id) ? category.color + '20' : 'transparent'"
-            >
-              <span
-                class="material-icons"
-                style="font-size: 14px;"
-                [style.color]="category.color"
-              >
-                {{ category.icon }}
-              </span>
-              <span [class.text-white]="isCategorySelected(category.id)" class="text-gray-700 dark:text-gray-300">
-                {{ category.label }}
-              </span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   `,
@@ -72,6 +84,8 @@ export class FilterBarComponent implements OnInit {
   selectedCategories: string[] = [];
   hasActiveFilters = false;
   hasSelectedCategories = false;
+  isSticky = false;
+  isCollapsed = false;
 
   private destroyRef = inject(DestroyRef);
 
@@ -81,14 +95,14 @@ export class FilterBarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // S'abonner aux catégories (défaut + personnalisées) avec cleanup automatique
+    // S'abonner aux catégories (défaut + personnalisées)
     this.categoryService.allCategories$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(categories => {
         this.allCategories = categories;
       });
 
-    // S'abonner aux filtres avec cleanup automatique
+    // S'abonner aux filtres
     this.filterService.filter$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(filter => {
@@ -96,6 +110,11 @@ export class FilterBarComponent implements OnInit {
         this.hasActiveFilters = this.filterService.hasActiveFilters();
         this.hasSelectedCategories = this.selectedCategories.length > 0;
       });
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.isSticky = window.scrollY > 100;
   }
 
   toggleCategory(categoryId: string): void {
@@ -108,5 +127,9 @@ export class FilterBarComponent implements OnInit {
 
   resetFilters(): void {
     this.filterService.resetFilters();
+  }
+
+  onToggleCollapse(): void {
+    this.isCollapsed = !this.isCollapsed;
   }
 }

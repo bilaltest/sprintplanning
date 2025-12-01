@@ -6,9 +6,6 @@ export type ActionPhase = 'pre_mep' | 'post_mep';
 
 // Action type
 export type ActionType =
-  | 'topic_creation'
-  | 'database_update'
-  | 'vault_credentials'
   | 'feature_flipping'
   | 'memory_flipping'
   | 'other';
@@ -43,6 +40,7 @@ export interface FeatureFlipping {
   actionId: string;
   flippingType: FlippingType;
   ruleName: string;
+  theme: string; // Thème du FF/MF (obligatoire)
   ruleAction: RuleAction;
   ruleState?: RuleState;
   targetClients: string[]; // ['all'] ou liste de CAELs
@@ -59,8 +57,7 @@ export interface Action {
   squadId: string;
   phase: ActionPhase;
   type: ActionType;
-  title: string;
-  description?: string;
+  description: string; // Obligatoire pour toutes les actions
   status: ActionStatus;
   order: number;
   flipping?: FeatureFlipping;
@@ -131,17 +128,13 @@ export interface CreateFeatureDto {
 export interface CreateActionDto {
   phase: ActionPhase;
   type: ActionType;
-  title: string;
-  description?: string;
+  description: string; // Obligatoire
   order?: number;
   flipping?: Partial<FeatureFlipping>;
 }
 
 // Constants
 export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
-  topic_creation: 'Création de topics',
-  database_update: 'Mise à jour BDD',
-  vault_credentials: 'Credentials Vault',
   feature_flipping: 'Feature Flipping',
   memory_flipping: 'Memory Flipping',
   other: 'Autre'

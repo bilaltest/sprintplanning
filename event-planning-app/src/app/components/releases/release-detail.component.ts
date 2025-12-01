@@ -202,41 +202,35 @@ import { fr } from 'date-fns/locale';
                    class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <form (submit)="addAction(squad.id!, 'pre_mep', $event)" class="space-y-3">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action <span class="text-red-500">*</span></label>
                     <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm">
                       <option value="">Sélectionner un type</option>
-                      <option value="topic_creation">{{ ACTION_TYPE_LABELS['topic_creation'] }}</option>
-                      <option value="database_update">{{ ACTION_TYPE_LABELS['database_update'] }}</option>
-                      <option value="vault_credentials">{{ ACTION_TYPE_LABELS['vault_credentials'] }}</option>
                       <option value="feature_flipping">{{ ACTION_TYPE_LABELS['feature_flipping'] }}</option>
                       <option value="memory_flipping">{{ ACTION_TYPE_LABELS['memory_flipping'] }}</option>
                       <option value="other">{{ ACTION_TYPE_LABELS['other'] }}</option>
                     </select>
                   </div>
 
-                  <input
-                    type="text"
-                    [(ngModel)]="newAction.title"
-                    name="title"
-                    placeholder="Titre de l'action"
-                    required
-                    class="input text-sm"
-                  />
-                  <textarea
-                    *ngIf="newAction.type !== 'feature_flipping' && newAction.type !== 'memory_flipping'"
-                    [(ngModel)]="newAction.description"
-                    name="description"
-                    placeholder="Description (optionnel)"
-                    rows="2"
-                    class="input text-sm"
-                  ></textarea>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description <span class="text-red-500">*</span></label>
+                    <textarea
+                      [(ngModel)]="newAction.description"
+                      name="description"
+                      placeholder="Description de l'action"
+                      rows="2"
+                      required
+                      class="input text-sm"
+                    ></textarea>
+                  </div>
 
                   <!-- Feature Flipping / Memory Flipping Form -->
                   <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 border border-gray-300 dark:border-gray-600 rounded">
                     <h4 class="font-medium text-gray-900 dark:text-white text-sm">Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}</h4>
 
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom de la règle</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {{ newAction.type === 'feature_flipping' ? 'Nom du FF' : 'Nom du MF' }} <span class="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         [(ngModel)]="newAction.flipping.ruleName"
@@ -248,7 +242,19 @@ import { fr } from 'date-fns/locale';
                     </div>
 
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Thème <span class="text-red-500">*</span></label>
+                      <input
+                        type="text"
+                        [(ngModel)]="newAction.flipping.theme"
+                        name="theme"
+                        required
+                        class="input text-sm"
+                        placeholder="Ex: Authentification, Navigation, Paiement"
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action <span class="text-red-500">*</span></label>
                       <select [(ngModel)]="newAction.flipping.ruleAction" name="ruleAction" required class="input text-sm">
                         <option value="">Sélectionner</option>
                         <option value="create_rule">{{ getDynamicRuleActionLabel('create_rule') }}</option>
@@ -379,12 +385,9 @@ import { fr } from 'date-fns/locale';
                             {{ getActionTypeLabel(action.type) }}
                           </span>
                           <h4 class="font-medium text-gray-900 dark:text-white">
-                            {{ action.title }}
+                            {{ action.description }}
                           </h4>
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" *ngIf="action.description">
-                          {{ action.description }}
-                        </p>
                       </div>
                       <button
                         (click)="deleteAction(action.id!)"
@@ -402,7 +405,8 @@ import { fr } from 'date-fns/locale';
                   <table class="min-w-full text-xs border border-gray-300 dark:border-gray-600 rounded">
                     <thead class="bg-gray-100 dark:bg-gray-800">
                       <tr>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Règle</th>
+                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
+                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Thème</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Action</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Clients</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Caisses</th>
@@ -414,6 +418,7 @@ import { fr } from 'date-fns/locale';
                     <tbody class="bg-white dark:bg-gray-900">
                       <tr *ngFor="let action of entry.value" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td class="px-2 py-2" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
+                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
@@ -457,41 +462,35 @@ import { fr } from 'date-fns/locale';
                 <!-- Same form as Pre-MEP -->
                 <form (submit)="addAction(squad.id!, 'post_mep', $event)" class="space-y-3">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action <span class="text-red-500">*</span></label>
                     <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm">
                       <option value="">Sélectionner un type</option>
-                      <option value="topic_creation">{{ ACTION_TYPE_LABELS['topic_creation'] }}</option>
-                      <option value="database_update">{{ ACTION_TYPE_LABELS['database_update'] }}</option>
-                      <option value="vault_credentials">{{ ACTION_TYPE_LABELS['vault_credentials'] }}</option>
                       <option value="feature_flipping">{{ ACTION_TYPE_LABELS['feature_flipping'] }}</option>
                       <option value="memory_flipping">{{ ACTION_TYPE_LABELS['memory_flipping'] }}</option>
                       <option value="other">{{ ACTION_TYPE_LABELS['other'] }}</option>
                     </select>
                   </div>
 
-                  <input
-                    type="text"
-                    [(ngModel)]="newAction.title"
-                    name="title"
-                    placeholder="Titre de l'action"
-                    required
-                    class="input text-sm"
-                  />
-                  <textarea
-                    *ngIf="newAction.type !== 'feature_flipping' && newAction.type !== 'memory_flipping'"
-                    [(ngModel)]="newAction.description"
-                    name="description"
-                    placeholder="Description (optionnel)"
-                    rows="2"
-                    class="input text-sm"
-                  ></textarea>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description <span class="text-red-500">*</span></label>
+                    <textarea
+                      [(ngModel)]="newAction.description"
+                      name="description"
+                      placeholder="Description de l'action"
+                      rows="2"
+                      required
+                      class="input text-sm"
+                    ></textarea>
+                  </div>
 
                   <!-- Feature Flipping / Memory Flipping Form -->
                   <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 border border-gray-300 dark:border-gray-600 rounded">
                     <h4 class="font-medium text-gray-900 dark:text-white text-sm">Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}</h4>
 
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nom de la règle</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        {{ newAction.type === 'feature_flipping' ? 'Nom du FF' : 'Nom du MF' }} <span class="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         [(ngModel)]="newAction.flipping.ruleName"
@@ -503,7 +502,19 @@ import { fr } from 'date-fns/locale';
                     </div>
 
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Thème <span class="text-red-500">*</span></label>
+                      <input
+                        type="text"
+                        [(ngModel)]="newAction.flipping.theme"
+                        name="theme"
+                        required
+                        class="input text-sm"
+                        placeholder="Ex: Authentification, Navigation, Paiement"
+                      />
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action <span class="text-red-500">*</span></label>
                       <select [(ngModel)]="newAction.flipping.ruleAction" name="ruleAction" required class="input text-sm">
                         <option value="">Sélectionner</option>
                         <option value="create_rule">{{ getDynamicRuleActionLabel('create_rule') }}</option>
@@ -634,12 +645,9 @@ import { fr } from 'date-fns/locale';
                             {{ getActionTypeLabel(action.type) }}
                           </span>
                           <h4 class="font-medium text-gray-900 dark:text-white">
-                            {{ action.title }}
+                            {{ action.description }}
                           </h4>
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" *ngIf="action.description">
-                          {{ action.description }}
-                        </p>
                       </div>
                       <button
                         (click)="deleteAction(action.id!)"
@@ -657,7 +665,8 @@ import { fr } from 'date-fns/locale';
                   <table class="min-w-full text-xs border border-gray-300 dark:border-gray-600 rounded">
                     <thead class="bg-gray-100 dark:bg-gray-800">
                       <tr>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Règle</th>
+                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
+                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Thème</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Action</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Clients</th>
                         <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Caisses</th>
@@ -669,6 +678,7 @@ import { fr } from 'date-fns/locale';
                     <tbody class="bg-white dark:bg-gray-900">
                       <tr *ngFor="let action of entry.value" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
                         <td class="px-2 py-2" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
+                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
@@ -717,11 +727,11 @@ export class ReleaseDetailComponent implements OnInit {
   addingActionPhase: ActionPhase | null = null;
   newAction: any = {
     type: '',
-    title: '',
     description: '',
     flipping: {
       flippingType: '',
       ruleName: '',
+      theme: '',
       ruleAction: '',
       ruleState: '',
       targetClients: [],
@@ -874,11 +884,11 @@ export class ReleaseDetailComponent implements OnInit {
   resetActionForm(): void {
     this.newAction = {
       type: '',
-      title: '',
       description: '',
       flipping: {
         flippingType: '',
         ruleName: '',
+        theme: '',
         ruleAction: '',
         ruleState: '',
         targetClients: [],
@@ -907,7 +917,7 @@ export class ReleaseDetailComponent implements OnInit {
   async addAction(squadId: string, phase: ActionPhase, event: Event): Promise<void> {
     event.preventDefault();
 
-    if (!this.newAction.type || !this.newAction.title.trim()) {
+    if (!this.newAction.type || !this.newAction.description?.trim()) {
       alert('Veuillez remplir tous les champs obligatoires');
       return;
     }
@@ -924,8 +934,7 @@ export class ReleaseDetailComponent implements OnInit {
       const actionDto: CreateActionDto = {
         phase,
         type: this.newAction.type as ActionType,
-        title: this.newAction.title,
-        description: this.newAction.description || undefined
+        description: this.newAction.description
       };
 
       // Add flipping config if needed
@@ -1118,6 +1127,16 @@ export class ReleaseDetailComponent implements OnInit {
     }
 
     return versions;
+  }
+
+  // Dynamic column label for flipping rule name
+  getFlippingRuleColumnLabel(actionType: string): string {
+    if (actionType === 'feature_flipping') {
+      return 'Nom du FF';
+    } else if (actionType === 'memory_flipping') {
+      return 'Nom du MF';
+    }
+    return 'Règle';
   }
 
   // Squad management methods

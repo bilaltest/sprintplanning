@@ -137,7 +137,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
       </div>
 
       <!-- Filter bar -->
-      <div class="sticky top-2 z-30">
+      <div class="sticky z-30" [style.top.px]="96">
         <app-filter-bar></app-filter-bar>
       </div>
 
