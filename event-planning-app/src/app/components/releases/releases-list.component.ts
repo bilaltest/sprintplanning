@@ -54,12 +54,6 @@ import { fr } from 'date-fns/locale';
                 Version {{ release.version }}
               </p>
             </div>
-            <span
-              class="px-2 py-1 text-xs font-semibold text-white rounded"
-              [ngClass]="STATUS_COLORS[release.status]"
-            >
-              {{ STATUS_LABELS[release.status] }}
-            </span>
           </div>
 
           <!-- Date -->
@@ -83,6 +77,39 @@ import { fr } from 'date-fns/locale';
               <div class="flex items-center space-x-1">
                 <span class="material-icons text-sm text-gray-500">task</span>
                 <span class="text-gray-600 dark:text-gray-300">{{ getTotalActions(release) }} actions</span>
+              </div>
+            </div>
+
+            <!-- Export Button -->
+            <div class="relative" (click)="$event.stopPropagation()">
+              <button
+                (click)="toggleExportMenu(release.id!)"
+                class="flex items-center space-x-1 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Exporter la release"
+              >
+                <span class="material-icons text-sm">download</span>
+                <span>Export</span>
+              </button>
+
+              <!-- Export Dropdown -->
+              <div
+                *ngIf="exportMenuOpen === release.id"
+                class="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10"
+              >
+                <button
+                  (click)="exportRelease(release, 'markdown')"
+                  class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg transition-colors flex items-center space-x-2"
+                >
+                  <span class="material-icons text-sm">description</span>
+                  <span>Markdown</span>
+                </button>
+                <button
+                  (click)="exportRelease(release, 'html')"
+                  class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg transition-colors flex items-center space-x-2"
+                >
+                  <span class="material-icons text-sm">code</span>
+                  <span>HTML</span>
+                </button>
               </div>
             </div>
           </div>
@@ -210,6 +237,7 @@ export class ReleasesListComponent implements OnInit {
 
   showCreateModal = false;
   isCreating = false;
+  exportMenuOpen: string | null = null;
 
   newRelease = {
     name: '',
@@ -286,5 +314,292 @@ export class ReleasesListComponent implements OnInit {
       console.error('Error deleting release:', error);
       alert('Erreur lors de la suppression de la release');
     }
+  }
+
+  toggleExportMenu(releaseId: string): void {
+    this.exportMenuOpen = this.exportMenuOpen === releaseId ? null : releaseId;
+  }
+
+  exportRelease(release: Release, format: 'markdown' | 'html'): void {
+    this.exportMenuOpen = null;
+
+    let content = '';
+    const fileName = `${release.name.replace(/\s+/g, '_')}_v${release.version}`;
+
+    if (format === 'markdown') {
+      content = this.generateMarkdown(release);
+      this.downloadFile(content, `${fileName}.md`, 'text/markdown');
+    } else {
+      content = this.generateHTML(release);
+      this.downloadFile(content, `${fileName}.html`, 'text/html');
+    }
+  }
+
+  private generateMarkdown(release: Release): string {
+    let md = `# ${release.name}\n\n`;
+    md += `**Version:** ${release.version}  \n`;
+    md += `**Date de MEP:** ${this.formatDate(release.releaseDate)}  \n\n`;
+
+    if (release.description) {
+      md += `## Description\n\n${release.description}\n\n`;
+    }
+
+    md += `## Squads\n\n`;
+
+    release.squads.forEach(squad => {
+      const completionStatus = squad.isCompleted ? '✅' : '⏳';
+      md += `### ${completionStatus} Squad ${squad.squadNumber}`;
+      if (squad.tontonMep) {
+        md += ` - Tonton MEP: ${squad.tontonMep}`;
+      }
+      md += '\n\n';
+
+      // Features
+      if (squad.features.length > 0) {
+        md += `#### Fonctionnalités majeures\n\n`;
+        squad.features.forEach(feature => {
+          md += `- **${feature.title}**`;
+          if (feature.description) {
+            md += `: ${feature.description}`;
+          }
+          md += '\n';
+        });
+        md += '\n';
+      }
+
+      // Actions Pre-MEP
+      const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
+      if (preMepActions.length > 0) {
+        md += `#### Actions Pre-MEP\n\n`;
+        preMepActions.forEach(action => {
+          md += this.formatActionMarkdown(action);
+        });
+        md += '\n';
+      }
+
+      // Actions Post-MEP
+      const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
+      if (postMepActions.length > 0) {
+        md += `#### Actions Post-MEP\n\n`;
+        postMepActions.forEach(action => {
+          md += this.formatActionMarkdown(action);
+        });
+        md += '\n';
+      }
+    });
+
+    return md;
+  }
+
+  private generateHTML(release: Release): string {
+    let html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${release.name}</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+    h1 { color: #2563eb; }
+    h2 { color: #1e40af; border-bottom: 2px solid #2563eb; padding-bottom: 5px; }
+    h3 { color: #059669; }
+    h4 { color: #7c3aed; }
+    .meta { color: #6b7280; margin-bottom: 20px; }
+    .squad { margin-bottom: 30px; padding: 15px; background: #f9fafb; border-left: 4px solid #2563eb; }
+    .squad.completed { border-left-color: #059669; background: #f0fdf4; }
+    ul { line-height: 1.8; }
+  </style>
+</head>
+<body>
+  <h1>${release.name}</h1>
+  <div class="meta">
+    <strong>Version:</strong> ${release.version}<br>
+    <strong>Date de MEP:</strong> ${this.formatDate(release.releaseDate)}
+  </div>`;
+
+    if (release.description) {
+      html += `<h2>Description</h2><p>${release.description}</p>`;
+    }
+
+    html += `<h2>Squads</h2>`;
+
+    release.squads.forEach(squad => {
+      const completionClass = squad.isCompleted ? 'completed' : '';
+      const completionEmoji = squad.isCompleted ? '✅' : '⏳';
+      html += `<div class="squad ${completionClass}">`;
+      html += `<h3>${completionEmoji} Squad ${squad.squadNumber}`;
+      if (squad.tontonMep) {
+        html += ` - Tonton MEP: ${squad.tontonMep}`;
+      }
+      html += '</h3>';
+
+      // Features
+      if (squad.features.length > 0) {
+        html += `<h4>Fonctionnalités majeures</h4><ul>`;
+        squad.features.forEach(feature => {
+          html += `<li><strong>${feature.title}</strong>`;
+          if (feature.description) {
+            html += `: ${feature.description}`;
+          }
+          html += '</li>';
+        });
+        html += '</ul>';
+      }
+
+      // Actions Pre-MEP
+      const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
+      if (preMepActions.length > 0) {
+        html += `<h4>Actions Pre-MEP</h4>`;
+        preMepActions.forEach(action => {
+          html += this.formatActionHTML(action);
+        });
+      }
+
+      // Actions Post-MEP
+      const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
+      if (postMepActions.length > 0) {
+        html += `<h4>Actions Post-MEP</h4>`;
+        postMepActions.forEach(action => {
+          html += this.formatActionHTML(action);
+        });
+      }
+
+      html += '</div>';
+    });
+
+    html += '</body></html>';
+    return html;
+  }
+
+  private formatActionMarkdown(action: any): string {
+    let md = `##### ${action.title}\n\n`;
+
+    if (action.description) {
+      md += `${action.description}\n\n`;
+    }
+
+    // Détails de l'action de type Feature/Memory Flipping
+    if (action.flipping) {
+      const flip = action.flipping;
+      md += `**Type:** ${flip.flippingType === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping'}  \n`;
+      md += `**Nom de la règle:** \`${flip.ruleName}\`  \n`;
+      md += `**Action:** ${this.getRuleActionLabel(flip.ruleAction)}  \n`;
+
+      // Périmètres
+      md += `\n**Périmètres :**  \n`;
+
+      // Clients
+      const clients = Array.isArray(flip.targetClients) ? flip.targetClients : JSON.parse(flip.targetClients || '[]');
+      if (clients.includes('all') || clients.length === 0) {
+        md += `- **Clients:** ALL  \n`;
+      } else {
+        md += `- **Clients:** ${clients.join(', ')}  \n`;
+      }
+
+      // Caisses
+      if (flip.targetCaisses) {
+        md += `- **Caisses:** ${flip.targetCaisses}  \n`;
+      } else {
+        md += `- **Caisses:** ALL  \n`;
+      }
+
+      // OS
+      const os = Array.isArray(flip.targetOS) ? flip.targetOS : JSON.parse(flip.targetOS || '[]');
+      if (os.length === 0 || (os.includes('ios') && os.includes('android'))) {
+        md += `- **OS:** ALL  \n`;
+      } else {
+        md += `- **OS:** ${os.join(', ').toUpperCase()}  \n`;
+      }
+
+      // Versions
+      const versions = Array.isArray(flip.targetVersions) ? flip.targetVersions : JSON.parse(flip.targetVersions || '[]');
+      if (versions.length === 0) {
+        md += `- **Versions:** ALL  \n`;
+      } else {
+        const versionStr = versions.map((v: any) => `${v.operator} ${v.version}`).join(', ');
+        md += `- **Versions:** ${versionStr}  \n`;
+      }
+    }
+
+    md += '\n';
+    return md;
+  }
+
+  private formatActionHTML(action: any): string {
+    let html = `<div style="margin-bottom: 15px; padding: 10px; background: #f9fafb; border-left: 3px solid #7c3aed;">`;
+    html += `<h5 style="margin: 0 0 10px 0; color: #7c3aed;">${action.title}</h5>`;
+
+    if (action.description) {
+      html += `<p style="margin-bottom: 10px;">${action.description}</p>`;
+    }
+
+    // Détails de l'action de type Feature/Memory Flipping
+    if (action.flipping) {
+      const flip = action.flipping;
+      html += `<p><strong>Type:</strong> ${flip.flippingType === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping'}</p>`;
+      html += `<p><strong>Nom de la règle:</strong> <code style="background: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${flip.ruleName}</code></p>`;
+      html += `<p><strong>Action:</strong> ${this.getRuleActionLabel(flip.ruleAction)}</p>`;
+
+      // Périmètres
+      html += `<p style="margin-top: 10px;"><strong>Périmètres :</strong></p>`;
+      html += `<ul style="margin-top: 5px;">`;
+
+      // Clients
+      const clients = Array.isArray(flip.targetClients) ? flip.targetClients : JSON.parse(flip.targetClients || '[]');
+      if (clients.includes('all') || clients.length === 0) {
+        html += `<li><strong>Clients:</strong> ALL</li>`;
+      } else {
+        html += `<li><strong>Clients:</strong> ${clients.join(', ')}</li>`;
+      }
+
+      // Caisses
+      if (flip.targetCaisses) {
+        html += `<li><strong>Caisses:</strong> ${flip.targetCaisses}</li>`;
+      } else {
+        html += `<li><strong>Caisses:</strong> ALL</li>`;
+      }
+
+      // OS
+      const os = Array.isArray(flip.targetOS) ? flip.targetOS : JSON.parse(flip.targetOS || '[]');
+      if (os.length === 0 || (os.includes('ios') && os.includes('android'))) {
+        html += `<li><strong>OS:</strong> ALL</li>`;
+      } else {
+        html += `<li><strong>OS:</strong> ${os.join(', ').toUpperCase()}</li>`;
+      }
+
+      // Versions
+      const versions = Array.isArray(flip.targetVersions) ? flip.targetVersions : JSON.parse(flip.targetVersions || '[]');
+      if (versions.length === 0) {
+        html += `<li><strong>Versions:</strong> ALL</li>`;
+      } else {
+        const versionStr = versions.map((v: any) => `${v.operator} ${v.version}`).join(', ');
+        html += `<li><strong>Versions:</strong> ${versionStr}</li>`;
+      }
+
+      html += `</ul>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  private getRuleActionLabel(action: string): string {
+    const labels: any = {
+      'create_rule': 'Créer la règle FF/MF',
+      'obsolete_rule': 'Obsolescence de la règle FF/MF',
+      'disable_rule': 'Désactiver la règle FF/MF',
+      'enable_rule': 'Activer la règle FF/MF'
+    };
+    return labels[action] || action;
+  }
+
+  private downloadFile(content: string, fileName: string, mimeType: string): void {
+    const blob = new Blob([content], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    window.URL.revokeObjectURL(url);
   }
 }

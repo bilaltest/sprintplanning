@@ -2,7 +2,11 @@
 
 ## Vue d'ensemble
 
-Application de planification d'événements pour l'équipe DSI d'une banque, développée avec Angular 20 et Node.js/Express.
+Application de planification d'événements et de gestion de releases pour l'équipe DSI d'une banque, développée avec Angular 20 et Node.js/Express.
+
+L'application comprend deux modules principaux :
+1. **Planning** - Gestion d'événements sur timeline annuelle/mensuelle
+2. **Releases** - Gestion de releases avec squads, features et actions (Feature/Memory Flipping)
 
 ## Stack Technique
 
@@ -31,17 +35,29 @@ Application de planification d'événements pour l'équipe DSI d'une banque, dé
 │   │   └── login.component.ts
 │   ├── filters/
 │   │   └── filter-bar.component.ts
+│   ├── home/
+│   │   └── home.component.ts
 │   ├── modals/
 │   │   └── event-modal.component.ts
+│   ├── releases/
+│   │   ├── releases-list.component.ts          # Liste des releases avec export
+│   │   ├── release-detail.component.ts         # Détail release avec squads
+│   │   ├── release-form.component.ts           # Création/édition release
+│   │   ├── feature-form.component.ts           # Formulaire feature
+│   │   └── action-form.component.ts            # Formulaire action avec FF/MF
 │   ├── settings/
 │   │   └── settings.component.ts
 │   └── timeline/
 │       ├── annual-view.component.ts
 │       ├── month-view.component.ts
 │       └── timeline-container.component.ts
+├── layouts/
+│   ├── planning-layout.component.ts            # Layout module Planning
+│   └── releases-layout.component.ts            # Layout module Releases
 ├── models/
 │   ├── event.model.ts
 │   ├── filter.model.ts
+│   ├── release.model.ts                        # Modèles Release/Squad/Feature/Action
 │   ├── settings.model.ts
 │   └── timeline.model.ts
 ├── services/
@@ -49,6 +65,7 @@ Application de planification d'événements pour l'équipe DSI d'une banque, dé
 │   ├── event.service.ts
 │   ├── export.service.ts
 │   ├── filter.service.ts
+│   ├── release.service.ts                      # Service gestion releases
 │   ├── settings.service.ts
 │   └── timeline.service.ts
 └── guards/
@@ -67,10 +84,12 @@ Application de planification d'événements pour l'équipe DSI d'une banque, dé
 │   ├── controllers/
 │   │   ├── event.controller.js
 │   │   ├── history.controller.js
+│   │   ├── release.controller.js              # CRUD releases
 │   │   └── settings.controller.js
 │   ├── routes/
 │   │   ├── event.routes.js
 │   │   ├── history.routes.js
+│   │   ├── release.routes.js                  # Routes releases
 │   │   └── settings.routes.js
 │   └── server.js
 └── package.json
@@ -126,6 +145,71 @@ interface CustomCategory {
   label: string;     // Display name
   color: string;     // Hex color
   icon: string;      // Material Icons name
+}
+```
+
+### Release
+```typescript
+interface Release {
+  id?: string;
+  name: string;
+  version: string;
+  description?: string;
+  targetDate: string;        // Format ISO YYYY-MM-DD
+  status: 'draft' | 'active' | 'completed';
+  squads: Squad[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+```
+
+### Squad
+```typescript
+interface Squad {
+  id?: string;
+  releaseId?: string;
+  squadNumber: number;
+  tontonMep?: string;         // Nom du Tonton MEP
+  features: Feature[];
+  actions: Action[];
+  isCompleted: boolean;       // Calculé: toutes les actions complétées
+}
+```
+
+### Feature
+```typescript
+interface Feature {
+  id?: string;
+  squadId?: string;
+  title: string;
+  description?: string;
+}
+```
+
+### Action
+```typescript
+interface Action {
+  id?: string;
+  squadId?: string;
+  title: string;
+  description?: string;
+  isCompleted: boolean;
+  flipping?: FeatureFlipping;  // Configuration Feature/Memory Flipping
+}
+```
+
+### FeatureFlipping
+```typescript
+interface FeatureFlipping {
+  id?: string;
+  actionId?: string;
+  flippingType: 'feature_flipping' | 'memory_flipping';
+  ruleName: string;
+  ruleAction: 'create_rule' | 'obsolete_rule' | 'disable_rule' | 'enable_rule';
+  targetClients: string;       // JSON array ou 'all'
+  targetCaisses?: string;      // Liste caisses ou null (ALL)
+  targetOS: string;            // JSON array: ['ios', 'android'] ou []
+  targetVersions: string;      // JSON array: [{operator, version}]
 }
 ```
 
@@ -232,6 +316,77 @@ Formats supportés:
 
 **Backend**: `history.controller.js`
 
+### 8. Gestion des Releases
+
+#### Routing et Architecture
+- **Route principale**: `/releases`
+- **Layout dédié**: ReleasesLayout avec navigation indépendante
+- **Routes lazy-loaded**:
+  - `/releases` - Liste des releases
+  - `/releases/new` - Création release
+  - `/releases/:id` - Détail release
+  - `/releases/:id/edit` - Édition release
+
+#### Liste des Releases
+- **Affichage**: Cartes avec nom, version, date cible
+- **Badge statut**: Supprimé (toutes en brouillon par défaut)
+- **Actions par carte**:
+  - Voir détails (clic sur carte)
+  - Éditer (icône edit)
+  - Supprimer (icône delete avec confirmation)
+  - **Export** (dropdown Markdown/HTML)
+
+#### Export de Releases
+- **Formats**: Markdown et HTML
+- **Contenu exporté**:
+  - En-tête avec nom, version, date, description
+  - Pour chaque squad:
+    - Numéro de squad et Tonton MEP
+    - Liste des features avec descriptions
+    - Liste détaillée des actions avec:
+      - Titre et description
+      - Type de flipping (Feature/Memory)
+      - Nom de la règle
+      - Action à effectuer (créer, désactiver, etc.)
+      - Périmètres complets:
+        - Clients (CAEL ou ALL)
+        - Caisses (liste ou ALL)
+        - OS (iOS, Android ou ALL)
+        - Versions (conditions avec opérateurs)
+
+**Fichiers concernés**:
+- `releases-list.component.ts` - Liste et export
+- `release-detail.component.ts` - Vue détail
+- `release-form.component.ts` - Formulaires
+- `release.service.ts` - API calls
+
+#### Détail Release (Squads)
+- **Affichage accordéon**: Squads repliables
+- **Indicateurs visuels de complétion**:
+  - Squad complétée: `bg-green-100` (light) / `bg-green-900/30` (dark)
+  - Squad incomplète: `bg-orange-100/50` (light) / `bg-orange-900/20` (dark)
+- **Header squad**: Numéro + Tonton MEP (pas de compteur)
+- **Contenu squad**:
+  - Section Features (liste simple)
+  - Section Actions avec checkboxes de complétion
+  - Détails Feature/Memory Flipping au clic
+
+#### Création/Édition Actions
+- **Formulaire complet**:
+  - Titre et description
+  - Type flipping (Feature/Memory)
+  - Nom de règle
+  - Action (créer, désactiver, activer, obsolescence)
+  - Périmètres:
+    - Clients: Checkboxes individuels ou ALL
+    - Caisses: Textarea liste libre ou ALL
+    - OS: iOS, Android ou ALL
+    - Versions: Ajout dynamique avec opérateur + version
+
+**Composants**:
+- `feature-form.component.ts` - Formulaire feature
+- `action-form.component.ts` - Formulaire action avec FF/MF
+
 ## Services Clés
 
 ### TimelineService
@@ -279,6 +434,21 @@ updateEvent(id: string, event: Event): Promise<Event>
 deleteEvent(id: string): Promise<void>
 ```
 
+### ReleaseService
+```typescript
+// CRUD Opérations Releases
+releases$: Observable<Release[]>
+
+getReleases(): Promise<Release[]>
+getRelease(id: string): Promise<Release>
+createRelease(release: Release): Promise<Release>
+updateRelease(id: string, release: Release): Promise<Release>
+deleteRelease(id: string): Promise<void>
+
+// Méthodes utilitaires
+toggleActionCompletion(releaseId: string, squadId: string, actionId: string): Promise<void>
+```
+
 ## API Endpoints
 
 ### Events
@@ -300,6 +470,16 @@ PUT    /api/settings        - Met à jour les paramètres
 ```
 GET    /api/history         - Récupère l'historique
 GET    /api/history/:id     - Récupère une entrée
+```
+
+### Releases
+```
+GET    /api/releases        - Liste toutes les releases
+GET    /api/releases/:id    - Récupère une release (avec squads, features, actions)
+POST   /api/releases        - Crée une release
+PUT    /api/releases/:id    - Met à jour une release
+DELETE /api/releases/:id    - Supprime une release
+PATCH  /api/releases/:id/actions/:actionId/toggle - Toggle complétion action
 ```
 
 ## Base de Données (Prisma Schema)
@@ -346,6 +526,74 @@ model History {
   timestamp    DateTime @default(now())
 
   @@index([timestamp])
+}
+```
+
+### Release (avec relations)
+```prisma
+model Release {
+  id          String   @id @default(cuid())
+  name        String
+  version     String
+  description String?
+  targetDate  String
+  status      String   @default("draft")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  squads      Squad[]
+
+  @@index([targetDate])
+  @@index([status])
+}
+
+model Squad {
+  id         String    @id @default(cuid())
+  releaseId  String
+  release    Release   @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  squadNumber Int
+  tontonMep  String?
+  features   Feature[]
+  actions    Action[]
+
+  @@index([releaseId])
+}
+
+model Feature {
+  id          String  @id @default(cuid())
+  squadId     String
+  squad       Squad   @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+
+  @@index([squadId])
+}
+
+model Action {
+  id          String            @id @default(cuid())
+  squadId     String
+  squad       Squad             @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  isCompleted Boolean           @default(false)
+  flipping    FeatureFlipping?
+
+  @@index([squadId])
+  @@index([isCompleted])
+}
+
+model FeatureFlipping {
+  id             String  @id @default(cuid())
+  actionId       String  @unique
+  action         Action  @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  flippingType   String
+  ruleName       String
+  ruleAction     String
+  targetClients  String
+  targetCaisses  String?
+  targetOS       String
+  targetVersions String
+
+  @@index([actionId])
 }
 ```
 
@@ -493,7 +741,34 @@ npx prisma studio     # Interface admin DB
 
 ### Version Actuelle
 
-#### Nettoyage et Simplification (Janvier 2025)
+#### Module Releases (Décembre 2024 - Janvier 2025)
+- ✅ **Architecture complète releases**:
+  - Routing dédié avec ReleasesLayout
+  - Page d'accueil `/home` avec navigation Planning/Releases
+  - Routes lazy-loaded pour optimisation
+- ✅ **Gestion complète releases**:
+  - CRUD releases avec squads, features, actions
+  - Formulaires Feature/Memory Flipping avec tous les périmètres
+  - Toggle complétion actions avec indicateurs visuels
+- ✅ **Indicateurs visuels squads**:
+  - Squad complétée: fond vert (`bg-green-100` / `bg-green-900/30`)
+  - Squad incomplète: fond orange (`bg-orange-100/50` / `bg-orange-900/20`)
+  - Suppression compteurs features/actions du header
+- ✅ **Export releases**:
+  - Formats Markdown et HTML
+  - Export détaillé complet des actions FF/MF
+  - Tous les périmètres inclus (clients, caisses, OS, versions)
+  - Méthodes `formatActionMarkdown()` et `formatActionHTML()`
+- ✅ **Backend releases**:
+  - Controllers et routes releases
+  - Schéma Prisma complet avec relations
+  - Cascade delete sur relations
+- ✅ **Champ Tonton MEP**:
+  - Ajout par squad
+  - Affichage dans header squad
+  - Export inclus
+
+#### Nettoyage et Simplification Module Planning (Janvier 2025)
 - ✅ Supprimé recherche textuelle des filtres (searchText)
 - ✅ Supprimé filtres par dates (dateFrom, dateTo)
 - ✅ Supprimé paramètre de langue (language)
@@ -503,7 +778,7 @@ npx prisma studio     # Interface admin DB
 - ✅ Migration DB: Retrait colonnes obsolètes
 - ✅ Documentation mise à jour
 
-#### Améliorations UI
+#### Améliorations UI Module Planning
 - ✅ Catégories settings: Grille 8 colonnes (responsive)
 - ✅ Séparateur visuel entre catégories par défaut et personnalisées
 - ✅ Bouton renommé: "Ajouter une catégorie"
@@ -520,7 +795,7 @@ npx prisma studio     # Interface admin DB
 
 ## Améliorations Futures Possibles
 
-### Fonctionnalités
+### Fonctionnalités Planning
 - [ ] Authentification API complète
 - [ ] Gestion multi-utilisateurs
 - [ ] Notifications/rappels
@@ -529,6 +804,17 @@ npx prisma studio     # Interface admin DB
 - [ ] Drag & drop événements
 - [ ] Recherche avancée
 - [ ] Vues semaine/jour
+
+### Fonctionnalités Releases
+- [ ] Filtres releases (par statut, par date)
+- [ ] Recherche dans releases
+- [ ] Historique des modifications releases
+- [ ] Validation des règles FF/MF (noms uniques, cohérence)
+- [ ] Templates de releases
+- [ ] Clonage de releases
+- [ ] Export PDF des releases
+- [ ] Statistiques de progression (% actions complétées)
+- [ ] Notifications deadline releases
 
 ### Technique
 - [ ] Internationalisation complète (i18n)
@@ -557,9 +843,98 @@ npx prisma studio     # Interface admin DB
 - ⚠️ Navigation clavier à tester
 - ✅ Contraste couleurs respecté
 
+## Points Techniques Avancés
+
+### Export Releases - Formats Markdown/HTML
+
+#### Méthodes d'Export
+Les releases peuvent être exportées en deux formats depuis `releases-list.component.ts`:
+
+**1. Export Markdown** (`generateMarkdown()`):
+- Structure hiérarchique claire avec headers
+- Code blocks pour noms de règles
+- Listes à puces pour périmètres
+- Formatage avec trailing spaces pour line breaks
+
+**2. Export HTML** (`generateHTML()`):
+- Structure complète avec DOCTYPE et meta tags
+- Styles inline pour portabilité
+- Cartes avec bordures colorées
+- Responsive design
+
+#### Détails Actions - Méthode `formatActionMarkdown()`
+Génère le contenu détaillé de chaque action:
+```typescript
+private formatActionMarkdown(action: any): string {
+  // Titre et description
+  // Type de flipping (Feature/Memory)
+  // Nom de règle
+  // Action (créer, désactiver, activer, obsolescence)
+  // Périmètres:
+  //   - Clients: Parse JSON, affiche CAEL ou ALL
+  //   - Caisses: Affiche liste ou ALL
+  //   - OS: Parse JSON, gère ios/android/ALL
+  //   - Versions: Parse JSON avec opérateurs
+}
+```
+
+#### Détails Actions - Méthode `formatActionHTML()`
+Version HTML du formatage détaillé:
+```typescript
+private formatActionHTML(action: any): string {
+  // Structure identique à Markdown
+  // Utilise balises HTML: <div>, <h5>, <p>, <ul>, <li>, <code>
+  // Styles inline pour les backgrounds et bordures
+  // Couleur violette (#7c3aed) pour cohérence visuelle
+}
+```
+
+#### Gestion des Périmètres
+**Clients**:
+- Stocké en JSON: `["all"]` ou `["CAEL1", "CAEL2"]`
+- Parse avec `JSON.parse()` si string
+- Affiche "ALL" si `includes('all')` ou tableau vide
+
+**Caisses**:
+- Stocké en string libre ou null
+- Affiche "ALL" si null/undefined/empty
+- Sinon affiche la valeur brute
+
+**OS**:
+- Stocké en JSON: `[]`, `["ios"]`, `["android"]`, `["ios", "android"]`
+- Affiche "ALL" si vide ou contient les deux
+- Sinon affiche "IOS" ou "ANDROID" (uppercase)
+
+**Versions**:
+- Stocké en JSON: `[{operator: ">=", version: "1.0.0"}]`
+- Affiche "ALL" si tableau vide
+- Sinon formate: "operator version" (ex: ">= 1.0.0, < 2.0.0")
+
+### Indicateurs Visuels de Complétion
+
+#### Calcul Squad Complétée
+```typescript
+// Dans release-detail.component.ts
+squad.isCompleted = squad.actions.every(action => action.isCompleted);
+```
+
+#### Classes Conditionnelles
+```html
+<div [ngClass]="{
+  'bg-green-100 dark:bg-green-900/30': squad.isCompleted,
+  'bg-orange-100/50 dark:dark:bg-orange-900/20': !squad.isCompleted
+}">
+```
+
+**Couleurs choisies**:
+- Vert pour complété: Assez visible sans être agressif
+- Orange pour incomplet: Subtil, rappel sans urgence
+- Transparence sur dark mode pour cohérence thème
+
 ## Support & Contact
 
 **Équipe**: DSI Banque
-**Contexte**: Planning interne équipe
+**Contexte**: Planning interne équipe + Gestion releases
 **Stack**: Angular 20 + Node.js + Prisma + SQLite
 **Password**: NMB
+**Modules**: Planning (timeline événements) + Releases (FF/MF)
