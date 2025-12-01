@@ -11,10 +11,13 @@
 
 ## 🚀 Démarrage Rapide
 
+### Option 1 : Script automatique (Recommandé)
+
 ```bash
-# 1. Installation
+# 1. Cloner et setup
 git clone <repository-url>
 cd romantic-gates
+./setup.sh
 
 # 2. Backend
 cd event-planning-backend
@@ -31,6 +34,34 @@ npm start
 # http://localhost:4200
 # Password: NMB
 ```
+
+### Option 2 : Setup manuel
+
+```bash
+# 1. Installation
+git clone <repository-url>
+cd romantic-gates
+
+# 2. Créer le fichier .env pour le backend
+cp event-planning-backend/.env.example event-planning-backend/.env
+
+# 3. Backend
+cd event-planning-backend
+npm install
+npx prisma db push
+npm run dev
+
+# 4. Frontend (nouveau terminal)
+cd ../event-planning-app
+npm install
+npm start
+
+# 5. Accéder à l'application
+# http://localhost:4200
+# Password: NMB
+```
+
+> **Note importante** : Le fichier `.env` est ignoré par Git (pour des raisons de sécurité). Le script `setup.sh` ou la commande de copie manuelle créent automatiquement ce fichier depuis `.env.example` lors du premier démarrage.
 
 ---
 
