@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReleaseService } from '@services/release.service';
+import { ToastService } from '@services/toast.service';
+import { ConfirmationService } from '@services/confirmation.service';
 import {
   Release,
   Squad,
@@ -761,7 +763,9 @@ export class ReleaseDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private releaseService: ReleaseService
+    private releaseService: ReleaseService,
+    private toastService: ToastService,
+    private confirmationService: ConfirmationService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -851,9 +855,17 @@ export class ReleaseDetailComponent implements OnInit {
       await this.releaseService.addFeature(squadId, this.newFeature);
       await this.loadRelease();
       this.cancelAddFeature();
+
+      this.toastService.success(
+        'Fonctionnalité ajoutée',
+        `${this.newFeature.title} a été ajoutée avec succès`
+      );
     } catch (error) {
       console.error('Error adding feature:', error);
-      alert('Erreur lors de l\'ajout de la fonctionnalité');
+      this.toastService.error(
+        'Erreur d\'ajout',
+        'Impossible d\'ajouter la fonctionnalité. Veuillez réessayer.'
+      );
     }
   }
 
@@ -863,14 +875,30 @@ export class ReleaseDetailComponent implements OnInit {
   }
 
   async deleteFeature(featureId: string): Promise<void> {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette fonctionnalité ?')) return;
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer la fonctionnalité',
+      message: 'Êtes-vous sûr de vouloir supprimer cette fonctionnalité ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
+
+    if (!confirmed) return;
 
     try {
       await this.releaseService.deleteFeature(featureId);
       await this.loadRelease();
+
+      this.toastService.success(
+        'Fonctionnalité supprimée',
+        'La fonctionnalité a été supprimée avec succès'
+      );
     } catch (error) {
       console.error('Error deleting feature:', error);
-      alert('Erreur lors de la suppression');
+      this.toastService.error(
+        'Erreur de suppression',
+        'Impossible de supprimer la fonctionnalité. Veuillez réessayer.'
+      );
     }
   }
 
@@ -918,14 +946,20 @@ export class ReleaseDetailComponent implements OnInit {
     event.preventDefault();
 
     if (!this.newAction.type || !this.newAction.description?.trim()) {
-      alert('Veuillez remplir tous les champs obligatoires');
+      this.toastService.warning(
+        'Champs requis',
+        'Veuillez remplir tous les champs obligatoires'
+      );
       return;
     }
 
     // Validation feature flipping or memory flipping
     if (this.newAction.type === 'feature_flipping' || this.newAction.type === 'memory_flipping') {
       if (!this.newAction.flipping.ruleName?.trim() || !this.newAction.flipping.ruleAction?.trim()) {
-        alert('Veuillez remplir tous les champs obligatoires du Feature/Memory Flipping');
+        this.toastService.warning(
+          'Configuration incomplète',
+          'Veuillez remplir tous les champs obligatoires du Feature/Memory Flipping'
+        );
         return;
       }
     }
@@ -934,6 +968,7 @@ export class ReleaseDetailComponent implements OnInit {
       const actionDto: CreateActionDto = {
         phase,
         type: this.newAction.type as ActionType,
+        title: this.newAction.description, // Le titre est la description
         description: this.newAction.description
       };
 
@@ -971,9 +1006,17 @@ export class ReleaseDetailComponent implements OnInit {
       await this.releaseService.addAction(squadId, actionDto);
       await this.loadRelease();
       this.cancelAddAction();
+
+      this.toastService.success(
+        'Action ajoutée',
+        `Action ${phase === 'pre_mep' ? 'pré-MEP' : 'post-MEP'} créée avec succès`
+      );
     } catch (error) {
       console.error('Error adding action:', error);
-      alert('Erreur lors de l\'ajout de l\'action');
+      this.toastService.error(
+        'Erreur d\'ajout',
+        'Impossible d\'ajouter l\'action. Veuillez réessayer.'
+      );
     }
   }
 
@@ -984,14 +1027,30 @@ export class ReleaseDetailComponent implements OnInit {
   }
 
   async deleteAction(actionId: string): Promise<void> {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette action ?')) return;
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer l\'action',
+      message: 'Êtes-vous sûr de vouloir supprimer cette action ? Cette action est irréversible.',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
+
+    if (!confirmed) return;
 
     try {
       await this.releaseService.deleteAction(actionId);
       await this.loadRelease();
+
+      this.toastService.success(
+        'Action supprimée',
+        'L\'action a été supprimée avec succès'
+      );
     } catch (error) {
       console.error('Error deleting action:', error);
-      alert('Erreur lors de la suppression');
+      this.toastService.error(
+        'Erreur de suppression',
+        'Impossible de supprimer l\'action. Veuillez réessayer.'
+      );
     }
   }
 
@@ -1147,9 +1206,17 @@ export class ReleaseDetailComponent implements OnInit {
     try {
       await this.releaseService.updateSquadTontonMep(squadId, tontonMep);
       await this.loadRelease();
+
+      this.toastService.success(
+        'Tonton MEP mis à jour',
+        tontonMep ? `Assigné à ${tontonMep}` : 'Tonton MEP retiré'
+      );
     } catch (error) {
       console.error('Error updating Tonton MEP:', error);
-      alert('Erreur lors de la mise à jour du Tonton MEP');
+      this.toastService.error(
+        'Erreur de mise à jour',
+        'Impossible de mettre à jour le Tonton MEP. Veuillez réessayer.'
+      );
     }
   }
 
@@ -1160,9 +1227,17 @@ export class ReleaseDetailComponent implements OnInit {
     try {
       await this.releaseService.toggleSquadCompletion(squadId, isCompleted);
       await this.loadRelease();
+
+      this.toastService.success(
+        isCompleted ? 'Squad complétée' : 'Squad marquée incomplète',
+        isCompleted ? 'Toutes les actions sont validées' : 'Squad marquée comme en cours'
+      );
     } catch (error) {
       console.error('Error toggling squad completion:', error);
-      alert('Erreur lors de la mise à jour de la complétude');
+      this.toastService.error(
+        'Erreur de mise à jour',
+        'Impossible de changer le statut de la squad. Veuillez réessayer.'
+      );
     }
   }
 }

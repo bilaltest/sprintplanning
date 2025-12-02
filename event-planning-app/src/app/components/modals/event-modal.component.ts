@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Event, EventCategory, EventColor, EventIcon, EVENT_CATEGORY_LABELS, CATEGORY_DEFAULTS } from '@models/event.model';
 import { EventService } from '@services/event.service';
 import { CategoryService, CategoryInfo } from '@services/category.service';
+import { ToastService } from '@services/toast.service';
+import { ConfirmationService } from '@services/confirmation.service';
 
 @Component({
   selector: 'app-event-modal',
@@ -190,7 +192,9 @@ export class EventModalComponent implements OnInit {
 
   constructor(
     private eventService: EventService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private toastService: ToastService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -247,29 +251,55 @@ export class EventModalComponent implements OnInit {
 
       if (this.isEditMode && this.event?.id) {
         await this.eventService.updateEvent(this.event.id, eventData);
+        this.toastService.success(
+          'Événement modifié',
+          `${eventData.title} a été mis à jour avec succès`
+        );
       } else {
         await this.eventService.createEvent(eventData);
+        this.toastService.success(
+          'Événement créé',
+          `${eventData.title} a été ajouté au planning`
+        );
       }
 
       this.save.emit();
     } catch (error) {
       console.error('Error saving event:', error);
-      alert('Erreur lors de la sauvegarde de l\'événement');
+      this.toastService.error(
+        'Erreur de sauvegarde',
+        'Impossible de sauvegarder l\'événement. Veuillez réessayer.'
+      );
     }
   }
 
   async onDelete(): Promise<void> {
     if (!this.event?.id) return;
 
-    const confirmed = confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer l\'événement',
+      message: `Êtes-vous sûr de vouloir supprimer "${this.event.title}" ? Cette action est irréversible.`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
+
     if (!confirmed) return;
 
     try {
+      const eventTitle = this.event.title;
       await this.eventService.deleteEvent(this.event.id);
+      this.toastService.success(
+        'Événement supprimé',
+        `${eventTitle} a été supprimé du planning`
+      );
       this.save.emit();
     } catch (error) {
       console.error('Error deleting event:', error);
-      alert('Erreur lors de la suppression de l\'événement');
+      this.toastService.error(
+        'Erreur de suppression',
+        'Impossible de supprimer l\'événement. Veuillez réessayer.'
+      );
     }
   }
 

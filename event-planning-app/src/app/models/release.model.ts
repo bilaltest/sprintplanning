@@ -128,7 +128,8 @@ export interface CreateFeatureDto {
 export interface CreateActionDto {
   phase: ActionPhase;
   type: ActionType;
-  description: string; // Obligatoire
+  title: string; // Titre de l'action (obligatoire)
+  description?: string; // Description optionnelle
   order?: number;
   flipping?: Partial<FeatureFlipping>;
 }

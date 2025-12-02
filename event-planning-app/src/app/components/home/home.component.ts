@@ -1,7 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SettingsService } from '@services/settings.service';
+import { ToastService } from '@services/toast.service';
+import { EventService } from '@services/event.service';
+import { ReleaseService } from '@services/release.service';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-home',
@@ -33,8 +38,16 @@ import { SettingsService } from '@services/settings.service';
           <!-- Planning Card -->
           <div
             (click)="navigateToPlanning()"
-            class="group cursor-pointer bg-white dark:bg-gray-900 rounded-2xl shadow-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 p-8"
+            class="group cursor-pointer bg-white dark:bg-gray-900 rounded-2xl shadow-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 p-8 relative"
           >
+            <!-- Badge de notification -->
+            <div
+              *ngIf="(eventsCount$ | async) as count"
+              class="absolute -top-3 -right-3 bg-primary-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg font-bold text-lg animate-pulse"
+            >
+              {{ count }}
+            </div>
+
             <div class="flex flex-col items-center text-center space-y-6">
               <div class="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <span class="material-icons text-primary-600 dark:text-primary-400" style="font-size: 48px;">
@@ -47,6 +60,11 @@ import { SettingsService } from '@services/settings.service';
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 text-lg">
                   Gérez vos événements et planifiez vos activités
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                  <span *ngIf="(eventsCount$ | async) as count">
+                    {{ count }} événement{{ count > 1 ? 's' : '' }} enregistré{{ count > 1 ? 's' : '' }}
+                  </span>
                 </p>
               </div>
               <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium">
@@ -61,8 +79,16 @@ import { SettingsService } from '@services/settings.service';
           <!-- Releases Card -->
           <div
             (click)="navigateToReleases()"
-            class="group cursor-pointer bg-white dark:bg-gray-900 rounded-2xl shadow-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 p-8"
+            class="group cursor-pointer bg-white dark:bg-gray-900 rounded-2xl shadow-lg border-2 border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 p-8 relative"
           >
+            <!-- Badge de notification -->
+            <div
+              *ngIf="(releasesCount$ | async) as count"
+              class="absolute -top-3 -right-3 bg-primary-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg font-bold text-lg animate-pulse"
+            >
+              {{ count }}
+            </div>
+
             <div class="flex flex-col items-center text-center space-y-6">
               <div class="w-24 h-24 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                 <span class="material-icons text-primary-600 dark:text-primary-400" style="font-size: 48px;">
@@ -75,6 +101,11 @@ import { SettingsService } from '@services/settings.service';
                 </h2>
                 <p class="text-gray-600 dark:text-gray-400 text-lg">
                   Gérez vos mises en production et releases
+                </p>
+                <p class="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                  <span *ngIf="(releasesCount$ | async) as count">
+                    {{ count }} release{{ count > 1 ? 's' : '' }} en cours
+                  </span>
                 </p>
               </div>
               <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium">
@@ -96,11 +127,32 @@ import { SettingsService } from '@services/settings.service';
     }
   `]
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+  eventsCount$!: Observable<number>;
+  releasesCount$!: Observable<number>;
+
   constructor(
     private router: Router,
-    public settingsService: SettingsService
+    public settingsService: SettingsService,
+    private toastService: ToastService,
+    private eventService: EventService,
+    private releaseService: ReleaseService
   ) {}
+
+  ngOnInit(): void {
+    // Calculer le nombre d'événements
+    this.eventsCount$ = this.eventService.events$.pipe(
+      map(events => events.length)
+    );
+
+    // Calculer le nombre de releases
+    this.releasesCount$ = this.releaseService.releases$.pipe(
+      map(releases => releases.length)
+    );
+
+    // Charger les releases au démarrage
+    this.releaseService.loadReleases();
+  }
 
   navigateToPlanning(): void {
     this.router.navigate(['/planning']);

@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ReleaseService } from '@services/release.service';
+import { ToastService } from '@services/toast.service';
+import { ConfirmationService } from '@services/confirmation.service';
 import { Release, STATUS_LABELS, STATUS_COLORS } from '@models/release.model';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -251,7 +253,9 @@ export class ReleasesListComponent implements OnInit {
 
   constructor(
     private releaseService: ReleaseService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService,
+    private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
@@ -291,11 +295,20 @@ export class ReleasesListComponent implements OnInit {
 
       this.showCreateModal = false;
 
+      // Show success toast
+      this.toastService.success(
+        'Release créée',
+        `${release.name} v${release.version} a été créée avec succès`
+      );
+
       // Navigate to the new release
       this.router.navigate(['/releases', release.id]);
     } catch (error) {
       console.error('Error creating release:', error);
-      alert('Erreur lors de la création de la release');
+      this.toastService.error(
+        'Erreur de création',
+        'Impossible de créer la release. Veuillez réessayer.'
+      );
     } finally {
       this.isCreating = false;
     }
@@ -304,15 +317,29 @@ export class ReleasesListComponent implements OnInit {
   async deleteRelease(event: Event, release: Release): Promise<void> {
     event.stopPropagation(); // Empêcher la navigation vers le détail
 
-    const confirmed = confirm(`Êtes-vous sûr de vouloir supprimer la release "${release.name}" ?\n\nCette action est irréversible et supprimera toutes les squads, features et actions associées.`);
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer la release',
+      message: `Êtes-vous sûr de vouloir supprimer "${release.name}" ? Cette action est irréversible et supprimera toutes les squads, features et actions associées.`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
 
     if (!confirmed) return;
 
     try {
       await this.releaseService.deleteRelease(release.id!);
+
+      this.toastService.success(
+        'Release supprimée',
+        `${release.name} a été supprimée définitivement`
+      );
     } catch (error) {
       console.error('Error deleting release:', error);
-      alert('Erreur lors de la suppression de la release');
+      this.toastService.error(
+        'Erreur de suppression',
+        'Impossible de supprimer la release. Veuillez réessayer.'
+      );
     }
   }
 

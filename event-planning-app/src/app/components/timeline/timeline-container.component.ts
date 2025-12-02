@@ -4,6 +4,7 @@ import { TimelineService } from '@services/timeline.service';
 import { EventService } from '@services/event.service';
 import { FilterService } from '@services/filter.service';
 import { ExportService } from '@services/export.service';
+import { ToastService } from '@services/toast.service';
 import { TimelineView } from '@models/timeline.model';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -225,7 +226,8 @@ export class TimelineContainerComponent implements OnInit {
     private timelineService: TimelineService,
     private eventService: EventService,
     private filterService: FilterService,
-    private exportService: ExportService
+    private exportService: ExportService,
+    private toastService: ToastService
   ) {
     // Initialisation des observables
     this.filteredEvents$ = this.filterService.filteredEvents$;
@@ -323,37 +325,45 @@ export class TimelineContainerComponent implements OnInit {
 
   async exportAsPDF(): Promise<void> {
     try {
+      this.toastService.info('Export en cours', 'Génération du fichier PDF...');
       await this.exportService.exportAsPDF('timeline-export', 'planning');
       this.showExportMenu = false;
+      this.toastService.success('Export réussi', 'Le fichier PDF a été téléchargé');
     } catch (error) {
-      // Erreur silencieuse ou notification utilisateur
+      this.toastService.error('Erreur d\'export', 'Impossible d\'exporter le planning en PDF');
     }
   }
 
   async exportAsPNG(): Promise<void> {
     try {
+      this.toastService.info('Export en cours', 'Génération de l\'image PNG...');
       await this.exportService.exportAsPNG('timeline-export', 'planning');
       this.showExportMenu = false;
+      this.toastService.success('Export réussi', 'L\'image PNG a été téléchargée');
     } catch (error) {
-      // Erreur silencieuse ou notification utilisateur
+      this.toastService.error('Erreur d\'export', 'Impossible d\'exporter le planning en PNG');
     }
   }
 
   async exportAsJSON(): Promise<void> {
     try {
+      this.toastService.info('Export en cours', 'Génération du fichier JSON...');
       await this.exportService.exportAsJSON();
       this.showExportMenu = false;
+      this.toastService.success('Export réussi', 'Le fichier JSON a été téléchargé');
     } catch (error) {
-      // Erreur silencieuse ou notification utilisateur
+      this.toastService.error('Erreur d\'export', 'Impossible d\'exporter les données en JSON');
     }
   }
 
   async exportAsCSV(): Promise<void> {
     try {
+      this.toastService.info('Export en cours', 'Génération du fichier CSV...');
       await this.exportService.exportAsCSV();
       this.showExportMenu = false;
+      this.toastService.success('Export réussi', 'Le fichier CSV a été téléchargé');
     } catch (error) {
-      // Erreur silencieuse ou notification utilisateur
+      this.toastService.error('Erreur d\'export', 'Impossible d\'exporter les données en CSV');
     }
   }
 
