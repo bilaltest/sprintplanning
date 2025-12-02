@@ -18,15 +18,18 @@ import { fr } from 'date-fns/locale';
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">
-          <span class="material-icons text-3xl text-primary-600 dark:text-primary-400">rocket_launch</span>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Préparation de MEP</h1>
+          <span class="material-icons text-4xl text-releases-500 dark:text-releases-400">rocket_launch</span>
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Préparation de MEP</h1>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Gérez vos releases et leurs déploiements</p>
+          </div>
         </div>
         <button
           (click)="showCreateModal = true"
-          class="btn btn-primary flex items-center space-x-2"
+          class="btn btn-primary flex items-center space-x-2 px-6 py-3"
         >
-          <span class="material-icons">add</span>
-          <span>Nouvelle Release</span>
+          <span class="material-icons text-xl">add_circle</span>
+          <span class="text-base">Nouvelle Release</span>
         </button>
       </div>
 
@@ -34,52 +37,43 @@ import { fr } from 'date-fns/locale';
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="(releases$ | async) as releases">
         <div
           *ngFor="let release of releases"
-          class="card p-6 hover:shadow-lg transition-shadow cursor-pointer relative group"
+          class="card-releases p-6 cursor-pointer relative group"
           (click)="viewRelease(release.id!, release.version)"
         >
           <!-- Delete Button -->
           <button
             (click)="deleteRelease($event, release)"
-            class="absolute top-4 right-4 p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+            class="absolute top-4 right-4 p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
             title="Supprimer la release"
           >
-            <span class="material-icons text-sm">delete</span>
+            <span class="material-icons text-lg">delete</span>
           </button>
 
           <!-- Header -->
           <div class="flex items-start justify-between mb-4 pr-8">
             <div class="flex-1">
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              <h3 class="text-xl font-bold text-releases-700 dark:text-releases-300 mb-1">
                 {{ release.name }}
               </h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">
-                Version {{ release.version }}
-              </p>
             </div>
           </div>
 
           <!-- Date -->
-          <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-300 mb-4">
-            <span class="material-icons text-sm">calendar_today</span>
-            <span>{{ formatDate(release.releaseDate) }}</span>
+          <div class="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 mb-4">
+            <span class="material-icons text-sm text-gray-500 dark:text-gray-400">event</span>
+            <span class="font-medium">{{ formatDate(release.releaseDate) }}</span>
           </div>
 
           <!-- Description -->
-          <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2" *ngIf="release.description">
+          <p class="text-sm text-gray-700 dark:text-gray-300 mb-4 line-clamp-2" *ngIf="release.description">
             {{ release.description }}
           </p>
 
           <!-- Squads Summary -->
           <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div class="flex items-center space-x-4 text-sm">
-              <div class="flex items-center space-x-1">
-                <span class="material-icons text-sm text-gray-500">groups</span>
-                <span class="text-gray-600 dark:text-gray-300">{{ release.squads.length }} squads</span>
-              </div>
-              <div class="flex items-center space-x-1">
-                <span class="material-icons text-sm text-gray-500">task</span>
-                <span class="text-gray-600 dark:text-gray-300">{{ getTotalActions(release) }} actions</span>
-              </div>
+            <div class="flex items-center space-x-2 text-sm">
+              <span class="material-icons text-lg text-gray-500 dark:text-gray-400">groups</span>
+              <span class="text-gray-700 dark:text-gray-300 font-semibold">{{ release.squads.length }} squads</span>
             </div>
 
             <!-- Export Button -->
@@ -164,20 +158,6 @@ import { fr } from 'date-fns/locale';
                 required
                 class="input"
                 placeholder="Ex: Release v40.5 - Sprint 2024.12"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Version
-              </label>
-              <input
-                type="text"
-                [(ngModel)]="newRelease.version"
-                name="version"
-                required
-                class="input"
-                placeholder="Ex: 40.5"
               />
             </div>
 
@@ -364,7 +344,6 @@ export class ReleasesListComponent implements OnInit {
 
   private generateMarkdown(release: Release): string {
     let md = `# ${release.name}\n\n`;
-    md += `**Version:** ${release.version}  \n`;
     md += `**Date de MEP:** ${this.formatDate(release.releaseDate)}  \n\n`;
 
     if (release.description) {
@@ -440,7 +419,6 @@ export class ReleasesListComponent implements OnInit {
 <body>
   <h1>${release.name}</h1>
   <div class="meta">
-    <strong>Version:</strong> ${release.version}<br>
     <strong>Date de MEP:</strong> ${this.formatDate(release.releaseDate)}
   </div>`;
 

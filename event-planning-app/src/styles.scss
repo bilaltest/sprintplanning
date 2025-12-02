@@ -20,7 +20,28 @@
 }
 
 @layer components {
-  /* Custom scrollbar */
+  /* ==================== GLASSMORPHISM ==================== */
+  .glass {
+    @apply backdrop-blur-md bg-white/70 dark:bg-gray-900/70;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-strong {
+    @apply backdrop-blur-xl bg-white/80 dark:bg-gray-900/80;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .glass-planning {
+    @apply backdrop-blur-md bg-planning-50/80 dark:bg-planning-900/80;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  .glass-releases {
+    @apply backdrop-blur-md bg-releases-50/80 dark:bg-releases-900/80;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
+
+  /* ==================== SCROLLBARS ==================== */
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -66,23 +87,52 @@
     font-feature-settings: 'liga';
   }
 
-  /* Button styles */
+  /* ==================== BUTTONS ==================== */
   .btn {
     @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
 
+  /* Legacy primary button (mapping vers planning) */
   .btn-primary {
-    @apply bg-primary-500 hover:bg-primary-600 text-white focus:ring-primary-500;
+    @apply bg-planning-500 hover:bg-planning-600 text-white focus:ring-planning-500 shadow-sm hover:shadow-md;
   }
 
+  /* Planning buttons */
+  .btn-planning {
+    @apply bg-planning-500 hover:bg-planning-600 text-white focus:ring-planning-500 shadow-sm hover:shadow-md;
+  }
+
+  .btn-planning-outline {
+    @apply border-2 border-planning-500 text-planning-600 dark:text-planning-400 hover:bg-planning-50 dark:hover:bg-planning-900/20 focus:ring-planning-500;
+  }
+
+  /* Releases buttons - énergiques avec gradients */
+  .btn-releases {
+    @apply bg-gradient-action-cta text-white focus:ring-releases-500 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200;
+  }
+
+  .btn-releases-outline {
+    @apply border-2 border-releases-500 text-releases-600 dark:text-releases-400 hover:bg-releases-50 dark:hover:bg-releases-900/20 focus:ring-releases-500;
+  }
+
+  .btn-releases-alert {
+    @apply bg-releases-alert-500 hover:bg-releases-alert-600 text-white focus:ring-releases-alert-500 shadow-md hover:shadow-lg transform hover:scale-105;
+  }
+
+  /* Generic buttons */
   .btn-secondary {
     @apply bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 focus:ring-gray-500;
   }
 
   .btn-danger {
-    @apply bg-red-500 hover:bg-red-600 text-white focus:ring-red-500;
+    @apply bg-red-500 hover:bg-red-600 text-white focus:ring-red-500 shadow-sm hover:shadow-md;
   }
 
+  .btn-success {
+    @apply bg-green-500 hover:bg-green-600 text-white focus:ring-green-500 shadow-sm hover:shadow-md;
+  }
+
+  /* Sizes */
   .btn-sm {
     @apply px-3 py-1.5 text-sm;
   }
@@ -91,13 +141,35 @@
     @apply px-6 py-3 text-lg;
   }
 
-  /* Card styles */
+  /* ==================== CARDS ==================== */
   .card {
     @apply bg-gray-50 dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800;
   }
 
   .card-hover {
     @apply card hover:shadow-md transition-shadow duration-200;
+  }
+
+  /* Planning cards - subtiles et apaisantes */
+  .card-planning {
+    @apply bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-planning-200 dark:border-planning-800 hover:shadow-md transition-all duration-200;
+  }
+
+  .card-planning-feature {
+    @apply bg-gradient-planning-subtle dark:bg-gray-900 rounded-lg shadow-sm border border-planning-200 dark:border-planning-800 hover:border-planning-400 dark:hover:border-planning-600 transition-all duration-200;
+  }
+
+  /* Releases cards - énergiques avec bordures colorées */
+  .card-releases {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200;
+  }
+
+  .card-releases-squad-incomplete {
+    @apply bg-gradient-squad-incomplete dark:bg-gray-800 rounded-lg border-l-4 border-l-releases-alert-500 border border-releases-alert-200 dark:border-gray-700 shadow-sm;
+  }
+
+  .card-releases-squad-complete {
+    @apply bg-gradient-squad-complete dark:bg-gray-800 rounded-lg border-l-4 border-l-planning-600 border border-planning-200 dark:border-gray-700 shadow-sm;
   }
 
   /* Input styles */
@@ -110,13 +182,21 @@
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
 
-  /* Modal overlay */
+  /* ==================== MODALS ==================== */
   .modal-overlay {
-    @apply fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4;
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4;
   }
 
   .modal-content {
-    @apply bg-gray-50 dark:bg-gray-900 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar;
+    @apply glass-strong rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar;
+  }
+
+  .modal-content-planning {
+    @apply glass-planning rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar border-2 border-planning-300 dark:border-planning-700;
+  }
+
+  .modal-content-releases {
+    @apply glass-releases rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar border-2 border-releases-300 dark:border-releases-700;
   }
 }
 
