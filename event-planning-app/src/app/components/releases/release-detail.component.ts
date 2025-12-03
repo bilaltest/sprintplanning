@@ -49,7 +49,7 @@ import { fr } from 'date-fns/locale';
           <div>
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ release.name }}</h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">
-              Version {{ release.version }} • {{ formatDate(release.releaseDate) }}
+              {{ formatDate(release.releaseDate) }}
             </p>
           </div>
         </div>
@@ -67,19 +67,27 @@ import { fr } from 'date-fns/locale';
       </div>
 
       <!-- Squads -->
-      <div class="space-y-4">
-        <div *ngFor="let squad of release.squads" class="card">
+      <div class="space-y-6">
+        <div *ngFor="let squad of release.squads" class="rounded-xl overflow-hidden shadow-lg">
           <!-- Squad Header -->
           <div
-            class="p-6 border-b border-gray-200 dark:border-gray-700 transition-colors"
+            class="p-6 border-b-2 transition-all duration-200"
             [ngClass]="{
-              'bg-green-100 dark:bg-green-900/30': squad.isCompleted,
-              'bg-orange-100/50 dark:bg-orange-900/20': !squad.isCompleted
+              'card-releases-squad-complete': squad.isCompleted,
+              'card-releases-squad-incomplete': !squad.isCompleted
             }"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-3 flex-1">
-                <span class="material-icons text-primary-600 dark:text-primary-400">groups</span>
+                <span
+                  class="material-icons text-2xl"
+                  [class.text-planning-600]="squad.isCompleted"
+                  [class.dark:text-planning-400]="squad.isCompleted"
+                  [class.text-releases-alert-600]="!squad.isCompleted"
+                  [class.dark:text-releases-alert-400]="!squad.isCompleted"
+                >
+                  {{ squad.isCompleted ? 'check_circle' : 'pending' }}
+                </span>
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h2>
 
                 <!-- Tonton MEP Field -->
@@ -105,7 +113,7 @@ import { fr } from 'date-fns/locale';
                       (click)="$event.stopPropagation()"
                       class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                     />
-                    <span class="text-sm text-gray-600 dark:text-gray-400">Complétée</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Complété</span>
                   </label>
                   <span *ngIf="squad.isCompleted" class="material-icons text-green-600 dark:text-green-400 text-lg">
                     check_circle
@@ -125,7 +133,7 @@ import { fr } from 'date-fns/locale';
           </div>
 
           <!-- Squad Content -->
-          <div *ngIf="expandedSquads.has(squad.squadNumber)" class="p-6 pt-0 space-y-6">
+          <div *ngIf="expandedSquads.has(squad.squadNumber)" class="p-6 pt-6 space-y-6">
             <!-- Features Section -->
             <div>
               <div class="flex items-center justify-between mb-3">

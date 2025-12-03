@@ -13,16 +13,21 @@ import { ConfirmationService } from '@services/confirmation.service';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="modal-overlay" (click)="onOverlayClick($event)">
-      <div class="modal-content fade-in-scale" (click)="$event.stopPropagation()">
-        <div class="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            {{ isEditMode ? "Modifier l'événement" : "Nouvel événement" }}
-          </h2>
+      <div class="modal-content-planning fade-in-scale" (click)="$event.stopPropagation()">
+        <div class="sticky top-0 glass-planning border-b-2 border-planning-300 dark:border-planning-700 px-6 py-4 flex items-center justify-between rounded-t-xl">
+          <div class="flex items-center space-x-2">
+            <span class="material-icons text-planning-600 dark:text-planning-400">
+              {{ isEditMode ? 'edit_calendar' : 'add_circle' }}
+            </span>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+              {{ isEditMode ? "Modifier l'événement" : "Nouvel événement" }}
+            </h2>
+          </div>
           <button
             (click)="close.emit()"
-            class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            class="p-2 hover:bg-planning-100 dark:hover:bg-planning-900/30 rounded-lg transition-all"
           >
-            <span class="material-icons text-gray-500 dark:text-gray-400">close</span>
+            <span class="material-icons text-gray-600 dark:text-gray-400">close</span>
           </button>
         </div>
 

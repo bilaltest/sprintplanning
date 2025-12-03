@@ -7,31 +7,99 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Palette inspirée Crédit Agricole - version moderne/pastel
+        // Crédit Agricole - Vert identité
+        ca: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#00a859',  // Vert CA officiel
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+        },
+
+        // Module PLANNING - Vert menthe moderne (calme/apaisant)
+        planning: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#10b981',  // Primary Planning - Emerald
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
+        },
+        'planning-blue': {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',  // Secondary Planning - Blue
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+        },
+
+        // Module RELEASES - Même palette que Planning (unifiée)
+        releases: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#10b981',  // Primary Releases - Emerald (comme Planning)
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
+        },
+        'releases-secondary': {
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',  // Secondary Releases - Blue
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+        },
+        'releases-alert': {
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fbbf24',  // Orange plus doux
+          500: '#f59e0b',  // Alert/Urgence - Orange pastel (amber)
+          600: '#d97706',
+          700: '#b45309',
+          800: '#92400e',
+          900: '#78350f',
+        },
+
+        // Legacy primary (pour compatibilité - mapping vers planning)
         primary: {
-          50: '#f0f9f4',
-          100: '#dcf2e4',
-          200: '#bce5cd',
-          300: '#8dd1ad',
-          400: '#5bb889',
-          500: '#339966', // Vert CA principal
-          600: '#2a7d54',
-          700: '#226344',
-          800: '#1d4f37',
-          900: '#18412e',
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
         },
-        accent: {
-          50: '#fef3f2',
-          100: '#fee5e2',
-          200: '#fecfc9',
-          300: '#fcaea4',
-          400: '#f87f6f',
-          500: '#ef5a45',
-          600: '#dc3d26',
-          700: '#b9311c',
-          800: '#992d1b',
-          900: '#7f2c1d',
-        },
+
+        // Couleurs événements
         event: {
           mep: '#22c55e',      // Vert - Mise en production
           incident: '#ef4444',  // Rouge - Incident
@@ -46,6 +114,23 @@ module.exports = {
           hotfix: '#dc2626',    // Rouge foncé - Hotfix
           planning: '#8b5cf6',  // Violet - Planning
         }
+      },
+
+      // Gradients personnalisés
+      backgroundImage: {
+        'gradient-planning': 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        'gradient-planning-subtle': 'linear-gradient(to bottom, #f9fafb, #f3f4f6)',
+        'gradient-releases': 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        'gradient-releases-card': 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+        'gradient-squad-incomplete': 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+        'gradient-squad-complete': 'linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)',
+        'gradient-action-cta': 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      },
+
+      // Glassmorphism
+      backdropBlur: {
+        xs: '2px',
+        '2xl': '40px',
       },
       animation: {
         'fade-in': 'fadeIn 0.2s ease-in-out',

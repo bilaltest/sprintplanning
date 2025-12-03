@@ -10,19 +10,19 @@ import { AuthService } from '@services/auth.service';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="min-h-screen bg-gray-100 dark:bg-gray-950">
-      <!-- Header -->
-      <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40">
+      <!-- Header avec gradient Planning -->
+      <header class="bg-gradient-planning sticky top-0 z-40 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-4">
           <div class="flex items-center justify-between">
             <!-- Logo/Home Button -->
             <button
               (click)="navigateToHome()"
-              class="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+              class="flex items-center space-x-2 hover:scale-105 transition-transform"
             >
-              <span class="material-icons text-primary-600 dark:text-primary-400 text-3xl">
+              <span class="material-icons text-white text-3xl drop-shadow-md">
                 calendar_month
               </span>
-              <span class="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">
+              <span class="text-xl font-bold text-white hidden sm:block drop-shadow-md">
                 Event Planning
               </span>
             </button>
@@ -31,37 +31,37 @@ import { AuthService } from '@services/auth.service';
             <nav class="flex items-center space-x-2">
               <a
                 routerLink="/planning"
-                routerLinkActive="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300"
+                routerLinkActive="bg-white/20 backdrop-blur-sm shadow-md"
                 [routerLinkActiveOptions]="{exact: false}"
-                class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-white/10 text-white"
               >
                 Planning
               </a>
               <a
                 routerLink="/history"
-                routerLinkActive="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300"
-                class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                routerLinkActive="bg-white/20 backdrop-blur-sm shadow-md"
+                class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-white/10 text-white"
               >
                 Historique
               </a>
               <a
                 routerLink="/settings"
-                routerLinkActive="bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300"
-                class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
+                routerLinkActive="bg-white/20 backdrop-blur-sm shadow-md"
+                class="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-white/10 text-white"
               >
                 Paramètres
               </a>
 
               <!-- Divider -->
-              <div class="h-6 w-px bg-gray-300 dark:bg-gray-600 mx-2"></div>
+              <div class="h-6 w-px bg-white/30 mx-2"></div>
 
               <!-- Theme Toggle -->
               <button
                 (click)="toggleTheme()"
-                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                class="p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
                 title="Changer le thème"
               >
-                <span class="material-icons text-gray-600 dark:text-gray-300">
+                <span class="material-icons text-white">
                   {{ (settingsService.preferences$ | async)?.theme === 'dark' ? 'light_mode' : 'dark_mode' }}
                 </span>
               </button>
@@ -69,10 +69,10 @@ import { AuthService } from '@services/auth.service';
               <!-- Logout -->
               <button
                 (click)="logout()"
-                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                class="p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
                 title="Se déconnecter"
               >
-                <span class="material-icons text-gray-600 dark:text-gray-300">logout</span>
+                <span class="material-icons text-white">logout</span>
               </button>
             </nav>
           </div>

@@ -1,0 +1,344 @@
+
+> event-planning-app@1.0.0 test
+> jest
+
+PASS src/app/app.component.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/components/filters/filter-bar.component.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/components/modals/event-modal.component.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/services/event.service.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/services/settings.service.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/services/timeline.service.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/services/auth.service.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+FAIL src/app/components/auth/login.component.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+  ● LoginComponent › should login successfully
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "password"
+
+    Number of calls: 0
+
+      59 |         tick();
+      60 |
+    > 61 |         expect(authService.login).toHaveBeenCalledWith('password');
+         |                                   ^
+      62 |         expect(component.isLoading).toBe(false);
+      63 |         expect(router.navigate).toHaveBeenCalledWith(['/']);
+      64 |     }));
+
+      at src/app/components/auth/login.component.spec.ts:61:35
+      at fakeAsyncFn (node_modules/zone.js/bundles/zone-testing.umd.js:1794:30)
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:410:32)
+      at ProxyZoneSpec.Object.<anonymous>.ProxyZoneSpec.onInvoke (node_modules/zone.js/bundles/zone-testing.umd.js:2219:43)
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:409:38)
+      at ZoneImpl.run (node_modules/zone.js/bundles/zone.umd.js:145:47)
+      at Object.wrappedFunc (node_modules/zone.js/bundles/zone-testing.umd.js:449:38)
+
+  ● LoginComponent › should handle login failure
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "wrong"
+
+    Number of calls: 0
+
+      76 |         tick();
+      77 |
+    > 78 |         expect(authService.login).toHaveBeenCalledWith('wrong');
+         |                                   ^
+      79 |         expect(component.isLoading).toBe(false);
+      80 |         expect(router.navigate).not.toHaveBeenCalled();
+      81 |         expect(component.showError).toBe(true);
+
+      at src/app/components/auth/login.component.spec.ts:78:35
+      at fakeAsyncFn (node_modules/zone.js/bundles/zone-testing.umd.js:1794:30)
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:410:32)
+      at ProxyZoneSpec.Object.<anonymous>.ProxyZoneSpec.onInvoke (node_modules/zone.js/bundles/zone-testing.umd.js:2219:43)
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:409:38)
+      at ZoneImpl.run (node_modules/zone.js/bundles/zone.umd.js:145:47)
+      at Object.wrappedFunc (node_modules/zone.js/bundles/zone-testing.umd.js:449:38)
+
+PASS src/app/components/home/home.component.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/components/settings/settings.component.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/components/timeline/month-view.component.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/components/timeline/timeline-container.component.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+PASS src/app/components/timeline/annual-view.component.spec.ts
+  ● Console
+
+    console.warn
+      
+          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+          Please use "setupZoneTestEnv" function instead. Example:
+      
+          // setup-jest.ts
+          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+      
+          setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+
+Test Suites: 1 failed, 12 passed, 13 total
+Tests:       2 failed, 111 passed, 113 total
+Snapshots:   0 total
+Time:        3.502 s
+Ran all test suites.

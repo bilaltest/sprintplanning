@@ -30,7 +30,13 @@
       "Bash(done)",
       "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npm start:*)",
       "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npm install:*)",
-      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npx prisma db push:*)"
+      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npx prisma db push:*)",
+      "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npx tsc --noEmit)",
+      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\":*)",
+      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npx prisma generate:*)",
+      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npm run dev:*)",
+      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npx tsc:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

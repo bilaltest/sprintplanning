@@ -1,0 +1,83 @@
+
+> event-planning-app@1.0.0 test
+> jest src/app/components/auth/login.component.spec.ts
+
+  console.warn
+    
+        Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
+        Please use "setupZoneTestEnv" function instead. Example:
+    
+        // setup-jest.ts
+        import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
+    
+        setupZoneTestEnv();
+
+    > 1 | import 'jest-preset-angular/setup-jest';
+        | ^
+      2 |
+      3 | Object.defineProperty(window, 'CSS', {value: null});
+      4 | Object.defineProperty(window, 'getComputedStyle', {
+
+      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
+      at Object.<anonymous> (setup-jest.ts:1:1)
+
+FAIL src/app/components/auth/login.component.spec.ts
+  LoginComponent
+    ✓ should create (47 ms)
+    ✓ should not submit if password is empty (8 ms)
+    ✕ should login successfully (8 ms)
+    ✕ should handle login failure (6 ms)
+
+  ● LoginComponent › should login successfully
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "password"
+
+    Number of calls: 0
+
+      56 |         flush();
+      57 |
+    > 58 |         expect(authService.login).toHaveBeenCalledWith('password');
+         |                                   ^
+      59 |         expect(component.isLoading).toBe(false);
+      60 |         expect(router.navigate).toHaveBeenCalledWith(['/']);
+      61 |     }));
+
+      at src/app/components/auth/login.component.spec.ts:58:35
+      at fakeAsyncFn (node_modules/zone.js/bundles/zone-testing.umd.js:1794:30)
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:410:32)
+      at ProxyZoneSpec.Object.<anonymous>.ProxyZoneSpec.onInvoke (node_modules/zone.js/bundles/zone-testing.umd.js:2219:43)
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:409:38)
+      at ZoneImpl.run (node_modules/zone.js/bundles/zone.umd.js:145:47)
+      at Object.wrappedFunc (node_modules/zone.js/bundles/zone-testing.umd.js:449:38)
+
+  ● LoginComponent › should handle login failure
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "wrong"
+
+    Number of calls: 0
+
+      70 |         flush();
+      71 |
+    > 72 |         expect(authService.login).toHaveBeenCalledWith('wrong');
+         |                                   ^
+      73 |         expect(component.isLoading).toBe(false);
+      74 |         expect(router.navigate).not.toHaveBeenCalled();
+      75 |         expect(component.showError).toBe(true);
+
+      at src/app/components/auth/login.component.spec.ts:72:35
+      at fakeAsyncFn (node_modules/zone.js/bundles/zone-testing.umd.js:1794:30)
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:410:32)
+      at ProxyZoneSpec.Object.<anonymous>.ProxyZoneSpec.onInvoke (node_modules/zone.js/bundles/zone-testing.umd.js:2219:43)
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:409:38)
+      at ZoneImpl.run (node_modules/zone.js/bundles/zone.umd.js:145:47)
+      at Object.wrappedFunc (node_modules/zone.js/bundles/zone-testing.umd.js:449:38)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 passed, 4 total
+Snapshots:   0 total
+Time:        0.802 s, estimated 2 s
+Ran all test suites matching /src\/app\/components\/auth\/login.component.spec.ts/i.

@@ -10,21 +10,26 @@ import { AuthService } from '@services/auth.service';
   imports: [CommonModule, RouterModule],
   template: `
     <div class="min-h-screen bg-gray-100 dark:bg-gray-950">
-      <!-- Simplified Header for Releases -->
-      <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40">
+      <!-- Header Releases - Gradient énergique -->
+      <header class="bg-gradient-releases sticky top-0 z-40 shadow-xl">
         <div class="max-w-7xl mx-auto px-4 py-4">
           <div class="flex items-center justify-between">
             <!-- Logo/Home Button -->
             <button
               (click)="navigateToHome()"
-              class="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+              class="flex items-center space-x-3 hover:scale-105 transition-transform group"
             >
-              <span class="material-icons text-primary-600 dark:text-primary-400 text-3xl">
+              <span class="material-icons text-white text-4xl drop-shadow-lg group-hover:rotate-12 transition-transform">
                 rocket_launch
               </span>
-              <span class="text-xl font-bold text-gray-900 dark:text-white hidden sm:block">
-                Releases MEP
-              </span>
+              <div class="hidden sm:block">
+                <span class="text-xl font-bold text-white block drop-shadow-md">
+                  Releases MEP
+                </span>
+                <span class="text-xs text-white/80 font-medium">
+                  Gestion des déploiements
+                </span>
+              </div>
             </button>
 
             <!-- Right Actions -->
@@ -32,10 +37,10 @@ import { AuthService } from '@services/auth.service';
               <!-- Theme Toggle -->
               <button
                 (click)="toggleTheme()"
-                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                class="p-2.5 rounded-lg hover:bg-white/10 transition-all duration-200 hover:shadow-md"
                 title="Changer le thème"
               >
-                <span class="material-icons text-gray-600 dark:text-gray-300">
+                <span class="material-icons text-white text-xl">
                   {{ (settingsService.preferences$ | async)?.theme === 'dark' ? 'light_mode' : 'dark_mode' }}
                 </span>
               </button>
@@ -43,17 +48,17 @@ import { AuthService } from '@services/auth.service';
               <!-- Logout -->
               <button
                 (click)="logout()"
-                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                class="p-2.5 rounded-lg hover:bg-white/10 transition-all duration-200 hover:shadow-md"
                 title="Se déconnecter"
               >
-                <span class="material-icons text-gray-600 dark:text-gray-300">logout</span>
+                <span class="material-icons text-white text-xl">logout</span>
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      <!-- Content -->
+      <!-- Content avec fond subtil -->
       <main class="max-w-7xl mx-auto px-4 py-6">
         <router-outlet></router-outlet>
       </main>

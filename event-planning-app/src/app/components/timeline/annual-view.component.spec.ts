@@ -11,8 +11,8 @@ import { Event } from '@models/event.model';
 describe('AnnualViewComponent', () => {
   let component: AnnualViewComponent;
   let fixture: ComponentFixture<AnnualViewComponent>;
-  let timelineService: jasmine.SpyObj<TimelineService>;
-  let settingsService: jasmine.SpyObj<SettingsService>;
+  let timelineService: any;
+  let settingsService: any;
 
   const mockTimelineState: TimelineState = {
     view: 'annual',
@@ -21,8 +21,7 @@ describe('AnnualViewComponent', () => {
 
   const mockPreferences: UserPreferences = {
     ...DEFAULT_PREFERENCES,
-    theme: 'light',
-    weekStart: 'monday'
+    theme: 'light'
   };
 
   const mockEvents: Event[] = [
@@ -42,15 +41,15 @@ describe('AnnualViewComponent', () => {
   ];
 
   beforeEach(async () => {
-    const timelineServiceSpy = jasmine.createSpyObj('TimelineService', [], {
+    const timelineServiceSpy = {
       state$: new BehaviorSubject(mockTimelineState),
       scrollToToday$: new BehaviorSubject<void>(undefined)
-    });
+    };
 
-    const settingsServiceSpy = jasmine.createSpyObj('SettingsService', ['getCurrentPreferences'], {
-      preferences$: new BehaviorSubject(mockPreferences)
-    });
-    settingsServiceSpy.getCurrentPreferences.and.returnValue(mockPreferences);
+    const settingsServiceSpy = {
+      preferences$: new BehaviorSubject(mockPreferences),
+      getCurrentPreferences: jest.fn().mockReturnValue(mockPreferences)
+    };
 
     await TestBed.configureTestingModule({
       imports: [AnnualViewComponent, HttpClientTestingModule],
@@ -60,8 +59,8 @@ describe('AnnualViewComponent', () => {
       ]
     }).compileComponents();
 
-    timelineService = TestBed.inject(TimelineService) as jasmine.SpyObj<TimelineService>;
-    settingsService = TestBed.inject(SettingsService) as jasmine.SpyObj<SettingsService>;
+    timelineService = TestBed.inject(TimelineService);
+    settingsService = TestBed.inject(SettingsService);
 
     fixture = TestBed.createComponent(AnnualViewComponent);
     component = fixture.componentInstance;
@@ -88,7 +87,7 @@ describe('AnnualViewComponent', () => {
     it('should emit addEventClick when clicking on a day without events', () => {
       // Arrange
       const dayWithoutEvents = new Date(2025, 0, 20); // January 20, 2025 (no events)
-      spyOn(component.addEventClick, 'emit');
+      jest.spyOn(component.addEventClick, 'emit');
 
       // Act
       component.handleDayClick(dayWithoutEvents);
@@ -165,7 +164,7 @@ describe('AnnualViewComponent', () => {
   describe('onEventClick', () => {
     it('should emit eventClick when an event is clicked', () => {
       // Arrange
-      spyOn(component.eventClick, 'emit');
+      jest.spyOn(component.eventClick, 'emit');
       const event = mockEvents[0];
 
       // Act
@@ -179,11 +178,11 @@ describe('AnnualViewComponent', () => {
   describe('onDeleteEvent', () => {
     it('should emit deleteEventClick when user confirms deletion', () => {
       // Arrange
-      spyOn(component.deleteEventClick, 'emit');
-      spyOn(window, 'confirm').and.returnValue(true);
+      jest.spyOn(component.deleteEventClick, 'emit');
+      jest.spyOn(window, 'confirm').mockReturnValue(true);
       const event = mockEvents[0];
       const mouseEvent = new MouseEvent('click');
-      spyOn(mouseEvent, 'stopPropagation');
+      jest.spyOn(mouseEvent, 'stopPropagation');
 
       // Act
       component.onDeleteEvent(mouseEvent, event);
@@ -196,8 +195,8 @@ describe('AnnualViewComponent', () => {
 
     it('should not emit deleteEventClick when user cancels deletion', () => {
       // Arrange
-      spyOn(component.deleteEventClick, 'emit');
-      spyOn(window, 'confirm').and.returnValue(false);
+      jest.spyOn(component.deleteEventClick, 'emit');
+      jest.spyOn(window, 'confirm').mockReturnValue(false);
       const event = mockEvents[0];
       const mouseEvent = new MouseEvent('click');
 

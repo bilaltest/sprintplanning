@@ -1,0 +1,62 @@
+
+> event-planning-app@1.0.0 test:coverage
+> jest --coverage
+
+----------------------------------|---------|----------|---------|---------|-----------------------------------------
+File                              | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                       
+----------------------------------|---------|----------|---------|---------|-----------------------------------------
+All files                         |   29.83 |    14.28 |   28.57 |    29.7 |                                         
+ app                              |   19.44 |      100 |       0 |      20 |                                         
+  app.component.ts                |     100 |      100 |     100 |     100 |                                         
+  app.routes.ts                   |       0 |      100 |       0 |       0 | 2-75                                    
+ app/components/auth              |       0 |        0 |       0 |       0 |                                         
+  login.component.ts              |       0 |        0 |       0 |       0 | 1-128                                   
+ app/components/confirmation      |   42.85 |        0 |       0 |   38.46 |                                         
+  confirmation-modal.component.ts |   42.85 |        0 |       0 |   38.46 | 116-137                                 
+ app/components/filters           |     100 |      100 |     100 |     100 |                                         
+  filter-bar.component.ts         |     100 |      100 |     100 |     100 |                                         
+ app/components/history           |       0 |        0 |       0 |       0 |                                         
+  history.component.ts            |       0 |        0 |       0 |       0 | 1-209                                   
+ app/components/home              |       0 |      100 |       0 |       0 |                                         
+  home.component.ts               |       0 |      100 |       0 |       0 | 1-114                                   
+ app/components/modals            |   89.09 |    79.16 |     100 |   92.15 |                                         
+  event-modal.component.ts        |   89.09 |    79.16 |     100 |   92.15 | 273-274,303-304                         
+ app/components/releases          |       0 |        0 |       0 |       0 |                                         
+  release-detail.component.ts     |       0 |        0 |       0 |       0 | 1-1245                                  
+  releases-list.component.ts      |       0 |        0 |       0 |       0 | 1-608                                   
+ app/components/settings          |       0 |        0 |       0 |       0 |                                         
+  settings.component.ts           |       0 |        0 |       0 |       0 | 1-335                                   
+ app/components/timeline          |   74.43 |       50 |   72.97 |    75.6 |                                         
+  annual-view.component.ts        |   77.64 |    64.28 |   74.07 |    78.2 | 235,248-256,298-299,319-324,332-339,355 
+  month-view.component.ts         |   81.08 |    45.45 |      70 |    82.6 | 224,233,281-286,295-306,322             
+  timeline-container.component.ts |   85.71 |       50 |   95.23 |   86.58 | 271-275,318,333,344,355,366-374         
+  year-view.component.ts          |       0 |        0 |       0 |       0 | 1-90                                    
+ app/components/toast             |   42.85 |        0 |       0 |   38.46 |                                         
+  toast-container.component.ts    |   42.85 |        0 |       0 |   38.46 | 133-154                                 
+ app/guards                       |       0 |        0 |       0 |       0 |                                         
+  auth.guard.ts                   |       0 |        0 |       0 |       0 | 1-14                                    
+ app/layouts                      |       0 |      100 |       0 |       0 |                                         
+  planning-layout.component.ts    |       0 |      100 |       0 |       0 | 1-111                                   
+  releases-layout.component.ts    |       0 |      100 |       0 |       0 | 1-90                                    
+ app/models                       |   19.23 |      100 |     100 |   19.23 |                                         
+  event.model.ts                  |     100 |      100 |     100 |     100 |                                         
+  filter.model.ts                 |     100 |      100 |     100 |     100 |                                         
+  history.model.ts                |       0 |      100 |     100 |       0 | 19                                      
+  index.ts                        |       0 |      100 |     100 |       0 | 1-5                                     
+  release.model.ts                |       0 |      100 |     100 |       0 | 138-173                                 
+  settings.model.ts               |     100 |      100 |     100 |     100 |                                         
+  timeline.model.ts               |       0 |      100 |     100 |       0 | 22-52                                   
+ app/services                     |   31.21 |    15.62 |   25.83 |   29.86 |                                         
+  auth.service.ts                 |       0 |        0 |       0 |       0 | 1-70                                    
+  category.service.ts             |      20 |        0 |    5.26 |   19.04 | 36-165                                  
+  confirmation.service.ts         |   33.33 |        0 |       0 |   23.07 | 9-30                                    
+  database.service.ts             |       0 |      100 |       0 |       0 | 1-24                                    
+  event.service.ts                |   86.27 |      100 |     100 |      86 | 29,43,55,66,85,104,116                  
+  export.service.ts               |    7.59 |        0 |       0 |    6.49 | 13-174                                  
+  filter.service.ts               |   19.35 |        0 |       0 |   16.66 | 11-74                                   
+  history.service.ts              |       0 |        0 |       0 |       0 | 1-78                                    
+  release.service.ts              |       0 |        0 |       0 |       0 | 1-253                                   
+  settings.service.ts             |   97.29 |      100 |     100 |   97.22 | 41                                      
+  timeline.service.ts             |     100 |      100 |     100 |     100 |                                         
+  toast.service.ts                |   21.73 |        0 |       0 |      15 | 9-83                                    
+----------------------------------|---------|----------|---------|---------|-----------------------------------------
