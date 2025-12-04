@@ -298,6 +298,7 @@ export const addAction = async (req, res) => {
         create: {
           flippingType: flipping.flippingType,
           ruleName: flipping.ruleName,
+          theme: flipping.theme,
           ruleAction: flipping.ruleAction,
           ruleState: flipping.ruleState,
           targetClients: JSON.stringify(flipping.targetClients || []),
@@ -354,6 +355,7 @@ export const updateAction = async (req, res) => {
           data: {
             flippingType: flipping.flippingType,
             ruleName: flipping.ruleName,
+            theme: flipping.theme,
             ruleAction: flipping.ruleAction,
             ruleState: flipping.ruleState,
             targetClients: JSON.stringify(flipping.targetClients || []),
@@ -368,6 +370,7 @@ export const updateAction = async (req, res) => {
             actionId: id,
             flippingType: flipping.flippingType,
             ruleName: flipping.ruleName,
+            theme: flipping.theme,
             ruleAction: flipping.ruleAction,
             ruleState: flipping.ruleState,
             targetClients: JSON.stringify(flipping.targetClients || []),

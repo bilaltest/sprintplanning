@@ -774,7 +774,7 @@ export class ReleaseDetailComponent implements OnInit {
     private releaseService: ReleaseService,
     private toastService: ToastService,
     private confirmationService: ConfirmationService
-  ) {}
+  ) { }
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
@@ -963,10 +963,12 @@ export class ReleaseDetailComponent implements OnInit {
 
     // Validation feature flipping or memory flipping
     if (this.newAction.type === 'feature_flipping' || this.newAction.type === 'memory_flipping') {
-      if (!this.newAction.flipping.ruleName?.trim() || !this.newAction.flipping.ruleAction?.trim()) {
+      if (!this.newAction.flipping.ruleName?.trim() ||
+        !this.newAction.flipping.theme?.trim() ||
+        !this.newAction.flipping.ruleAction?.trim()) {
         this.toastService.warning(
           'Configuration incomplète',
-          'Veuillez remplir tous les champs obligatoires du Feature/Memory Flipping'
+          'Veuillez remplir tous les champs obligatoires du Feature/Memory Flipping (Nom, Thème, Action)'
         );
         return;
       }
@@ -1003,6 +1005,7 @@ export class ReleaseDetailComponent implements OnInit {
         actionDto.flipping = {
           flippingType: this.newAction.flipping.flippingType as FlippingType,
           ruleName: this.newAction.flipping.ruleName,
+          theme: this.newAction.flipping.theme,
           ruleAction: this.newAction.flipping.ruleAction as RuleAction,
           targetClients,
           targetCaisses,

@@ -118,6 +118,7 @@ model FeatureFlipping {
   actionId    String   @unique
   flippingType String  // 'memory_flipping', 'feature_flipping', extensible
   ruleName    String   // Nom de la règle dans le référentiel
+  theme       String?  // Thème du FF/MF
   ruleAction  String   // 'create_rule', 'obsolete_rule', 'disable_rule', 'enable_rule'
   ruleState   String?  // 'enabled', 'disabled' (deprecated, kept for backward compatibility)
 

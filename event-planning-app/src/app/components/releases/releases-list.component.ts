@@ -5,7 +5,17 @@ import { Router } from '@angular/router';
 import { ReleaseService } from '@services/release.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
-import { Release, STATUS_LABELS, STATUS_COLORS } from '@models/release.model';
+import {
+  Release,
+  STATUS_LABELS,
+  STATUS_COLORS,
+  Action,
+  ActionType,
+  Feature,
+  FlippingType,
+  FeatureFlipping,
+  VersionCondition
+} from '@models/release.model';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -236,7 +246,7 @@ export class ReleasesListComponent implements OnInit {
     private router: Router,
     private toastService: ToastService,
     private confirmationService: ConfirmationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.releaseService.loadReleases();
@@ -363,13 +373,9 @@ export class ReleasesListComponent implements OnInit {
       // Features
       if (squad.features.length > 0) {
         md += `#### Fonctionnalités majeures\n\n`;
-        squad.features.forEach(feature => {
-          md += `- **${feature.title}**`;
-          if (feature.description) {
-            md += `: ${feature.description}`;
-          }
-          md += '\n';
-        });
+        const featureHeaders = ['Titre', 'Description'];
+        const featureRows = squad.features.map(f => [f.title, f.description || '']);
+        md += this.generateMarkdownTable(featureHeaders, featureRows);
         md += '\n';
       }
 
@@ -377,24 +383,82 @@ export class ReleasesListComponent implements OnInit {
       const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
       if (preMepActions.length > 0) {
         md += `#### Actions Pre-MEP\n\n`;
-        preMepActions.forEach(action => {
-          md += this.formatActionMarkdown(action);
-        });
-        md += '\n';
+        md += this.generateActionsMarkdown(preMepActions);
       }
 
       // Actions Post-MEP
       const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
       if (postMepActions.length > 0) {
         md += `#### Actions Post-MEP\n\n`;
-        postMepActions.forEach(action => {
-          md += this.formatActionMarkdown(action);
-        });
-        md += '\n';
+        md += this.generateActionsMarkdown(postMepActions);
       }
     });
 
     return md;
+  }
+
+  private generateActionsMarkdown(actions: Action[]): string {
+    let md = '';
+    const grouped = this.groupActionsByType(actions);
+
+    // Memory Flipping
+    if (grouped.memory_flipping.length > 0) {
+      md += `##### Memory Flipping\n\n`;
+      const headers = ['Nom du MF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const rows = grouped.memory_flipping.map(a => [
+        a.flipping?.ruleName || '',
+        a.flipping?.theme || '',
+        this.getRuleActionLabel(a.flipping?.ruleAction || ''),
+        this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
+        this.getFlippingCaissesDisplay(a.flipping?.targetCaisses),
+        this.getFlippingOSDisplay(a.flipping?.targetOS || []),
+        this.getFlippingVersionsDisplay(a.flipping?.targetVersions || [])
+      ]);
+      md += this.generateMarkdownTable(headers, rows);
+      md += '\n';
+    }
+
+    // Feature Flipping
+    if (grouped.feature_flipping.length > 0) {
+      md += `##### Feature Flipping\n\n`;
+      const headers = ['Nom du FF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const rows = grouped.feature_flipping.map(a => [
+        a.flipping?.ruleName || '',
+        a.flipping?.theme || '',
+        this.getRuleActionLabel(a.flipping?.ruleAction || ''),
+        this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
+        this.getFlippingCaissesDisplay(a.flipping?.targetCaisses),
+        this.getFlippingOSDisplay(a.flipping?.targetOS || []),
+        this.getFlippingVersionsDisplay(a.flipping?.targetVersions || [])
+      ]);
+      md += this.generateMarkdownTable(headers, rows);
+      md += '\n';
+    }
+
+    // Other Actions
+    if (grouped.other.length > 0) {
+      md += `##### Autres Actions\n\n`;
+      const headers = ['Description'];
+      const rows = grouped.other.map(a => [a.description]);
+      md += this.generateMarkdownTable(headers, rows);
+      md += '\n';
+    }
+
+    return md;
+  }
+
+  private generateMarkdownTable(headers: string[], rows: string[][]): string {
+    if (rows.length === 0) return '';
+
+    let table = `| ${headers.join(' | ')} |\n`;
+    table += `| ${headers.map(() => '---').join(' | ')} |\n`;
+
+    rows.forEach(row => {
+      const escapedRow = row.map(cell => (cell || '').replace(/\|/g, '\\|').replace(/\n/g, '<br>'));
+      table += `| ${escapedRow.join(' | ')} |\n`;
+    });
+
+    return table;
   }
 
   private generateHTML(release: Release): string {
@@ -405,15 +469,22 @@ export class ReleasesListComponent implements OnInit {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${release.name}</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
-    h1 { color: #2563eb; }
-    h2 { color: #1e40af; border-bottom: 2px solid #2563eb; padding-bottom: 5px; }
-    h3 { color: #059669; }
-    h4 { color: #7c3aed; }
-    .meta { color: #6b7280; margin-bottom: 20px; }
-    .squad { margin-bottom: 30px; padding: 15px; background: #f9fafb; border-left: 4px solid #2563eb; }
-    .squad.completed { border-left-color: #059669; background: #f0fdf4; }
-    ul { line-height: 1.8; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; color: #1f2937; }
+    h1 { color: #111827; font-size: 2rem; margin-bottom: 0.5rem; }
+    h2 { color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 2rem; }
+    h3 { color: #374151; margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    h4 { color: #4b5563; margin-top: 1.25rem; font-size: 1.1rem; }
+    h5 { color: #6b7280; margin-top: 1rem; font-size: 1rem; font-weight: 600; }
+    .meta { color: #6b7280; margin-bottom: 2rem; }
+    .squad { margin-bottom: 2rem; padding: 1.5rem; background: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb; }
+    .squad.completed { background: #f0fdf4; border-color: #bbf7d0; }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem; }
+    th { background-color: #f3f4f6; text-align: left; padding: 0.75rem; border: 1px solid #e5e7eb; font-weight: 600; color: #374151; }
+    td { padding: 0.75rem; border: 1px solid #e5e7eb; color: #4b5563; vertical-align: top; }
+    tr:nth-child(even) { background-color: #f9fafb; }
+    .squad.completed tr:nth-child(even) { background-color: #f0fdf4; }
+    .squad.completed th { background-color: #dcfce7; }
   </style>
 </head>
 <body>
@@ -434,39 +505,30 @@ export class ReleasesListComponent implements OnInit {
       html += `<div class="squad ${completionClass}">`;
       html += `<h3>${completionEmoji} Squad ${squad.squadNumber}`;
       if (squad.tontonMep) {
-        html += ` - Tonton MEP: ${squad.tontonMep}`;
+        html += ` <span style="font-size: 0.875em; font-weight: normal; color: #6b7280;">(Tonton MEP: ${squad.tontonMep})</span>`;
       }
       html += '</h3>';
 
       // Features
       if (squad.features.length > 0) {
-        html += `<h4>Fonctionnalités majeures</h4><ul>`;
-        squad.features.forEach(feature => {
-          html += `<li><strong>${feature.title}</strong>`;
-          if (feature.description) {
-            html += `: ${feature.description}`;
-          }
-          html += '</li>';
-        });
-        html += '</ul>';
+        html += `<h4>Fonctionnalités majeures</h4>`;
+        const featureHeaders = ['Titre', 'Description'];
+        const featureRows = squad.features.map(f => [f.title, f.description || '']);
+        html += this.generateHTMLTable(featureHeaders, featureRows);
       }
 
       // Actions Pre-MEP
       const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
       if (preMepActions.length > 0) {
         html += `<h4>Actions Pre-MEP</h4>`;
-        preMepActions.forEach(action => {
-          html += this.formatActionHTML(action);
-        });
+        html += this.generateActionsHTML(preMepActions);
       }
 
       // Actions Post-MEP
       const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
       if (postMepActions.length > 0) {
         html += `<h4>Actions Post-MEP</h4>`;
-        postMepActions.forEach(action => {
-          html += this.formatActionHTML(action);
-        });
+        html += this.generateActionsHTML(postMepActions);
       }
 
       html += '</div>';
@@ -476,124 +538,152 @@ export class ReleasesListComponent implements OnInit {
     return html;
   }
 
-  private formatActionMarkdown(action: any): string {
-    let md = `##### ${action.title}\n\n`;
+  private generateActionsHTML(actions: Action[]): string {
+    let html = '';
+    const grouped = this.groupActionsByType(actions);
 
-    if (action.description) {
-      md += `${action.description}\n\n`;
+    // Memory Flipping
+    if (grouped.memory_flipping.length > 0) {
+      html += `<h5>Memory Flipping</h5>`;
+      const headers = ['Nom du MF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const rows = grouped.memory_flipping.map(a => [
+        a.flipping?.ruleName || '',
+        a.flipping?.theme || '',
+        this.getRuleActionLabel(a.flipping?.ruleAction || ''),
+        this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
+        this.getFlippingCaissesDisplay(a.flipping?.targetCaisses),
+        this.getFlippingOSDisplay(a.flipping?.targetOS || []),
+        this.getFlippingVersionsDisplay(a.flipping?.targetVersions || [])
+      ]);
+      html += this.generateHTMLTable(headers, rows);
     }
 
-    // Détails de l'action de type Feature/Memory Flipping
-    if (action.flipping) {
-      const flip = action.flipping;
-      md += `**Type:** ${flip.flippingType === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping'}  \n`;
-      md += `**Nom de la règle:** \`${flip.ruleName}\`  \n`;
-      md += `**Action:** ${this.getRuleActionLabel(flip.ruleAction)}  \n`;
-
-      // Périmètres
-      md += `\n**Périmètres :**  \n`;
-
-      // Clients
-      const clients = Array.isArray(flip.targetClients) ? flip.targetClients : JSON.parse(flip.targetClients || '[]');
-      if (clients.includes('all') || clients.length === 0) {
-        md += `- **Clients:** ALL  \n`;
-      } else {
-        md += `- **Clients:** ${clients.join(', ')}  \n`;
-      }
-
-      // Caisses
-      if (flip.targetCaisses) {
-        md += `- **Caisses:** ${flip.targetCaisses}  \n`;
-      } else {
-        md += `- **Caisses:** ALL  \n`;
-      }
-
-      // OS
-      const os = Array.isArray(flip.targetOS) ? flip.targetOS : JSON.parse(flip.targetOS || '[]');
-      if (os.length === 0 || (os.includes('ios') && os.includes('android'))) {
-        md += `- **OS:** ALL  \n`;
-      } else {
-        md += `- **OS:** ${os.join(', ').toUpperCase()}  \n`;
-      }
-
-      // Versions
-      const versions = Array.isArray(flip.targetVersions) ? flip.targetVersions : JSON.parse(flip.targetVersions || '[]');
-      if (versions.length === 0) {
-        md += `- **Versions:** ALL  \n`;
-      } else {
-        const versionStr = versions.map((v: any) => `${v.operator} ${v.version}`).join(', ');
-        md += `- **Versions:** ${versionStr}  \n`;
-      }
+    // Feature Flipping
+    if (grouped.feature_flipping.length > 0) {
+      html += `<h5>Feature Flipping</h5>`;
+      const headers = ['Nom du FF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const rows = grouped.feature_flipping.map(a => [
+        a.flipping?.ruleName || '',
+        a.flipping?.theme || '',
+        this.getRuleActionLabel(a.flipping?.ruleAction || ''),
+        this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
+        this.getFlippingCaissesDisplay(a.flipping?.targetCaisses),
+        this.getFlippingOSDisplay(a.flipping?.targetOS || []),
+        this.getFlippingVersionsDisplay(a.flipping?.targetVersions || [])
+      ]);
+      html += this.generateHTMLTable(headers, rows);
     }
 
-    md += '\n';
-    return md;
+    // Other Actions
+    if (grouped.other.length > 0) {
+      html += `<h5>Autres Actions</h5>`;
+      const headers = ['Description'];
+      const rows = grouped.other.map(a => [a.description]);
+      html += this.generateHTMLTable(headers, rows);
+    }
+
+    return html;
   }
 
-  private formatActionHTML(action: any): string {
-    let html = `<div style="margin-bottom: 15px; padding: 10px; background: #f9fafb; border-left: 3px solid #7c3aed;">`;
-    html += `<h5 style="margin: 0 0 10px 0; color: #7c3aed;">${action.title}</h5>`;
+  private generateHTMLTable(headers: string[], rows: string[][]): string {
+    if (rows.length === 0) return '';
 
-    if (action.description) {
-      html += `<p style="margin-bottom: 10px;">${action.description}</p>`;
-    }
+    let html = `<table><thead><tr>`;
+    headers.forEach(header => {
+      html += `<th>${header}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
 
-    // Détails de l'action de type Feature/Memory Flipping
-    if (action.flipping) {
-      const flip = action.flipping;
-      html += `<p><strong>Type:</strong> ${flip.flippingType === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping'}</p>`;
-      html += `<p><strong>Nom de la règle:</strong> <code style="background: #e5e7eb; padding: 2px 6px; border-radius: 3px;">${flip.ruleName}</code></p>`;
-      html += `<p><strong>Action:</strong> ${this.getRuleActionLabel(flip.ruleAction)}</p>`;
+    rows.forEach(row => {
+      html += `<tr>`;
+      row.forEach(cell => {
+        html += `<td>${(cell || '').replace(/\n/g, '<br>')}</td>`;
+      });
+      html += `</tr>`;
+    });
 
-      // Périmètres
-      html += `<p style="margin-top: 10px;"><strong>Périmètres :</strong></p>`;
-      html += `<ul style="margin-top: 5px;">`;
-
-      // Clients
-      const clients = Array.isArray(flip.targetClients) ? flip.targetClients : JSON.parse(flip.targetClients || '[]');
-      if (clients.includes('all') || clients.length === 0) {
-        html += `<li><strong>Clients:</strong> ALL</li>`;
-      } else {
-        html += `<li><strong>Clients:</strong> ${clients.join(', ')}</li>`;
-      }
-
-      // Caisses
-      if (flip.targetCaisses) {
-        html += `<li><strong>Caisses:</strong> ${flip.targetCaisses}</li>`;
-      } else {
-        html += `<li><strong>Caisses:</strong> ALL</li>`;
-      }
-
-      // OS
-      const os = Array.isArray(flip.targetOS) ? flip.targetOS : JSON.parse(flip.targetOS || '[]');
-      if (os.length === 0 || (os.includes('ios') && os.includes('android'))) {
-        html += `<li><strong>OS:</strong> ALL</li>`;
-      } else {
-        html += `<li><strong>OS:</strong> ${os.join(', ').toUpperCase()}</li>`;
-      }
-
-      // Versions
-      const versions = Array.isArray(flip.targetVersions) ? flip.targetVersions : JSON.parse(flip.targetVersions || '[]');
-      if (versions.length === 0) {
-        html += `<li><strong>Versions:</strong> ALL</li>`;
-      } else {
-        const versionStr = versions.map((v: any) => `${v.operator} ${v.version}`).join(', ');
-        html += `<li><strong>Versions:</strong> ${versionStr}</li>`;
-      }
-
-      html += `</ul>`;
-    }
-
-    html += `</div>`;
+    html += `</tbody></table>`;
     return html;
+  }
+
+  private groupActionsByType(actions: Action[]): { memory_flipping: Action[], feature_flipping: Action[], other: Action[] } {
+    const grouped = {
+      memory_flipping: [] as Action[],
+      feature_flipping: [] as Action[],
+      other: [] as Action[]
+    };
+
+    actions.forEach(action => {
+      if (action.type === 'memory_flipping') {
+        grouped.memory_flipping.push(action);
+      } else if (action.type === 'feature_flipping') {
+        grouped.feature_flipping.push(action);
+      } else {
+        grouped.other.push(action);
+      }
+    });
+
+    return grouped;
+  }
+
+  // Helper methods for formatting
+  private getFlippingTargets(data: string | string[]): string[] {
+    if (Array.isArray(data)) return data;
+    try {
+      return JSON.parse(data);
+    } catch {
+      return [];
+    }
+  }
+
+  private getFlippingClientsDisplay(targetClients: string | string[]): string {
+    const clients = this.getFlippingTargets(targetClients);
+    if (clients.length === 0 || clients.includes('all')) {
+      return 'ALL';
+    }
+    return clients.join(', ');
+  }
+
+  private getFlippingCaissesDisplay(targetCaisses?: string | null): string {
+    if (!targetCaisses) {
+      return 'ALL';
+    }
+    return targetCaisses;
+  }
+
+  private getFlippingOSDisplay(targetOS: string | string[]): string {
+    const osList = this.getFlippingTargets(targetOS);
+    if (osList.length === 0 || (osList.includes('ios') && osList.includes('android'))) {
+      return 'ALL';
+    }
+    return osList.join(', ').toUpperCase();
+  }
+
+  private getFlippingVersionsDisplay(targetVersions: string | any[]): string {
+    let versions: any[];
+    if (Array.isArray(targetVersions)) {
+      versions = targetVersions;
+    } else {
+      try {
+        versions = JSON.parse(targetVersions);
+      } catch {
+        versions = [];
+      }
+    }
+
+    if (versions.length === 0) {
+      return 'ALL';
+    }
+
+    return versions.map((v: any) => `${v.operator} ${v.version}`).join(', ');
   }
 
   private getRuleActionLabel(action: string): string {
     const labels: any = {
-      'create_rule': 'Créer la règle FF/MF',
-      'obsolete_rule': 'Obsolescence de la règle FF/MF',
-      'disable_rule': 'Désactiver la règle FF/MF',
-      'enable_rule': 'Activer la règle FF/MF'
+      'create_rule': 'Créer la règle',
+      'obsolete_rule': 'Rendre obsolète',
+      'disable_rule': 'Désactiver',
+      'enable_rule': 'Activer'
     };
     return labels[action] || action;
   }
