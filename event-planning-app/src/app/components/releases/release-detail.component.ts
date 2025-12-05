@@ -100,23 +100,19 @@ import { fr } from 'date-fns/locale';
                       class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white w-full max-w-xs transition-shadow"
                     />
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <label class="flex items-center space-x-2 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        [checked]="squad.isCompleted"
-                        (change)="toggleCompletion(squad.id!, $event)"
-                        class="w-4 h-4 text-green-600 rounded focus:ring-green-500 cursor-pointer"
-                      />
-                      <span
-                        class="text-sm font-medium transition-colors"
-                        [class.text-green-600]="squad.isCompleted"
-                        [class.text-gray-500]="!squad.isCompleted"
-                        [class.group-hover:text-gray-700]="!squad.isCompleted"
-                      >
-                        {{ squad.isCompleted ? 'Validé' : 'En cours' }}
-                      </span>
-                    </label>
+                  <td class="px-6 py-4 whitespace-nowrap w-48">
+                    <div class="flex flex-col space-y-1">
+                      <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                        <div
+                          class="bg-green-600 h-2.5 rounded-full transition-all duration-500"
+                          [style.width.%]="getSquadProgress(squad)"
+                        ></div>
+                      </div>
+                      <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <span>{{ getSquadProgress(squad) }}%</span>
+                        <span *ngIf="getSquadProgress(squad) === 100" class="text-green-600 font-medium">Complet</span>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -181,12 +177,26 @@ import { fr } from 'date-fns/locale';
                     <button (click)="startEditingFeature(squad, feature)" class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
                       <span class="material-icons text-sm">edit</span>
                     </button>
-                    <button (click)="deleteFeature(feature.id!)" class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                    <button (click)="deleteFeature(squad.id!, feature.id!)" class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
                       <span class="material-icons text-sm">delete</span>
                     </button>
                   </div>
                 </div>
-                <p *ngIf="squad.features.length === 0" class="text-sm text-gray-400 italic pl-2">Aucune fonctionnalité majeure</p>
+                <div *ngIf="squad.features.length === 0" class="pl-2 space-y-2">
+                  <p class="text-sm text-gray-400 italic">Aucune fonctionnalité majeure</p>
+                  <div class="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      [checked]="squad.featuresEmptyConfirmed"
+                      (change)="toggleEmptyStatus(squad, 'features')"
+                      id="features-empty-{{squad.id}}"
+                      class="rounded text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    />
+                    <label for="features-empty-{{squad.id}}" class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                      Néant (Rien à signaler)
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -411,7 +421,7 @@ import { fr } from 'date-fns/locale';
                                     <td class="px-4 py-3 text-right w-24">
                                         <div class="flex items-center justify-end space-x-2">
                                             <button (click)="startEditingAction(squad, 'pre_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
-                                            <button (click)="deleteAction(action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
+                                            <button (click)="deleteAction(squad.id!, action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -455,7 +465,7 @@ import { fr } from 'date-fns/locale';
                                 <span class="material-icons text-sm">edit</span>
                                 </button>
                                 <button
-                                (click)="deleteAction(action.id!)"
+                                (click)="deleteAction(squad.id!, action.id!)"
                                 class="text-red-600 dark:text-red-400 hover:text-red-700"
                                 >
                                 <span class="material-icons text-sm">delete</span>
@@ -468,9 +478,21 @@ import { fr } from 'date-fns/locale';
                   </div>
                 </div>
 
-                <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-2" *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0">
-                  Aucune action pré-MEP
-                </p>
+                <div *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0" class="text-center py-2 space-y-2">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Aucune action pré-MEP</p>
+                  <div class="flex items-center justify-center space-x-2">
+                    <input
+                      type="checkbox"
+                      [checked]="squad.preMepEmptyConfirmed"
+                      (change)="toggleEmptyStatus(squad, 'pre_mep')"
+                      id="pre-mep-empty-{{squad.id}}"
+                      class="rounded text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    />
+                    <label for="pre-mep-empty-{{squad.id}}" class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                      Néant (Rien à signaler)
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -695,7 +717,7 @@ import { fr } from 'date-fns/locale';
                                     <td class="px-4 py-3 text-right w-24">
                                         <div class="flex items-center justify-end space-x-2">
                                             <button (click)="startEditingAction(squad, 'post_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
-                                            <button (click)="deleteAction(action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
+                                            <button (click)="deleteAction(squad.id!, action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -739,7 +761,7 @@ import { fr } from 'date-fns/locale';
                                 <span class="material-icons text-sm">edit</span>
                                 </button>
                                 <button
-                                (click)="deleteAction(action.id!)"
+                                (click)="deleteAction(squad.id!, action.id!)"
                                 class="text-red-600 dark:text-red-400 hover:text-red-700"
                                 >
                                 <span class="material-icons text-sm">delete</span>
@@ -752,9 +774,21 @@ import { fr } from 'date-fns/locale';
                   </div>
                 </div>
 
-                <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-2" *ngIf="getActionsByPhase(squad, 'post_mep').length === 0">
-                  Aucune action post-MEP
-                </p>
+                <div *ngIf="getActionsByPhase(squad, 'post_mep').length === 0" class="text-center py-2 space-y-2">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">Aucune action post-MEP</p>
+                  <div class="flex items-center justify-center space-x-2">
+                    <input
+                      type="checkbox"
+                      [checked]="squad.postMepEmptyConfirmed"
+                      (change)="toggleEmptyStatus(squad, 'post_mep')"
+                      id="post-mep-empty-{{squad.id}}"
+                      class="rounded text-primary-600 focus:ring-primary-500 cursor-pointer"
+                    />
+                    <label for="post-mep-empty-{{squad.id}}" class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                      Néant (Rien à signaler)
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -922,6 +956,7 @@ export class ReleaseDetailComponent implements OnInit {
 
       await this.loadRelease();
       this.cancelAddFeature();
+      await this.checkAndUpdateCompletion(squadId);
 
       this.toastService.success(
         this.editingFeatureId ? 'Fonctionnalité modifiée' : 'Fonctionnalité ajoutée',
@@ -942,7 +977,7 @@ export class ReleaseDetailComponent implements OnInit {
     this.newFeature = { title: '', description: '' };
   }
 
-  async deleteFeature(featureId: string): Promise<void> {
+  async deleteFeature(squadId: string, featureId: string): Promise<void> {
     const confirmed = await this.confirmationService.confirm({
       title: 'Supprimer la fonctionnalité',
       message: 'Êtes-vous sûr de vouloir supprimer cette fonctionnalité ? Cette action est irréversible.',
@@ -956,6 +991,7 @@ export class ReleaseDetailComponent implements OnInit {
     try {
       await this.releaseService.deleteFeature(featureId);
       await this.loadRelease();
+      await this.checkAndUpdateCompletion(squadId);
 
       this.toastService.success(
         'Fonctionnalité supprimée',
@@ -1162,6 +1198,7 @@ export class ReleaseDetailComponent implements OnInit {
 
       await this.loadRelease();
       this.cancelAddAction();
+      await this.checkAndUpdateCompletion(squadId);
 
       this.toastService.success(
         this.editingActionId ? 'Action modifiée' : 'Action ajoutée',
@@ -1183,7 +1220,7 @@ export class ReleaseDetailComponent implements OnInit {
     this.resetActionForm();
   }
 
-  async deleteAction(actionId: string): Promise<void> {
+  async deleteAction(squadId: string, actionId: string): Promise<void> {
     const confirmed = await this.confirmationService.confirm({
       title: 'Supprimer l\'action',
       message: 'Êtes-vous sûr de vouloir supprimer cette action ? Cette action est irréversible.',
@@ -1197,6 +1234,7 @@ export class ReleaseDetailComponent implements OnInit {
     try {
       await this.releaseService.deleteAction(actionId);
       await this.loadRelease();
+      await this.checkAndUpdateCompletion(squadId);
 
       this.toastService.success(
         'Action supprimée',
@@ -1356,13 +1394,15 @@ export class ReleaseDetailComponent implements OnInit {
   }
 
   // Squad management methods
+  // Squad management methods
   async updateTontonMep(squadId: string, event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const tontonMep = input.value.trim();
 
     try {
-      await this.releaseService.updateSquadTontonMep(squadId, tontonMep);
+      await this.releaseService.updateSquad(squadId, { tontonMep });
       await this.loadRelease();
+      await this.checkAndUpdateCompletion(squadId);
 
       this.toastService.success(
         'Tonton MEP mis à jour',
@@ -1377,24 +1417,82 @@ export class ReleaseDetailComponent implements OnInit {
     }
   }
 
-  async toggleCompletion(squadId: string, event: Event): Promise<void> {
-    const checkbox = event.target as HTMLInputElement;
-    const isCompleted = checkbox.checked;
+  getSquadProgress(squad: Squad): number {
+    let completedSections = 0;
+    const totalSections = 4;
+
+    // Tonton MEP
+    if (squad.tontonMep && squad.tontonMep.trim() !== '') {
+      completedSections++;
+    }
+
+    // Features
+    if (squad.features.length > 0 || squad.featuresEmptyConfirmed) {
+      completedSections++;
+    }
+
+    // Pre-MEP
+    const preMepActions = this.getActionsByPhase(squad, 'pre_mep');
+    if (preMepActions.length > 0 || squad.preMepEmptyConfirmed) {
+      completedSections++;
+    }
+
+    // Post-MEP
+    const postMepActions = this.getActionsByPhase(squad, 'post_mep');
+    if (postMepActions.length > 0 || squad.postMepEmptyConfirmed) {
+      completedSections++;
+    }
+
+    return Math.round((completedSections / totalSections) * 100);
+  }
+
+  async toggleEmptyStatus(squad: Squad, section: 'features' | 'pre_mep' | 'post_mep'): Promise<void> {
+    const updateData: any = {};
+    if (section === 'features') {
+      updateData.featuresEmptyConfirmed = !squad.featuresEmptyConfirmed;
+    } else if (section === 'pre_mep') {
+      updateData.preMepEmptyConfirmed = !squad.preMepEmptyConfirmed;
+    } else if (section === 'post_mep') {
+      updateData.postMepEmptyConfirmed = !squad.postMepEmptyConfirmed;
+    }
 
     try {
-      await this.releaseService.toggleSquadCompletion(squadId, isCompleted);
+      await this.releaseService.updateSquad(squad.id!, updateData);
       await this.loadRelease();
 
-      this.toastService.success(
-        isCompleted ? 'Squad complétée' : 'Squad marquée incomplète',
-        isCompleted ? 'Toutes les actions sont validées' : 'Squad marquée comme en cours'
-      );
+      // Check and update completion status
+      await this.checkAndUpdateCompletion(squad.id!);
+
     } catch (error) {
-      console.error('Error toggling squad completion:', error);
-      this.toastService.error(
-        'Erreur de mise à jour',
-        'Impossible de changer le statut de la squad. Veuillez réessayer.'
-      );
+      console.error('Error updating empty status:', error);
+      this.toastService.error('Erreur', 'Impossible de mettre à jour le statut.');
+    }
+  }
+
+  async checkAndUpdateCompletion(squadId: string): Promise<void> {
+    if (!this.release) return;
+    const squad = this.release.squads.find(s => s.id === squadId);
+    if (!squad) return;
+
+    const progress = this.getSquadProgress(squad);
+    const isCompleted = progress === 100;
+
+    if (squad.isCompleted !== isCompleted) {
+      try {
+        await this.releaseService.updateSquad(squadId, { isCompleted });
+        // No need to reload release here as we just did or will do
+        // But to be safe and update UI immediately:
+        squad.isCompleted = isCompleted;
+
+        if (isCompleted) {
+          this.toastService.success(
+            'Félicitations ! 🎉',
+            `La Squad ${squad.squadNumber} a complété toutes ses tâches !`
+          );
+        }
+      } catch (error) {
+        console.error('Error auto-updating completion:', error);
+      }
     }
   }
 }

@@ -70,6 +70,9 @@ model Squad {
   squadNumber Int      // 1 à 6
   tontonMep   String?  // Nom du Tonton MEP responsable de la squad
   isCompleted Boolean  @default(false) // Indique si la squad est complétée
+  featuresEmptyConfirmed Boolean @default(false)
+  preMepEmptyConfirmed   Boolean @default(false)
+  postMepEmptyConfirmed  Boolean @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -380,8 +380,10 @@ export class ReleasesListComponent implements OnInit {
         const featureRows = squad.features.map(f => [f.title, f.description || '']);
         md += this.generateMarkdownTable(featureHeaders, featureRows);
         md += '\n';
-      } else {
+      } else if (squad.featuresEmptyConfirmed) {
         md += '_Néant_\n\n';
+      } else {
+        md += '_Non renseigné_\n\n';
       }
     });
 
@@ -392,8 +394,10 @@ export class ReleasesListComponent implements OnInit {
       const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
       if (preMepActions.length > 0) {
         md += this.generateActionsMarkdown(preMepActions);
-      } else {
+      } else if (squad.preMepEmptyConfirmed) {
         md += '_Néant_\n\n';
+      } else {
+        md += '_Non renseigné_\n\n';
       }
     });
 
@@ -404,8 +408,10 @@ export class ReleasesListComponent implements OnInit {
       const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
       if (postMepActions.length > 0) {
         md += this.generateActionsMarkdown(postMepActions);
-      } else {
+      } else if (squad.postMepEmptyConfirmed) {
         md += '_Néant_\n\n';
+      } else {
+        md += '_Non renseigné_\n\n';
       }
     });
 
@@ -531,8 +537,10 @@ export class ReleasesListComponent implements OnInit {
         const featureHeaders = ['Titre', 'Description'];
         const featureRows = squad.features.map(f => [f.title, f.description || '']);
         html += this.generateHTMLTable(featureHeaders, featureRows);
-      } else {
+      } else if (squad.featuresEmptyConfirmed) {
         html += `<p class="empty-section">Néant</p>`;
+      } else {
+        html += `<p class="empty-section" style="color: #ef4444;">Non renseigné</p>`;
       }
     });
 
@@ -543,8 +551,10 @@ export class ReleasesListComponent implements OnInit {
       const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
       if (preMepActions.length > 0) {
         html += this.generateActionsHTML(preMepActions);
-      } else {
+      } else if (squad.preMepEmptyConfirmed) {
         html += `<p class="empty-section">Néant</p>`;
+      } else {
+        html += `<p class="empty-section" style="color: #ef4444;">Non renseigné</p>`;
       }
     });
 
@@ -555,8 +565,10 @@ export class ReleasesListComponent implements OnInit {
       const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
       if (postMepActions.length > 0) {
         html += this.generateActionsHTML(postMepActions);
-      } else {
+      } else if (squad.postMepEmptyConfirmed) {
         html += `<p class="empty-section">Néant</p>`;
+      } else {
+        html += `<p class="empty-section" style="color: #ef4444;">Non renseigné</p>`;
       }
     });
 

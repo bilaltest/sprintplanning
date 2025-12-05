@@ -413,38 +413,27 @@ export const deleteAction = async (req, res) => {
   }
 };
 
-// Update squad Tonton MEP
-export const updateSquadTontonMep = async (req, res) => {
+// Update squad
+export const updateSquad = async (req, res) => {
   try {
     const { squadId } = req.params;
-    const { tontonMep } = req.body;
+    const { tontonMep, isCompleted, featuresEmptyConfirmed, preMepEmptyConfirmed, postMepEmptyConfirmed } = req.body;
+
+    const data = {};
+    if (tontonMep !== undefined) data.tontonMep = tontonMep;
+    if (isCompleted !== undefined) data.isCompleted = isCompleted;
+    if (featuresEmptyConfirmed !== undefined) data.featuresEmptyConfirmed = featuresEmptyConfirmed;
+    if (preMepEmptyConfirmed !== undefined) data.preMepEmptyConfirmed = preMepEmptyConfirmed;
+    if (postMepEmptyConfirmed !== undefined) data.postMepEmptyConfirmed = postMepEmptyConfirmed;
 
     const squad = await prisma.squad.update({
       where: { id: squadId },
-      data: { tontonMep }
+      data
     });
 
     res.json(squad);
   } catch (error) {
-    console.error('Error updating Tonton MEP:', error);
-    res.status(500).json({ error: 'Failed to update Tonton MEP' });
-  }
-};
-
-// Toggle squad completion status
-export const updateSquadCompletion = async (req, res) => {
-  try {
-    const { squadId } = req.params;
-    const { isCompleted } = req.body;
-
-    const squad = await prisma.squad.update({
-      where: { id: squadId },
-      data: { isCompleted }
-    });
-
-    res.json(squad);
-  } catch (error) {
-    console.error('Error updating squad completion:', error);
-    res.status(500).json({ error: 'Failed to update squad completion' });
+    console.error('Error updating squad:', error);
+    res.status(500).json({ error: 'Failed to update squad' });
   }
 };

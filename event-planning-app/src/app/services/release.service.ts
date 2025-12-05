@@ -222,10 +222,16 @@ export class ReleaseService {
 
   // ===== SQUAD UPDATES =====
 
-  async updateSquadTontonMep(squadId: string, tontonMep: string): Promise<void> {
+  async updateSquad(squadId: string, data: {
+    tontonMep?: string;
+    isCompleted?: boolean;
+    featuresEmptyConfirmed?: boolean;
+    preMepEmptyConfirmed?: boolean;
+    postMepEmptyConfirmed?: boolean;
+  }): Promise<void> {
     try {
       await firstValueFrom(
-        this.http.put<void>(`${this.apiUrl}/squads/${squadId}/tonton-mep`, { tontonMep })
+        this.http.put<void>(`${this.apiUrl}/squads/${squadId}`, data)
       );
 
       // Reload current release
@@ -233,23 +239,7 @@ export class ReleaseService {
         await this.getRelease(this.currentReleaseSubject.value.id!);
       }
     } catch (error) {
-      console.error('Error updating Tonton MEP:', error);
-      throw error;
-    }
-  }
-
-  async toggleSquadCompletion(squadId: string, isCompleted: boolean): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.http.put<void>(`${this.apiUrl}/squads/${squadId}/completion`, { isCompleted })
-      );
-
-      // Reload current release
-      if (this.currentReleaseSubject.value) {
-        await this.getRelease(this.currentReleaseSubject.value.id!);
-      }
-    } catch (error) {
-      console.error('Error updating squad completion:', error);
+      console.error('Error updating squad:', error);
       throw error;
     }
   }
