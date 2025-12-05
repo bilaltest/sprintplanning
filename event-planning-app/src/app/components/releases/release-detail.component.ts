@@ -53,12 +53,7 @@ import { fr } from 'date-fns/locale';
             </p>
           </div>
         </div>
-        <span
-          class="px-3 py-1 text-sm font-semibold text-white rounded"
-          [ngClass]="STATUS_COLORS[release.status]"
-        >
-          {{ STATUS_LABELS[release.status] }}
-        </span>
+
       </div>
 
       <!-- Description -->
@@ -77,46 +72,46 @@ import { fr } from 'date-fns/locale';
               {{ expandedSections.has('tontons') ? 'expand_less' : 'expand_more' }}
             </span>
           </div>
-          <div *ngIf="expandedSections.has('tontons')" class="p-0">
-            <table class="min-w-full text-sm">
-              <thead class="bg-gray-100 dark:bg-gray-700">
-                <tr>
-                  <th class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Squad</th>
-                  <th class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tonton MEP</th>
-                  <th class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Statut</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                <tr *ngFor="let squad of release.squads">
-                  <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    Squad {{ squad.squadNumber }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+          <div *ngIf="expandedSections.has('tontons')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm flex flex-col space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</span>
+                  <div class="flex items-center space-x-2">
+                    <div class="w-24 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                      <div class="bg-green-600 h-2 rounded-full transition-all duration-500" [style.width.%]="getSquadProgress(squad)"></div>
+                    </div>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 w-8 text-right">{{ getSquadProgress(squad) }}%</span>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Tonton :</span>
+                  <div class="flex-1 flex items-center space-x-1">
                     <input
+                      #tontonInput
                       type="text"
                       [value]="squad.tontonMep || ''"
-                      (blur)="updateTontonMep(squad.id!, $event)"
+                      (input)="true"
+                      (keyup.enter)="updateTontonMep(squad.id!, tontonInput.value)"
                       placeholder="Non assigné"
-                      class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white w-full max-w-xs transition-shadow"
+                      class="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-shadow"
                     />
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap w-48">
-                    <div class="flex flex-col space-y-1">
-                      <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                        <div
-                          class="bg-green-600 h-2.5 rounded-full transition-all duration-500"
-                          [style.width.%]="getSquadProgress(squad)"
-                        ></div>
-                      </div>
-                      <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                        <span>{{ getSquadProgress(squad) }}%</span>
-                        <span *ngIf="getSquadProgress(squad) === 100" class="text-green-600 font-medium">Complet</span>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                    <button
+                      (click)="updateTontonMep(squad.id!, tontonInput.value)"
+                      [disabled]="tontonInput.value.trim() === (squad.tontonMep || '')"
+                      [ngClass]="{
+                        'opacity-30 cursor-not-allowed text-gray-400': tontonInput.value.trim() === (squad.tontonMep || ''),
+                        'text-green-600 hover:text-green-800 hover:bg-green-50 dark:hover:bg-green-900/20': tontonInput.value.trim() !== (squad.tontonMep || '')
+                      }"
+                      class="p-1 rounded transition-colors"
+                      title="Valider"
+                    >
+                      <span class="material-icons text-sm">check</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -128,8 +123,9 @@ import { fr } from 'date-fns/locale';
               {{ expandedSections.has('features') ? 'expand_less' : 'expand_more' }}
             </span>
           </div>
-          <div *ngIf="expandedSections.has('features')" class="p-6 space-y-8">
-            <div *ngFor="let squad of release.squads" class="space-y-4">
+          <div *ngIf="expandedSections.has('features')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm h-full">
               <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
                 <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
                 <button
@@ -167,7 +163,7 @@ import { fr } from 'date-fns/locale';
               </div>
 
               <!-- Features List -->
-              <div class="space-y-2 pl-4 border-l-2 border-gray-100 dark:border-gray-700">
+              <div class="space-y-2 pl-4 border-l-2 border-gray-100 dark:border-gray-700 max-h-48 overflow-y-auto custom-scrollbar">
                 <div *ngFor="let feature of squad.features" class="flex items-start justify-between group p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                   <div class="flex-1">
                     <h4 class="font-medium text-gray-900 dark:text-white">{{ feature.title }}</h4>
@@ -199,6 +195,7 @@ import { fr } from 'date-fns/locale';
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </div>
 
@@ -210,8 +207,9 @@ import { fr } from 'date-fns/locale';
               {{ expandedSections.has('pre_mep') ? 'expand_less' : 'expand_more' }}
             </span>
           </div>
-          <div *ngIf="expandedSections.has('pre_mep')" class="p-6 space-y-8">
-            <div *ngFor="let squad of release.squads" class="space-y-4">
+          <div *ngIf="expandedSections.has('pre_mep')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm h-full">
               <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
                 <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
                 <button
@@ -495,6 +493,7 @@ import { fr } from 'date-fns/locale';
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </div>
 
@@ -506,8 +505,9 @@ import { fr } from 'date-fns/locale';
               {{ expandedSections.has('post_mep') ? 'expand_less' : 'expand_more' }}
             </span>
           </div>
-          <div *ngIf="expandedSections.has('post_mep')" class="p-6 space-y-8">
-            <div *ngFor="let squad of release.squads" class="space-y-4">
+          <div *ngIf="expandedSections.has('post_mep')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm h-full">
               <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
                 <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
                 <button
@@ -790,6 +790,7 @@ import { fr } from 'date-fns/locale';
                   </div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -1395,13 +1396,24 @@ export class ReleaseDetailComponent implements OnInit {
 
   // Squad management methods
   // Squad management methods
-  async updateTontonMep(squadId: string, event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const tontonMep = input.value.trim();
+  async updateTontonMep(squadId: string, tontonMepValue: string): Promise<void> {
+    const tontonMep = tontonMepValue.trim();
+    const squad = this.release?.squads.find(s => s.id === squadId);
+
+    if (!squad) return;
+
+    // Check if value hasn't changed
+    const currentTonton = squad.tontonMep || '';
+    if (currentTonton === tontonMep) {
+      return;
+    }
 
     try {
       await this.releaseService.updateSquad(squadId, { tontonMep });
-      await this.loadRelease();
+
+      // Update local state
+      squad.tontonMep = tontonMep;
+
       await this.checkAndUpdateCompletion(squadId);
 
       this.toastService.success(
