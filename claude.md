@@ -2,16 +2,13 @@
 
 ## Vue d'ensemble
 Application Angular 20 + Node.js/Express pour la DSI d'une banque.
-- **Module Planning**: Gestion événements sur timeline annuelle/mensuelle
-- **Module Releases**: Gestion releases avec squads, features et actions (Feature/Memory Flipping)
+- **Modules**: Planning (Timeline annuelle/mensuelle), Releases (Squads, Features, Actions FF/MF)
 
 ## Stack Technique
-**Frontend**: Angular 20 standalone, Tailwind CSS, Material Icons, date-fns, RxJS
-**Backend**: Node.js, Express, Prisma ORM, SQLite
-**Ports**: Frontend :4200, Backend :3000
+- **Frontend**: Angular 20 standalone, Tailwind CSS, Material Icons, date-fns, RxJS. Ports: :4200
+- **Backend**: Node.js, Express, Prisma ORM, SQLite. Ports: :3000
 
 ## Architecture Rapide
-
 ### Composants Clés
 ```
 components/
@@ -29,35 +26,24 @@ components/
     ├── annual-view.component.ts             # Vue 12 mois
     ├── month-view.component.ts              # Vue mensuelle
     └── timeline-container.component.ts      # Conteneur principal
-
 layouts/
-├── planning-layout.component.ts             # Layout Planning avec header gradient
-└── releases-layout.component.ts             # Layout Releases avec header gradient
-
+├── planning-layout.component.ts             # Layout Planning (header gradient)
+└── releases-layout.component.ts             # Layout Releases (header gradient)
 services/
-├── event.service.ts                         # CRUD événements
-├── release.service.ts                       # CRUD releases
-├── settings.service.ts                      # Préférences (thème, catégories)
-├── filter.service.ts                        # Filtrage catégories
-├── timeline.service.ts                      # Navigation timeline
-└── toast.service.ts                         # Notifications modernes
+├── event.service.ts, release.service.ts     # CRUD
+├── settings.service.ts, filter.service.ts   # Prefs & Filtres
+├── timeline.service.ts                      # Nav
+└── toast.service.ts                         # Notifications
 ```
 
 ### Backend
 ```
 src/
-├── controllers/
-│   ├── event.controller.js
-│   ├── release.controller.js                # CRUD releases avec cascade delete
-│   └── settings.controller.js
-└── routes/
-    ├── event.routes.js
-    ├── release.routes.js
-    └── settings.routes.js
+├── controllers/ {event, release, settings}.controller.js
+└── routes/      {event, release, settings}.routes.js
 ```
 
 ## Modèles Essentiels
-
 ### Event
 ```typescript
 interface Event {
@@ -71,143 +57,60 @@ type EventCategory = 'mep' | 'hotfix' | 'maintenance' | 'pi_planning' | 'sprint_
 ### Release / Squad / Feature / Action
 ```typescript
 interface Release {
-  id?: string; name: string; description?: string;
-  releaseDate: string; // ISO YYYY-MM-DD (PAS de version séparée)
-  status: 'draft' | 'active' | 'completed';
-  squads: Squad[];
+  id?: string; name: string; description?: string; releaseDate: string; // ISO YYYY-MM-DD
+  status: 'draft' | 'active' | 'completed'; squads: Squad[];
 }
-
 interface Squad {
-  id?: string; releaseId?: string; squadNumber: number;
-  tontonMep?: string; features: Feature[]; actions: Action[];
-  isCompleted: boolean; // Calculé: toutes actions complétées
+  id?: string; releaseId?: string; squadNumber: number; tontonMep?: string;
+  features: Feature[]; actions: Action[]; isCompleted: boolean; // Calculé
 }
-
-interface Feature {
-  id?: string; squadId?: string; title: string; description?: string;
-}
-
+interface Feature { id?: string; squadId?: string; title: string; description?: string; }
 interface Action {
   id?: string; squadId?: string; title: string; description?: string;
-  isCompleted: boolean; phase: 'pre_mep' | 'post_mep';
-  flipping?: FeatureFlipping;
+  isCompleted: boolean; phase: 'pre_mep' | 'post_mep'; flipping?: FeatureFlipping;
 }
-
 interface FeatureFlipping {
-  flippingType: 'feature_flipping' | 'memory_flipping';
-  ruleName: string;
+  flippingType: 'feature_flipping' | 'memory_flipping'; ruleName: string;
   ruleAction: 'create_rule' | 'obsolete_rule' | 'disable_rule' | 'enable_rule';
-  targetClients: string;    // JSON: ["CAEL1"] ou ["all"]
-  targetCaisses?: string;   // String libre ou null (ALL)
-  targetOS: string;         // JSON: ["ios", "android"] ou []
-  targetVersions: string;   // JSON: [{operator: ">=", version: "1.0.0"}]
+  targetClients: string; targetCaisses?: string; targetOS: string; targetVersions: string;
 }
 ```
 
 ## API Endpoints
 ```
-# Events
-GET/POST/PUT/DELETE  /api/events[/:id]
-
-# Releases
-GET/POST/PUT/DELETE  /api/releases[/:id]
-PATCH                /api/releases/:id/actions/:actionId/toggle
-
-# Settings
-GET/PUT              /api/settings
+Events:   GET/POST/PUT/DELETE /api/events[/:id]
+Releases: GET/POST/PUT/DELETE /api/releases[/:id], PATCH /api/releases/:id/actions/:actionId/toggle
+Settings: GET/PUT /api/settings
 ```
 
 ## Design System
-
-### Palette Unifiée (Planning + Releases)
-- **Primary**: Vert émeraude (#10b981 / planning-500)
-- **Gradients**: `bg-gradient-planning` et `bg-gradient-releases` (identiques)
-- **Alert**: Amber doux (#f59e0b / releases-alert-500) pour squads incomplètes
-- **Dark mode**: `bg-gray-800` pour cards (pas bg-gray-900, trop agressif)
-
-### Classes Tailwind Importantes
-```scss
-.card                                // bg-gray-50 dark:bg-gray-900
-.card-releases                       // Cards releases: bg-white dark:bg-gray-800
-.card-releases-squad-complete        // Vert: bg-gradient-squad-complete dark:bg-gray-800
-.card-releases-squad-incomplete      // Amber: bg-gradient-squad-incomplete dark:bg-gray-800
-.btn-primary                         // Bouton vert principal
-.glass-planning / .glass-releases    // Glassmorphism (backdrop-blur)
-```
-
-### Points UI Critiques
-- **Filter bar**: `sticky top-2 z-30` avec backdrop-blur
-- **Export dropdown**: `z-50` pour passer au-dessus des filtres
-- **Header gradient**: Appliqué sur home, planning-layout et releases-layout
-- **Compteurs**: Releases cards affichent uniquement nombre de squads (pas d'actions)
-- **Date MEP**: Icône et texte gris neutre (pas de fond vert)
+### Palette & Classes
+- **Primary**: Vert émeraude (#10b981). **Alert**: Amber doux (#f59e0b). **Dark**: `bg-gray-800`.
+- **Gradients**: `bg-gradient-planning`, `bg-gradient-releases`.
+- **Classes**: `.card` (bg-gray-50/900), `.card-releases` (bg-white/800), `.btn-primary`.
+- **UI**: Filter bar sticky, Export dropdown z-50, Date MEP neutre.
 
 ## Fonctionnalités Clés
-
 ### Planning
-- Timeline annuelle (défaut) ou mensuelle
-- Scroll manuel vers "Aujourd'hui" (pas auto au load)
-- Filtres par catégorie uniquement (pas de dates, pas de recherche)
-- Premier jour semaine: **toujours lundi** (hardcodé)
-- Catégories custom: Grille 8 colonnes, stockées JSON en SQLite
+- Timeline annuelle/mensuelle. Scroll manuel "Aujourd'hui".
+- Filtres catégorie uniquement. Semaine commence Lundi.
+- Catégories custom (8 colonnes, JSON).
 
 ### Releases
-- **Export**: Markdown et HTML avec détails complets FF/MF
-- **Squads accordéon**: Indicateurs visuels (vert = complété, amber = incomplet)
-- **Actions**: Phase Pre-MEP / Post-MEP, toggle complétion
-- **Périmètres FF/MF**: Clients (CAEL ou ALL), Caisses (liste ou ALL), OS (iOS/Android/ALL), Versions (opérateurs)
+- **Export**: Markdown/HTML avec détails FF/MF.
+- **Squads**: Accordéon, indicateurs visuels (Vert/Amber).
+- **Actions**: Pre/Post MEP, toggle.
+- **FF/MF**: Clients, Caisses, OS, Versions.
 
-## Points Techniques à Retenir
+## Points Techniques
+- **Scroll**: `Subject` (pas BehaviorSubject).
+- **Dark Mode**: Classe `.dark` sur `html`.
+- **Squad Complete**: `squad.actions.every(a => a.isCompleted)`.
 
-### Scroll Timeline
-```typescript
-// Utilise Subject (pas BehaviorSubject) pour éviter émission initiale
-private scrollToTodaySubject = new Subject<void>();
-public scrollToToday$ = this.scrollToTodaySubject.asObservable();
-```
-
-### Dark Mode
-```typescript
-// Application via classe .dark sur <html>
-applyTheme(theme: string) {
-  document.documentElement.classList.toggle('dark', theme === 'dark');
-}
-```
-
-### Calcul Squad Complétée
-```typescript
-squad.isCompleted = squad.actions.every(action => action.isCompleted);
-```
-
-## Scripts de Démarrage
-```bash
-# Frontend
-cd event-planning-app && npm start          # Port 4200
-
-# Backend
-cd event-planning-backend && npm run dev    # Port 3000 (nodemon)
-
-# Base de données
-npx prisma db push                          # Sync schema
-npx prisma studio                           # Admin DB GUI
-```
-
-## Dernières Modifications (Décembre 2024)
-- ✅ Renommé "Ma Banque Tools"
-- ✅ Design system unifié Planning/Releases (vert émeraude)
-- ✅ Dark mode adouci (bg-gray-800 au lieu de bg-gray-900)
-- ✅ Suppression compteurs actions sur cards releases
-- ✅ Suppression couleur verte date MEP
-- ✅ Notifications/confirmations modernes (ToastService/ConfirmationService)
-- ✅ Simplification filtres (catégorie uniquement)
-- ✅ Export releases Markdown/HTML détaillé avec FF/MF
-
-## Remarques Importantes
-- **Auth**: Password simple "NMB" (pas de JWT, architecture préparée)
-- **Version**: Non séparée du nom, incluse dans le nom de release
-- **Tonton MEP**: Champ par squad, éditable inline
-- **Catégories prédéfinies**: 8 par défaut, lecture seule, séparées des custom
-- **Prisma**: Relations avec `onDelete: Cascade` pour delete propre
+## Scripts & Notes
+- **Run**: `npm start` (Front :4200), `npm run dev` (Back :3000). `npx prisma db push/studio`.
+- **Dec 2024 Updates**: Renommé "Ma Banque Tools", Design unifié, Dark mode adouci, Export détaillé.
+- **Auth**: Password "NMB". **Version**: Incluse dans nom release. **Prisma**: Cascade delete.
 
 ---
 **Équipe**: DSI Banque | **Stack**: Angular 20 + Node.js + Prisma + SQLite | **Password**: NMB

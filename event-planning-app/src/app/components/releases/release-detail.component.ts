@@ -66,106 +66,104 @@ import { fr } from 'date-fns/locale';
         <p class="text-gray-700 dark:text-gray-300">{{ release.description }}</p>
       </div>
 
-      <!-- Squads -->
+      <!-- New Layout: Sections -->
       <div class="space-y-6">
-        <div *ngFor="let squad of release.squads" class="rounded-xl overflow-hidden shadow-lg">
-          <!-- Squad Header -->
-          <div
-            class="p-6 border-b-2 transition-all duration-200"
-            [ngClass]="{
-              'card-releases-squad-complete': squad.isCompleted,
-              'card-releases-squad-incomplete': !squad.isCompleted
-            }"
-          >
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3 flex-1">
-                <span
-                  class="material-icons text-2xl"
-                  [class.text-planning-600]="squad.isCompleted"
-                  [class.dark:text-planning-400]="squad.isCompleted"
-                  [class.text-releases-alert-600]="!squad.isCompleted"
-                  [class.dark:text-releases-alert-400]="!squad.isCompleted"
-                >
-                  {{ squad.isCompleted ? 'check_circle' : 'pending' }}
-                </span>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h2>
 
-                <!-- Tonton MEP Field -->
-                <div class="flex items-center space-x-2 ml-4">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">Tonton MEP:</span>
-                  <input
-                    type="text"
-                    [value]="squad.tontonMep || ''"
-                    (blur)="updateTontonMep(squad.id!, $event)"
-                    (click)="$event.stopPropagation()"
-                    placeholder="Non assigné"
-                    class="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-
-                <!-- Completion Indicator -->
-                <div class="flex items-center space-x-2 ml-4">
-                  <label class="flex items-center space-x-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      [checked]="squad.isCompleted"
-                      (change)="toggleCompletion(squad.id!, $event)"
-                      (click)="$event.stopPropagation()"
-                      class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                    />
-                    <span class="text-sm text-gray-600 dark:text-gray-400">Complété</span>
-                  </label>
-                  <span *ngIf="squad.isCompleted" class="material-icons text-green-600 dark:text-green-400 text-lg">
-                    check_circle
-                  </span>
-                </div>
-              </div>
-
-              <button
-                (click)="toggleSquad(squad.squadNumber)"
-                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
-              >
-                <span class="material-icons text-gray-500">
-                  {{ expandedSquads.has(squad.squadNumber) ? 'expand_less' : 'expand_more' }}
-                </span>
-              </button>
-            </div>
+        <!-- 1. Tontons MEP Table -->
+        <div class="card overflow-hidden">
+          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('tontons')">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Tontons MEP</h2>
+            <span class="material-icons text-gray-500">
+              {{ expandedSections.has('tontons') ? 'expand_less' : 'expand_more' }}
+            </span>
           </div>
+          <div *ngIf="expandedSections.has('tontons')" class="p-0">
+            <table class="min-w-full text-sm">
+              <thead class="bg-gray-100 dark:bg-gray-700">
+                <tr>
+                  <th class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Squad</th>
+                  <th class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tonton MEP</th>
+                  <th class="px-6 py-3 text-left font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Statut</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr *ngFor="let squad of release.squads">
+                  <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                    Squad {{ squad.squadNumber }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="text"
+                      [value]="squad.tontonMep || ''"
+                      (blur)="updateTontonMep(squad.id!, $event)"
+                      placeholder="Non assigné"
+                      class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white w-full max-w-xs transition-shadow"
+                    />
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <label class="flex items-center space-x-2 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        [checked]="squad.isCompleted"
+                        (change)="toggleCompletion(squad.id!, $event)"
+                        class="w-4 h-4 text-green-600 rounded focus:ring-green-500 cursor-pointer"
+                      />
+                      <span
+                        class="text-sm font-medium transition-colors"
+                        [class.text-green-600]="squad.isCompleted"
+                        [class.text-gray-500]="!squad.isCompleted"
+                        [class.group-hover:text-gray-700]="!squad.isCompleted"
+                      >
+                        {{ squad.isCompleted ? 'Validé' : 'En cours' }}
+                      </span>
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-          <!-- Squad Content -->
-          <div *ngIf="expandedSquads.has(squad.squadNumber)" class="p-6 pt-6 space-y-6">
-            <!-- Features Section -->
-            <div>
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Fonctionnalités majeures</h3>
+        <!-- 2. Fonctionnalités Majeures -->
+        <div class="card overflow-hidden">
+          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('features')">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Fonctionnalités Majeures</h2>
+            <span class="material-icons text-gray-500">
+              {{ expandedSections.has('features') ? 'expand_less' : 'expand_more' }}
+            </span>
+          </div>
+          <div *ngIf="expandedSections.has('features')" class="p-6 space-y-8">
+            <div *ngFor="let squad of release.squads" class="space-y-4">
+              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
                 <button
                   (click)="startAddingFeature(squad)"
-                  class="btn btn-sm btn-primary flex items-center space-x-1"
+                  class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
                 >
                   <span class="material-icons text-sm">add</span>
                   <span>Ajouter</span>
                 </button>
               </div>
 
-              <!-- Add Feature Form -->
-              <div *ngIf="addingFeatureToSquad?.id === squad.id" class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <h4 class="font-medium text-gray-900 dark:text-white mb-2">
+              <!-- Add/Edit Feature Form -->
+              <div *ngIf="addingFeatureToSquad?.id === squad.id" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h4 class="font-medium text-gray-900 dark:text-white mb-3">
                   {{ editingFeatureId ? "Modifier la fonctionnalité" : "Nouvelle fonctionnalité" }}
                 </h4>
-                <div class="space-y-2">
+                <div class="space-y-3">
                   <input
                     type="text"
                     [(ngModel)]="newFeature.title"
                     placeholder="Titre de la fonctionnalité"
-                    class="input text-sm"
+                    class="input text-sm w-full"
                   />
                   <textarea
                     [(ngModel)]="newFeature.description"
                     placeholder="Description (optionnel)"
                     rows="2"
-                    class="input text-sm"
+                    class="input text-sm w-full"
                   ></textarea>
-                  <div class="flex space-x-2">
+                  <div class="flex space-x-2 pt-1">
                     <button (click)="addFeature(squad.id!)" class="btn btn-primary btn-sm">Enregistrer</button>
                     <button (click)="cancelAddFeature()" class="btn btn-secondary btn-sm">Annuler</button>
                   </div>
@@ -173,45 +171,42 @@ import { fr } from 'date-fns/locale';
               </div>
 
               <!-- Features List -->
-              <div class="space-y-2">
-                <div
-                  *ngFor="let feature of squad.features"
-                  class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-start justify-between"
-                >
+              <div class="space-y-2 pl-4 border-l-2 border-gray-100 dark:border-gray-700">
+                <div *ngFor="let feature of squad.features" class="flex items-start justify-between group p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                   <div class="flex-1">
                     <h4 class="font-medium text-gray-900 dark:text-white">{{ feature.title }}</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1" *ngIf="feature.description">
-                      {{ feature.description }}
-                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5" *ngIf="feature.description">{{ feature.description }}</p>
                   </div>
-                  <div class="flex items-center space-x-2">
-                    <button
-                      (click)="startEditingFeature(squad, feature)"
-                      class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
-                    >
+                  <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
+                    <button (click)="startEditingFeature(squad, feature)" class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
                       <span class="material-icons text-sm">edit</span>
                     </button>
-                    <button
-                      (click)="deleteFeature(feature.id!)"
-                      class="text-red-600 dark:text-red-400 hover:text-red-700"
-                    >
+                    <button (click)="deleteFeature(feature.id!)" class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
                       <span class="material-icons text-sm">delete</span>
                     </button>
                   </div>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-2" *ngIf="squad.features.length === 0">
-                  Aucune fonctionnalité ajoutée
-                </p>
+                <p *ngIf="squad.features.length === 0" class="text-sm text-gray-400 italic pl-2">Aucune fonctionnalité majeure</p>
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Actions Pre-MEP -->
-            <div>
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Actions Pré-MEP</h3>
+        <!-- 3. Actions Pré-MEP -->
+        <div class="card overflow-hidden">
+          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('pre_mep')">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Pré-MEP</h2>
+            <span class="material-icons text-gray-500">
+              {{ expandedSections.has('pre_mep') ? 'expand_less' : 'expand_more' }}
+            </span>
+          </div>
+          <div *ngIf="expandedSections.has('pre_mep')" class="p-6 space-y-8">
+            <div *ngFor="let squad of release.squads" class="space-y-4">
+              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
                 <button
                   (click)="startAddingAction(squad, 'pre_mep')"
-                  class="btn btn-sm btn-primary flex items-center space-x-1"
+                  class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
                 >
                   <span class="material-icons text-sm">add</span>
                   <span>Ajouter</span>
@@ -220,7 +215,7 @@ import { fr } from 'date-fns/locale';
 
               <!-- Add Action Form -->
               <div *ngIf="addingActionToSquad?.id === squad.id && addingActionPhase === 'pre_mep'"
-                   class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                   class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                 <form (submit)="addAction(squad.id!, 'pre_mep', $event)" class="space-y-3">
                   <div class="flex items-center justify-between mb-2">
                     <h4 class="font-medium text-gray-900 dark:text-white">
@@ -229,7 +224,7 @@ import { fr } from 'date-fns/locale';
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action <span class="text-red-500">*</span></label>
-                    <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm">
+                    <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm w-full">
                       <option value="">Sélectionner un type</option>
                       <option value="feature_flipping">{{ ACTION_TYPE_LABELS['feature_flipping'] }}</option>
                       <option value="memory_flipping">{{ ACTION_TYPE_LABELS['memory_flipping'] }}</option>
@@ -245,12 +240,12 @@ import { fr } from 'date-fns/locale';
                       placeholder="Description de l'action"
                       rows="2"
                       required
-                      class="input text-sm"
+                      class="input text-sm w-full"
                     ></textarea>
                   </div>
 
                   <!-- Feature Flipping / Memory Flipping Form -->
-                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 border border-gray-300 dark:border-gray-600 rounded">
+                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800">
                     <h4 class="font-medium text-gray-900 dark:text-white text-sm">Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}</h4>
 
                     <div>
@@ -262,7 +257,7 @@ import { fr } from 'date-fns/locale';
                         [(ngModel)]="newAction.flipping.ruleName"
                         name="ruleName"
                         required
-                        class="input text-sm"
+                        class="input text-sm w-full"
                         placeholder="Ex: FEATURE_NEW_DASHBOARD"
                       />
                     </div>
@@ -274,14 +269,14 @@ import { fr } from 'date-fns/locale';
                         [(ngModel)]="newAction.flipping.theme"
                         name="theme"
                         required
-                        class="input text-sm"
+                        class="input text-sm w-full"
                         placeholder="Ex: Authentification, Navigation, Paiement"
                       />
                     </div>
 
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action <span class="text-red-500">*</span></label>
-                      <select [(ngModel)]="newAction.flipping.ruleAction" name="ruleAction" required class="input text-sm">
+                      <select [(ngModel)]="newAction.flipping.ruleAction" name="ruleAction" required class="input text-sm w-full">
                         <option value="">Sélectionner</option>
                         <option value="create_rule">{{ getDynamicRuleActionLabel('create_rule') }}</option>
                         <option value="obsolete_rule">{{ getDynamicRuleActionLabel('obsolete_rule') }}</option>
@@ -309,7 +304,7 @@ import { fr } from 'date-fns/locale';
                           [(ngModel)]="flippingClientsInput"
                           name="clients"
                           placeholder="Ex: 89123456789"
-                          class="input text-sm"
+                          class="input text-sm w-full"
                         />
                       </div>
                     </div>
@@ -333,7 +328,7 @@ import { fr } from 'date-fns/locale';
                           [(ngModel)]="flippingCaissesInput"
                           name="caisses"
                           placeholder="Ex: Caisse 1, Caisse 2"
-                          class="input text-sm"
+                          class="input text-sm w-full"
                         />
                       </div>
                     </div>
@@ -383,13 +378,13 @@ import { fr } from 'date-fns/locale';
                           [(ngModel)]="flippingVersionsInput"
                           name="versions"
                           placeholder="Ex: >= 38.5, < 40.0"
-                          class="input text-sm"
+                          class="input text-sm w-full"
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div class="flex space-x-2">
+                  <div class="flex space-x-2 pt-2">
                     <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
                     <button type="button" (click)="cancelAddAction()" class="btn btn-secondary btn-sm">Annuler</button>
                   </div>
@@ -397,86 +392,80 @@ import { fr } from 'date-fns/locale';
               </div>
 
               <!-- Actions List -->
-              <div class="space-y-4">
+              <div class="space-y-6">
                 <!-- Non-flipping actions -->
-                <div class="space-y-2" *ngIf="getNonFlippingActions(squad, 'pre_mep').length > 0">
-                  <div
-                    *ngFor="let action of getNonFlippingActions(squad, 'pre_mep')"
-                    class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                  >
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <div class="flex items-center space-x-2">
-                          <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                            {{ getActionTypeLabel(action.type) }}
-                          </span>
-                          <h4 class="font-medium text-gray-900 dark:text-white">
-                            {{ action.description }}
-                          </h4>
-                        </div>
-                      </div>
-                      <div class="flex items-center space-x-2">
-                        <button
-                          (click)="startEditingAction(squad, 'pre_mep', action)"
-                          class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
-                        >
-                          <span class="material-icons text-sm">edit</span>
-                        </button>
-                        <button
-                          (click)="deleteAction(action.id!)"
-                          class="text-red-600 dark:text-red-400 hover:text-red-700"
-                        >
-                          <span class="material-icons text-sm">delete</span>
-                        </button>
-                      </div>
+                <div *ngIf="getNonFlippingActions(squad, 'pre_mep').length > 0">
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Actions Standard</h4>
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                        <table class="min-w-full text-sm">
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr *ngFor="let action of getNonFlippingActions(squad, 'pre_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
+                                                {{ getActionTypeLabel(action.type) }}
+                                            </span>
+                                            <span class="text-gray-900 dark:text-white">{{ action.description }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right w-24">
+                                        <div class="flex items-center justify-end space-x-2">
+                                            <button (click)="startEditingAction(squad, 'pre_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
+                                            <button (click)="deleteAction(action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                  </div>
                 </div>
 
                 <!-- Flipping actions grouped by type in tables -->
                 <div *ngFor="let entry of getFlippingActionsByType(squad, 'pre_mep') | keyvalue" class="overflow-x-auto">
-                  <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ getActionTypeLabel(entry.key) }}</h4>
-                  <table class="min-w-full text-xs border border-gray-300 dark:border-gray-600 rounded">
-                    <thead class="bg-gray-100 dark:bg-gray-800">
-                      <tr>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Thème</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Action</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Clients</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Caisses</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">OS</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Versions</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600"></th>
-                      </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-gray-900">
-                      <tr *ngFor="let action of entry.value" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td class="px-2 py-2" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
-                        <td class="px-2 py-2">
-                          <div class="flex items-center space-x-2">
-                            <button
-                              (click)="startEditingAction(squad, 'pre_mep', action)"
-                              class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
-                            >
-                              <span class="material-icons text-sm">edit</span>
-                            </button>
-                            <button
-                              (click)="deleteAction(action.id!)"
-                              class="text-red-600 dark:text-red-400 hover:text-red-700"
-                            >
-                              <span class="material-icons text-sm">delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
+                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <table class="min-w-full text-xs">
+                        <thead class="bg-gray-50 dark:bg-gray-700/50">
+                        <tr>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Thème</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Action</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Clients</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Caisses</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">OS</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Versions</th>
+                            <th class="px-3 py-2"></th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
+                            <td class="px-3 py-2 text-right">
+                            <div class="flex items-center justify-end space-x-2">
+                                <button
+                                (click)="startEditingAction(squad, 'pre_mep', action)"
+                                class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                                >
+                                <span class="material-icons text-sm">edit</span>
+                                </button>
+                                <button
+                                (click)="deleteAction(action.id!)"
+                                class="text-red-600 dark:text-red-400 hover:text-red-700"
+                                >
+                                <span class="material-icons text-sm">delete</span>
+                                </button>
+                            </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                  </div>
                 </div>
 
                 <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-2" *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0">
@@ -484,24 +473,33 @@ import { fr } from 'date-fns/locale';
                 </p>
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Actions Post-MEP -->
-            <div>
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Actions Post-MEP</h3>
+        <!-- 4. Actions Post-MEP -->
+        <div class="card overflow-hidden">
+          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('post_mep')">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Post-MEP</h2>
+            <span class="material-icons text-gray-500">
+              {{ expandedSections.has('post_mep') ? 'expand_less' : 'expand_more' }}
+            </span>
+          </div>
+          <div *ngIf="expandedSections.has('post_mep')" class="p-6 space-y-8">
+            <div *ngFor="let squad of release.squads" class="space-y-4">
+              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
                 <button
                   (click)="startAddingAction(squad, 'post_mep')"
-                  class="btn btn-sm btn-primary flex items-center space-x-1"
+                  class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
                 >
                   <span class="material-icons text-sm">add</span>
                   <span>Ajouter</span>
                 </button>
               </div>
 
-              <!-- Add Action Form (Post-MEP) -->
+              <!-- Add Action Form -->
               <div *ngIf="addingActionToSquad?.id === squad.id && addingActionPhase === 'post_mep'"
-                   class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <!-- Same form as Pre-MEP -->
+                   class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                 <form (submit)="addAction(squad.id!, 'post_mep', $event)" class="space-y-3">
                   <div class="flex items-center justify-between mb-2">
                     <h4 class="font-medium text-gray-900 dark:text-white">
@@ -510,7 +508,7 @@ import { fr } from 'date-fns/locale';
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action <span class="text-red-500">*</span></label>
-                    <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm">
+                    <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm w-full">
                       <option value="">Sélectionner un type</option>
                       <option value="feature_flipping">{{ ACTION_TYPE_LABELS['feature_flipping'] }}</option>
                       <option value="memory_flipping">{{ ACTION_TYPE_LABELS['memory_flipping'] }}</option>
@@ -526,12 +524,12 @@ import { fr } from 'date-fns/locale';
                       placeholder="Description de l'action"
                       rows="2"
                       required
-                      class="input text-sm"
+                      class="input text-sm w-full"
                     ></textarea>
                   </div>
 
                   <!-- Feature Flipping / Memory Flipping Form -->
-                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 border border-gray-300 dark:border-gray-600 rounded">
+                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800">
                     <h4 class="font-medium text-gray-900 dark:text-white text-sm">Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}</h4>
 
                     <div>
@@ -543,7 +541,7 @@ import { fr } from 'date-fns/locale';
                         [(ngModel)]="newAction.flipping.ruleName"
                         name="ruleName"
                         required
-                        class="input text-sm"
+                        class="input text-sm w-full"
                         placeholder="Ex: FEATURE_NEW_DASHBOARD"
                       />
                     </div>
@@ -555,14 +553,14 @@ import { fr } from 'date-fns/locale';
                         [(ngModel)]="newAction.flipping.theme"
                         name="theme"
                         required
-                        class="input text-sm"
+                        class="input text-sm w-full"
                         placeholder="Ex: Authentification, Navigation, Paiement"
                       />
                     </div>
 
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action <span class="text-red-500">*</span></label>
-                      <select [(ngModel)]="newAction.flipping.ruleAction" name="ruleAction" required class="input text-sm">
+                      <select [(ngModel)]="newAction.flipping.ruleAction" name="ruleAction" required class="input text-sm w-full">
                         <option value="">Sélectionner</option>
                         <option value="create_rule">{{ getDynamicRuleActionLabel('create_rule') }}</option>
                         <option value="obsolete_rule">{{ getDynamicRuleActionLabel('obsolete_rule') }}</option>
@@ -590,7 +588,7 @@ import { fr } from 'date-fns/locale';
                           [(ngModel)]="flippingClientsInput"
                           name="clients"
                           placeholder="Ex: 89123456789"
-                          class="input text-sm"
+                          class="input text-sm w-full"
                         />
                       </div>
                     </div>
@@ -614,7 +612,7 @@ import { fr } from 'date-fns/locale';
                           [(ngModel)]="flippingCaissesInput"
                           name="caisses"
                           placeholder="Ex: Caisse 1, Caisse 2"
-                          class="input text-sm"
+                          class="input text-sm w-full"
                         />
                       </div>
                     </div>
@@ -664,100 +662,94 @@ import { fr } from 'date-fns/locale';
                           [(ngModel)]="flippingVersionsInput"
                           name="versions"
                           placeholder="Ex: >= 38.5, < 40.0"
-                          class="input text-sm"
+                          class="input text-sm w-full"
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div class="flex space-x-2">
+                  <div class="flex space-x-2 pt-2">
                     <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
                     <button type="button" (click)="cancelAddAction()" class="btn btn-secondary btn-sm">Annuler</button>
                   </div>
                 </form>
               </div>
 
-              <!-- Actions List (Post-MEP) -->
-              <div class="space-y-4">
+              <!-- Actions List -->
+              <div class="space-y-6">
                 <!-- Non-flipping actions -->
-                <div class="space-y-2" *ngIf="getNonFlippingActions(squad, 'post_mep').length > 0">
-                  <div
-                    *ngFor="let action of getNonFlippingActions(squad, 'post_mep')"
-                    class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                  >
-                    <div class="flex items-start justify-between">
-                      <div class="flex-1">
-                        <div class="flex items-center space-x-2">
-                          <span class="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                            {{ getActionTypeLabel(action.type) }}
-                          </span>
-                          <h4 class="font-medium text-gray-900 dark:text-white">
-                            {{ action.description }}
-                          </h4>
-                        </div>
-                      </div>
-                      <div class="flex items-center space-x-2">
-                        <button
-                          (click)="startEditingAction(squad, 'post_mep', action)"
-                          class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
-                        >
-                          <span class="material-icons text-sm">edit</span>
-                        </button>
-                        <button
-                          (click)="deleteAction(action.id!)"
-                          class="text-red-600 dark:text-red-400 hover:text-red-700"
-                        >
-                          <span class="material-icons text-sm">delete</span>
-                        </button>
-                      </div>
+                <div *ngIf="getNonFlippingActions(squad, 'post_mep').length > 0">
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Actions Standard</h4>
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                        <table class="min-w-full text-sm">
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr *ngFor="let action of getNonFlippingActions(squad, 'post_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                    <td class="px-4 py-3">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
+                                                {{ getActionTypeLabel(action.type) }}
+                                            </span>
+                                            <span class="text-gray-900 dark:text-white">{{ action.description }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-4 py-3 text-right w-24">
+                                        <div class="flex items-center justify-end space-x-2">
+                                            <button (click)="startEditingAction(squad, 'post_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
+                                            <button (click)="deleteAction(action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                  </div>
                 </div>
 
                 <!-- Flipping actions grouped by type in tables -->
                 <div *ngFor="let entry of getFlippingActionsByType(squad, 'post_mep') | keyvalue" class="overflow-x-auto">
-                  <h4 class="text-sm font-semibold text-gray-900 dark:text-white mb-2">{{ getActionTypeLabel(entry.key) }}</h4>
-                  <table class="min-w-full text-xs border border-gray-300 dark:border-gray-600 rounded">
-                    <thead class="bg-gray-100 dark:bg-gray-800">
-                      <tr>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Thème</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Action</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Clients</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Caisses</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">OS</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600">Versions</th>
-                        <th class="px-2 py-1 text-left border-b border-gray-300 dark:border-gray-600"></th>
-                      </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-gray-900">
-                      <tr *ngFor="let action of entry.value" class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td class="px-2 py-2" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
-                        <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
-                        <td class="px-2 py-2">
-                          <div class="flex items-center space-x-2">
-                            <button
-                              (click)="startEditingAction(squad, 'post_mep', action)"
-                              class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
-                            >
-                              <span class="material-icons text-sm">edit</span>
-                            </button>
-                            <button
-                              (click)="deleteAction(action.id!)"
-                              class="text-red-600 dark:text-red-400 hover:text-red-700"
-                            >
-                              <span class="material-icons text-sm">delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
+                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <table class="min-w-full text-xs">
+                        <thead class="bg-gray-50 dark:bg-gray-700/50">
+                        <tr>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Thème</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Action</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Clients</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Caisses</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">OS</th>
+                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Versions</th>
+                            <th class="px-3 py-2"></th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                            <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
+                            <td class="px-3 py-2 text-right">
+                            <div class="flex items-center justify-end space-x-2">
+                                <button
+                                (click)="startEditingAction(squad, 'post_mep', action)"
+                                class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                                >
+                                <span class="material-icons text-sm">edit</span>
+                                </button>
+                                <button
+                                (click)="deleteAction(action.id!)"
+                                class="text-red-600 dark:text-red-400 hover:text-red-700"
+                                >
+                                <span class="material-icons text-sm">delete</span>
+                                </button>
+                            </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                  </div>
                 </div>
 
                 <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-2" *ngIf="getActionsByPhase(squad, 'post_mep').length === 0">
@@ -767,6 +759,7 @@ import { fr } from 'date-fns/locale';
             </div>
           </div>
         </div>
+
       </div>
     </div>
   `,
@@ -779,7 +772,7 @@ import { fr } from 'date-fns/locale';
 })
 export class ReleaseDetailComponent implements OnInit {
   release: Release | null = null;
-  expandedSquads = new Set<number>();
+  expandedSections = new Set<string>(['tontons', 'features', 'pre_mep', 'post_mep']);
 
   // Feature form
   addingFeatureToSquad: Squad | null = null;
@@ -836,10 +829,6 @@ export class ReleaseDetailComponent implements OnInit {
     if (id) {
       try {
         this.release = await this.releaseService.getRelease(id);
-        // Expand first squad by default
-        if (this.release.squads.length > 0) {
-          this.expandedSquads.add(this.release.squads[0].squadNumber);
-        }
       } catch (error) {
         console.error('Error loading release:', error);
         this.router.navigate(['/releases']);
@@ -866,11 +855,11 @@ export class ReleaseDetailComponent implements OnInit {
     this.router.navigate(['/releases']);
   }
 
-  toggleSquad(squadNumber: number): void {
-    if (this.expandedSquads.has(squadNumber)) {
-      this.expandedSquads.delete(squadNumber);
+  toggleSection(section: string): void {
+    if (this.expandedSections.has(section)) {
+      this.expandedSections.delete(section);
     } else {
-      this.expandedSquads.add(squadNumber);
+      this.expandedSections.add(section);
     }
   }
 

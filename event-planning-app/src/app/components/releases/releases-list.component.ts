@@ -360,37 +360,52 @@ export class ReleasesListComponent implements OnInit {
       md += `## Description\n\n${release.description}\n\n`;
     }
 
-    md += `## Squads\n\n`;
+    // 1. Tontons MEP Table
+    md += `## Tontons MEP\n\n`;
+    const tontonHeaders = ['Squad', 'Tonton MEP', 'Statut'];
+    const tontonRows = release.squads.map(s => [
+      `Squad ${s.squadNumber}`,
+      s.tontonMep || '-',
+      s.isCompleted ? '✅ Validé' : '⏳ En cours'
+    ]);
+    md += this.generateMarkdownTable(tontonHeaders, tontonRows);
+    md += '\n';
 
+    // 2. Fonctionnalités Majeures
+    md += `## Fonctionnalités Majeures\n\n`;
     release.squads.forEach(squad => {
-      const completionStatus = squad.isCompleted ? '✅' : '⏳';
-      md += `### ${completionStatus} Squad ${squad.squadNumber}`;
-      if (squad.tontonMep) {
-        md += ` - Tonton MEP: ${squad.tontonMep}`;
-      }
-      md += '\n\n';
-
-      // Features
+      md += `### Squad ${squad.squadNumber}\n\n`;
       if (squad.features.length > 0) {
-        md += `#### Fonctionnalités majeures\n\n`;
         const featureHeaders = ['Titre', 'Description'];
         const featureRows = squad.features.map(f => [f.title, f.description || '']);
         md += this.generateMarkdownTable(featureHeaders, featureRows);
         md += '\n';
+      } else {
+        md += '_Néant_\n\n';
       }
+    });
 
-      // Actions Pre-MEP
+    // 3. Actions Pré-MEP
+    md += `## Actions Pré-MEP\n\n`;
+    release.squads.forEach(squad => {
+      md += `### Squad ${squad.squadNumber}\n\n`;
       const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
       if (preMepActions.length > 0) {
-        md += `#### Actions Pre-MEP\n\n`;
         md += this.generateActionsMarkdown(preMepActions);
+      } else {
+        md += '_Néant_\n\n';
       }
+    });
 
-      // Actions Post-MEP
+    // 4. Actions Post-MEP
+    md += `## Actions Post-MEP\n\n`;
+    release.squads.forEach(squad => {
+      md += `### Squad ${squad.squadNumber}\n\n`;
       const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
       if (postMepActions.length > 0) {
-        md += `#### Actions Post-MEP\n\n`;
         md += this.generateActionsMarkdown(postMepActions);
+      } else {
+        md += '_Néant_\n\n';
       }
     });
 
@@ -403,7 +418,7 @@ export class ReleasesListComponent implements OnInit {
 
     // Memory Flipping
     if (grouped.memory_flipping.length > 0) {
-      md += `##### Memory Flipping\n\n`;
+      md += `#### Memory Flipping\n\n`;
       const headers = ['Nom du MF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.memory_flipping.map(a => [
         a.flipping?.ruleName || '',
@@ -420,7 +435,7 @@ export class ReleasesListComponent implements OnInit {
 
     // Feature Flipping
     if (grouped.feature_flipping.length > 0) {
-      md += `##### Feature Flipping\n\n`;
+      md += `#### Feature Flipping\n\n`;
       const headers = ['Nom du FF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.feature_flipping.map(a => [
         a.flipping?.ruleName || '',
@@ -437,7 +452,7 @@ export class ReleasesListComponent implements OnInit {
 
     // Other Actions
     if (grouped.other.length > 0) {
-      md += `##### Autres Actions\n\n`;
+      md += `#### Autres Actions\n\n`;
       const headers = ['Description'];
       const rows = grouped.other.map(a => [a.description]);
       md += this.generateMarkdownTable(headers, rows);
@@ -485,6 +500,7 @@ export class ReleasesListComponent implements OnInit {
     tr:nth-child(even) { background-color: #f9fafb; }
     .squad.completed tr:nth-child(even) { background-color: #f0fdf4; }
     .squad.completed th { background-color: #dcfce7; }
+    .empty-section { font-style: italic; color: #6b7280; margin-top: 0.5rem; margin-bottom: 1rem; }
   </style>
 </head>
 <body>
@@ -497,41 +513,51 @@ export class ReleasesListComponent implements OnInit {
       html += `<h2>Description</h2><p>${release.description}</p>`;
     }
 
-    html += `<h2>Squads</h2>`;
+    // 1. Tontons MEP Table
+    html += `<h2>Tontons MEP</h2>`;
+    const tontonHeaders = ['Squad', 'Tonton MEP', 'Statut'];
+    const tontonRows = release.squads.map(s => [
+      `Squad ${s.squadNumber}`,
+      s.tontonMep || '-',
+      s.isCompleted ? '✅ Validé' : '⏳ En cours'
+    ]);
+    html += this.generateHTMLTable(tontonHeaders, tontonRows);
 
+    // 2. Fonctionnalités Majeures
+    html += `<h2>Fonctionnalités Majeures</h2>`;
     release.squads.forEach(squad => {
-      const completionClass = squad.isCompleted ? 'completed' : '';
-      const completionEmoji = squad.isCompleted ? '✅' : '⏳';
-      html += `<div class="squad ${completionClass}">`;
-      html += `<h3>${completionEmoji} Squad ${squad.squadNumber}`;
-      if (squad.tontonMep) {
-        html += ` <span style="font-size: 0.875em; font-weight: normal; color: #6b7280;">(Tonton MEP: ${squad.tontonMep})</span>`;
-      }
-      html += '</h3>';
-
-      // Features
+      html += `<h3>Squad ${squad.squadNumber}</h3>`;
       if (squad.features.length > 0) {
-        html += `<h4>Fonctionnalités majeures</h4>`;
         const featureHeaders = ['Titre', 'Description'];
         const featureRows = squad.features.map(f => [f.title, f.description || '']);
         html += this.generateHTMLTable(featureHeaders, featureRows);
+      } else {
+        html += `<p class="empty-section">Néant</p>`;
       }
+    });
 
-      // Actions Pre-MEP
+    // 3. Actions Pré-MEP
+    html += `<h2>Actions Pré-MEP</h2>`;
+    release.squads.forEach(squad => {
+      html += `<h3>Squad ${squad.squadNumber}</h3>`;
       const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
       if (preMepActions.length > 0) {
-        html += `<h4>Actions Pre-MEP</h4>`;
         html += this.generateActionsHTML(preMepActions);
+      } else {
+        html += `<p class="empty-section">Néant</p>`;
       }
+    });
 
-      // Actions Post-MEP
+    // 4. Actions Post-MEP
+    html += `<h2>Actions Post-MEP</h2>`;
+    release.squads.forEach(squad => {
+      html += `<h3>Squad ${squad.squadNumber}</h3>`;
       const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
       if (postMepActions.length > 0) {
-        html += `<h4>Actions Post-MEP</h4>`;
         html += this.generateActionsHTML(postMepActions);
+      } else {
+        html += `<p class="empty-section">Néant</p>`;
       }
-
-      html += '</div>';
     });
 
     html += '</body></html>';
@@ -544,7 +570,7 @@ export class ReleasesListComponent implements OnInit {
 
     // Memory Flipping
     if (grouped.memory_flipping.length > 0) {
-      html += `<h5>Memory Flipping</h5>`;
+      html += `<h4>Memory Flipping</h4>`;
       const headers = ['Nom du MF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.memory_flipping.map(a => [
         a.flipping?.ruleName || '',
@@ -560,7 +586,7 @@ export class ReleasesListComponent implements OnInit {
 
     // Feature Flipping
     if (grouped.feature_flipping.length > 0) {
-      html += `<h5>Feature Flipping</h5>`;
+      html += `<h4>Feature Flipping</h4>`;
       const headers = ['Nom du FF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.feature_flipping.map(a => [
         a.flipping?.ruleName || '',
@@ -576,7 +602,7 @@ export class ReleasesListComponent implements OnInit {
 
     // Other Actions
     if (grouped.other.length > 0) {
-      html += `<h5>Autres Actions</h5>`;
+      html += `<h4>Autres Actions</h4>`;
       const headers = ['Description'];
       const rows = grouped.other.map(a => [a.description]);
       html += this.generateHTMLTable(headers, rows);
