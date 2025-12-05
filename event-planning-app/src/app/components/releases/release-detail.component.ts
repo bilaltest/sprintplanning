@@ -149,6 +149,9 @@ import { fr } from 'date-fns/locale';
 
               <!-- Add Feature Form -->
               <div *ngIf="addingFeatureToSquad?.id === squad.id" class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <h4 class="font-medium text-gray-900 dark:text-white mb-2">
+                  {{ editingFeatureId ? "Modifier la fonctionnalité" : "Nouvelle fonctionnalité" }}
+                </h4>
                 <div class="space-y-2">
                   <input
                     type="text"
@@ -181,12 +184,20 @@ import { fr } from 'date-fns/locale';
                       {{ feature.description }}
                     </p>
                   </div>
-                  <button
-                    (click)="deleteFeature(feature.id!)"
-                    class="text-red-600 dark:text-red-400 hover:text-red-700"
-                  >
-                    <span class="material-icons text-sm">delete</span>
-                  </button>
+                  <div class="flex items-center space-x-2">
+                    <button
+                      (click)="startEditingFeature(squad, feature)"
+                      class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                    >
+                      <span class="material-icons text-sm">edit</span>
+                    </button>
+                    <button
+                      (click)="deleteFeature(feature.id!)"
+                      class="text-red-600 dark:text-red-400 hover:text-red-700"
+                    >
+                      <span class="material-icons text-sm">delete</span>
+                    </button>
+                  </div>
                 </div>
                 <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-2" *ngIf="squad.features.length === 0">
                   Aucune fonctionnalité ajoutée
@@ -211,6 +222,11 @@ import { fr } from 'date-fns/locale';
               <div *ngIf="addingActionToSquad?.id === squad.id && addingActionPhase === 'pre_mep'"
                    class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <form (submit)="addAction(squad.id!, 'pre_mep', $event)" class="space-y-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-medium text-gray-900 dark:text-white">
+                      {{ editingActionId ? "Modifier l'action" : "Nouvelle action" }}
+                    </h4>
+                  </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action <span class="text-red-500">*</span></label>
                     <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm">
@@ -399,12 +415,20 @@ import { fr } from 'date-fns/locale';
                           </h4>
                         </div>
                       </div>
-                      <button
-                        (click)="deleteAction(action.id!)"
-                        class="text-red-600 dark:text-red-400 hover:text-red-700"
-                      >
-                        <span class="material-icons text-sm">delete</span>
-                      </button>
+                      <div class="flex items-center space-x-2">
+                        <button
+                          (click)="startEditingAction(squad, 'pre_mep', action)"
+                          class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                        >
+                          <span class="material-icons text-sm">edit</span>
+                        </button>
+                        <button
+                          (click)="deleteAction(action.id!)"
+                          class="text-red-600 dark:text-red-400 hover:text-red-700"
+                        >
+                          <span class="material-icons text-sm">delete</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -435,12 +459,20 @@ import { fr } from 'date-fns/locale';
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
                         <td class="px-2 py-2">
-                          <button
-                            (click)="deleteAction(action.id!)"
-                            class="text-red-600 dark:text-red-400 hover:text-red-700"
-                          >
-                            <span class="material-icons text-sm">delete</span>
-                          </button>
+                          <div class="flex items-center space-x-2">
+                            <button
+                              (click)="startEditingAction(squad, 'pre_mep', action)"
+                              class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                            >
+                              <span class="material-icons text-sm">edit</span>
+                            </button>
+                            <button
+                              (click)="deleteAction(action.id!)"
+                              class="text-red-600 dark:text-red-400 hover:text-red-700"
+                            >
+                              <span class="material-icons text-sm">delete</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     </tbody>
@@ -471,6 +503,11 @@ import { fr } from 'date-fns/locale';
                    class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 <!-- Same form as Pre-MEP -->
                 <form (submit)="addAction(squad.id!, 'post_mep', $event)" class="space-y-3">
+                  <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-medium text-gray-900 dark:text-white">
+                      {{ editingActionId ? "Modifier l'action" : "Nouvelle action" }}
+                    </h4>
+                  </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action <span class="text-red-500">*</span></label>
                     <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm">
@@ -659,12 +696,20 @@ import { fr } from 'date-fns/locale';
                           </h4>
                         </div>
                       </div>
-                      <button
-                        (click)="deleteAction(action.id!)"
-                        class="text-red-600 dark:text-red-400 hover:text-red-700"
-                      >
-                        <span class="material-icons text-sm">delete</span>
-                      </button>
+                      <div class="flex items-center space-x-2">
+                        <button
+                          (click)="startEditingAction(squad, 'post_mep', action)"
+                          class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                        >
+                          <span class="material-icons text-sm">edit</span>
+                        </button>
+                        <button
+                          (click)="deleteAction(action.id!)"
+                          class="text-red-600 dark:text-red-400 hover:text-red-700"
+                        >
+                          <span class="material-icons text-sm">delete</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -695,12 +740,20 @@ import { fr } from 'date-fns/locale';
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
                         <td class="px-2 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
                         <td class="px-2 py-2">
-                          <button
-                            (click)="deleteAction(action.id!)"
-                            class="text-red-600 dark:text-red-400 hover:text-red-700"
-                          >
-                            <span class="material-icons text-sm">delete</span>
-                          </button>
+                          <div class="flex items-center space-x-2">
+                            <button
+                              (click)="startEditingAction(squad, 'post_mep', action)"
+                              class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                            >
+                              <span class="material-icons text-sm">edit</span>
+                            </button>
+                            <button
+                              (click)="deleteAction(action.id!)"
+                              class="text-red-600 dark:text-red-400 hover:text-red-700"
+                            >
+                              <span class="material-icons text-sm">delete</span>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     </tbody>
@@ -730,11 +783,13 @@ export class ReleaseDetailComponent implements OnInit {
 
   // Feature form
   addingFeatureToSquad: Squad | null = null;
+  editingFeatureId: string | null = null;
   newFeature: CreateFeatureDto = { title: '', description: '' };
 
   // Action form
   addingActionToSquad: Squad | null = null;
   addingActionPhase: ActionPhase | null = null;
+  editingActionId: string | null = null;
   newAction: any = {
     type: '',
     description: '',
@@ -853,32 +908,48 @@ export class ReleaseDetailComponent implements OnInit {
   // Feature methods
   startAddingFeature(squad: Squad): void {
     this.addingFeatureToSquad = squad;
+    this.editingFeatureId = null;
     this.newFeature = { title: '', description: '' };
+  }
+
+  startEditingFeature(squad: Squad, feature: Feature): void {
+    this.addingFeatureToSquad = squad;
+    this.editingFeatureId = feature.id!;
+    this.newFeature = {
+      title: feature.title,
+      description: feature.description || ''
+    };
   }
 
   async addFeature(squadId: string): Promise<void> {
     if (!this.newFeature.title.trim()) return;
 
     try {
-      await this.releaseService.addFeature(squadId, this.newFeature);
+      if (this.editingFeatureId) {
+        await this.releaseService.updateFeature(this.editingFeatureId, this.newFeature);
+      } else {
+        await this.releaseService.addFeature(squadId, this.newFeature);
+      }
+
       await this.loadRelease();
       this.cancelAddFeature();
 
       this.toastService.success(
-        'Fonctionnalité ajoutée',
-        `${this.newFeature.title} a été ajoutée avec succès`
+        this.editingFeatureId ? 'Fonctionnalité modifiée' : 'Fonctionnalité ajoutée',
+        `${this.newFeature.title} a été ${this.editingFeatureId ? 'modifiée' : 'ajoutée'} avec succès`
       );
     } catch (error) {
-      console.error('Error adding feature:', error);
+      console.error('Error adding/updating feature:', error);
       this.toastService.error(
-        'Erreur d\'ajout',
-        'Impossible d\'ajouter la fonctionnalité. Veuillez réessayer.'
+        'Erreur',
+        `Impossible ${this.editingFeatureId ? 'de modifier' : 'd\'ajouter'} la fonctionnalité. Veuillez réessayer.`
       );
     }
   }
 
   cancelAddFeature(): void {
     this.addingFeatureToSquad = null;
+    this.editingFeatureId = null;
     this.newFeature = { title: '', description: '' };
   }
 
@@ -914,7 +985,87 @@ export class ReleaseDetailComponent implements OnInit {
   startAddingAction(squad: Squad, phase: ActionPhase): void {
     this.addingActionToSquad = squad;
     this.addingActionPhase = phase;
+    this.editingActionId = null;
     this.resetActionForm();
+  }
+
+  startEditingAction(squad: Squad, phase: ActionPhase, action: Action): void {
+    this.addingActionToSquad = squad;
+    this.addingActionPhase = phase;
+    this.editingActionId = action.id!;
+
+    // Populate form
+    this.newAction = {
+      type: action.type,
+      description: action.description || '',
+      flipping: {
+        flippingType: '',
+        ruleName: '',
+        theme: '',
+        ruleAction: '',
+        ruleState: '',
+        targetClients: [],
+        targetOS: [],
+        targetVersions: []
+      }
+    };
+
+    if (action.flipping) {
+      this.newAction.flipping = {
+        flippingType: action.flipping.flippingType,
+        ruleName: action.flipping.ruleName,
+        theme: action.flipping.theme,
+        ruleAction: action.flipping.ruleAction,
+        ruleState: action.flipping.ruleState,
+        targetClients: [], // Will be set below
+        targetOS: [], // Will be set below
+        targetVersions: [] // Will be set below
+      };
+
+      // Handle Clients
+      const clients = this.getFlippingTargets(action.flipping.targetClients);
+      if (clients.includes('all')) {
+        this.flippingTargetsAll = true;
+        this.flippingClientsInput = '';
+      } else {
+        this.flippingTargetsAll = false;
+        this.flippingClientsInput = clients.join(', ');
+      }
+
+      // Handle Caisses
+      if (!action.flipping.targetCaisses) {
+        this.flippingTargetsAllCaisses = true;
+        this.flippingCaissesInput = '';
+      } else {
+        this.flippingTargetsAllCaisses = false;
+        this.flippingCaissesInput = action.flipping.targetCaisses;
+      }
+
+      // Handle OS
+      const osList = this.getFlippingTargets(action.flipping.targetOS);
+      this.flippingOSiOS = osList.length === 0 || osList.includes('ios');
+      this.flippingOSAndroid = osList.length === 0 || osList.includes('android');
+
+      // Handle Versions
+      const versions = this.getFlippingVersions(action.flipping.targetVersions);
+      if (versions === 'ALL' || !versions) {
+        this.flippingTargetsAllVersions = true;
+        this.flippingVersionsInput = '';
+      } else {
+        this.flippingTargetsAllVersions = false;
+        this.flippingVersionsInput = versions;
+      }
+    } else {
+      // Reset flipping helpers if not a flipping action
+      this.flippingTargetsAll = true;
+      this.flippingClientsInput = '';
+      this.flippingTargetsAllCaisses = true;
+      this.flippingCaissesInput = '';
+      this.flippingOSiOS = true;
+      this.flippingOSAndroid = true;
+      this.flippingTargetsAllVersions = true;
+      this.flippingVersionsInput = '';
+    }
   }
 
   resetActionForm(): void {
@@ -1014,13 +1165,18 @@ export class ReleaseDetailComponent implements OnInit {
         };
       }
 
-      await this.releaseService.addAction(squadId, actionDto);
+      if (this.editingActionId) {
+        await this.releaseService.updateAction(this.editingActionId, actionDto);
+      } else {
+        await this.releaseService.addAction(squadId, actionDto);
+      }
+
       await this.loadRelease();
       this.cancelAddAction();
 
       this.toastService.success(
-        'Action ajoutée',
-        `Action ${phase === 'pre_mep' ? 'pré-MEP' : 'post-MEP'} créée avec succès`
+        this.editingActionId ? 'Action modifiée' : 'Action ajoutée',
+        `Action ${phase === 'pre_mep' ? 'pré-MEP' : 'post-MEP'} ${this.editingActionId ? 'modifiée' : 'créée'} avec succès`
       );
     } catch (error) {
       console.error('Error adding action:', error);
@@ -1034,6 +1190,7 @@ export class ReleaseDetailComponent implements OnInit {
   cancelAddAction(): void {
     this.addingActionToSquad = null;
     this.addingActionPhase = null;
+    this.editingActionId = null;
     this.resetActionForm();
   }
 
