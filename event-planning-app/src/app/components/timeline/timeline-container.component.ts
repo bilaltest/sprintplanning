@@ -26,7 +26,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
   template: `
     <div class="space-y-6">
       <!-- Toolbar -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-4">
         <div class="flex items-center justify-between flex-wrap gap-4">
           <!-- View selector -->
           <div class="flex items-center space-x-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
@@ -100,7 +100,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
 
               <div
                 *ngIf="showExportMenu"
-                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50 fade-in-scale"
+                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-1 z-50 fade-in-scale"
               >
                 <button
                   (click)="exportAsPDF()"
@@ -137,7 +137,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
       </div>
 
       <!-- Filter bar -->
-      <div [class.sticky]="!isStickyDisabled" class="z-30" [style.top.px]="82">
+      <div [class.sticky]="!isStickyDisabled" class="z-30" [style.top.px]="0">
         <app-filter-bar></app-filter-bar>
         
         <!-- Toggle button (visible when scrolled) -->
@@ -154,7 +154,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
       </div>
 
       <!-- Timeline view -->
-      <div id="timeline-export" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+      <div id="timeline-export" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-6">
         <app-quarterly-view
           [events]="filteredEvents$ | async"
           (eventClick)="openEditEventModal($event)"
@@ -164,7 +164,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
       </div>
 
       <!-- Bottom navigation -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">
             <button
@@ -360,8 +360,9 @@ export class TimelineContainerComponent implements OnInit {
 
     try {
       await this.eventService.deleteEvent(event.id);
+      this.toastService.success('Événement supprimé', 'L\'événement a été supprimé avec succès');
     } catch (error) {
-      alert('Erreur lors de la suppression de l\'événement');
+      this.toastService.error('Erreur', 'Erreur lors de la suppression de l\'événement');
     }
   }
 

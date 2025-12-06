@@ -41,9 +41,14 @@ model History {
   eventId         String?
   eventData       String   // Snapshot de l'événement (JSON en String pour SQLite)
   previousData    String?  // Pour rollback (JSON en String pour SQLite)
+  userId          String?  // ID de l'utilisateur qui a fait l'action
+  userDisplayName String?  // Format: "Prenom N." (ex: "Jean D.")
   timestamp       DateTime @default(now())
 
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([timestamp])
+  @@index([userId])
 }
 
 // ===== RELEASE MANAGEMENT MODELS =====
@@ -54,6 +59,7 @@ model Release {
   version     String   // Ex: "40.5"
   releaseDate DateTime // Date prévue de la MEP
   status      String   @default("draft") // draft, in_progress, completed, cancelled
+  type        String   @default("release") // release, hotfix
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -62,6 +68,7 @@ model Release {
 
   @@index([releaseDate])
   @@index([status])
+  @@index([type])
 }
 
 model Squad {
@@ -138,4 +145,21 @@ model FeatureFlipping {
 
   @@index([actionId])
   @@index([ruleName])
+}
+
+// ===== USER AUTHENTICATION MODEL =====
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  password        String   // Hashé avec bcrypt
+  firstName       String
+  lastName        String
+  themePreference String   @default("light") // 'light' ou 'dark'
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  histories       History[]
+
+  @@index([email])
 }

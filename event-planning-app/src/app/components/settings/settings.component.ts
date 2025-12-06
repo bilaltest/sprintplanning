@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SettingsService } from '@services/settings.service';
 import { CategoryService } from '@services/category.service';
+import { ConfirmationService } from '@services/confirmation.service';
+import { ToastService } from '@services/toast.service';
 import { Theme, UserPreferences } from '@models/settings.model';
 
 @Component({
@@ -262,7 +264,9 @@ export class SettingsComponent implements OnInit {
 
   constructor(
     private settingsService: SettingsService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private confirmationService: ConfirmationService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -286,9 +290,16 @@ export class SettingsComponent implements OnInit {
   }
 
   async resetToDefaults(): Promise<void> {
-    const confirmed = confirm('Êtes-vous sûr de vouloir réinitialiser tous les paramètres ?');
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Réinitialiser les paramètres ?',
+      message: 'Êtes-vous sûr de vouloir réinitialiser tous les paramètres ? Cette action est irréversible.',
+      confirmText: 'Réinitialiser',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'warning'
+    });
     if (confirmed) {
       await this.settingsService.resetToDefaults();
+      this.toastService.success('Paramètres réinitialisés', 'Les paramètres ont été réinitialisés avec succès');
     }
   }
 
@@ -314,8 +325,9 @@ export class SettingsComponent implements OnInit {
       this.newCategoryColor = '#3b82f6';
       this.newCategoryIcon = 'event';
       this.showAddCategoryForm = false;
+      this.toastService.success('Catégorie ajoutée', 'La catégorie a été ajoutée avec succès');
     } catch (error) {
-      alert('Erreur lors de l\'ajout de la catégorie');
+      this.toastService.error('Erreur', 'Erreur lors de l\'ajout de la catégorie');
     }
   }
 
@@ -327,12 +339,19 @@ export class SettingsComponent implements OnInit {
   }
 
   async deleteCustomCategory(id: string): Promise<void> {
-    const confirmed = confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer cette catégorie ?',
+      message: 'Êtes-vous sûr de vouloir supprimer cette catégorie ?',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
     if (confirmed) {
       try {
         await this.categoryService.deleteCustomCategory(id);
+        this.toastService.success('Catégorie supprimée', 'La catégorie a été supprimée avec succès');
       } catch (error) {
-        alert('Erreur lors de la suppression de la catégorie');
+        this.toastService.error('Erreur', 'Erreur lors de la suppression de la catégorie');
       }
     }
   }

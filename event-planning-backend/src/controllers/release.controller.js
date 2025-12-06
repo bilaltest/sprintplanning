@@ -126,13 +126,14 @@ export const getRelease = async (req, res) => {
 // Create a new release
 export const createRelease = async (req, res) => {
   try {
-    const { name, version, releaseDate, description } = req.body;
+    const { name, version, releaseDate, type, description } = req.body;
 
     const release = await prisma.release.create({
       data: {
         name,
         version,
         releaseDate: new Date(releaseDate),
+        type: type || 'release',
         description,
         status: 'draft',
         squads: {
@@ -170,7 +171,7 @@ export const createRelease = async (req, res) => {
 export const updateRelease = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, version, releaseDate, description, status } = req.body;
+    const { name, version, releaseDate, type, description, status } = req.body;
 
     const release = await prisma.release.update({
       where: { id },
@@ -178,6 +179,7 @@ export const updateRelease = async (req, res) => {
         name,
         version,
         releaseDate: releaseDate ? new Date(releaseDate) : undefined,
+        type,
         description,
         status
       },

@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 Application Angular 20 + Node.js/Express pour la DSI d'une banque.
-- **Modules**: Planning (Timeline annuelle/mensuelle), Releases (Squads, Features, Actions FF/MF)
+- **Modules**: Planning (Timeline trimestrielle), Releases (Squads, Features, Actions FF/MF)
 
 ## Stack Technique
 - **Frontend**: Angular 20 standalone, Tailwind CSS, Material Icons, date-fns, RxJS. Ports: :4200
@@ -23,8 +23,7 @@ components/
 │   └── action-form.component.ts             # Formulaire actions FF/MF
 ├── settings/settings.component.ts           # Thème + catégories custom
 └── timeline/
-    ├── annual-view.component.ts             # Vue 12 mois
-    ├── month-view.component.ts              # Vue mensuelle
+    ├── quarterly-view.component.ts          # Vue trimestrielle (3 mois)
     └── timeline-container.component.ts      # Conteneur principal
 layouts/
 ├── planning-layout.component.ts             # Layout Planning (header gradient)
@@ -92,9 +91,12 @@ Settings: GET/PUT /api/settings
 
 ## Fonctionnalités Clés
 ### Planning
-- Timeline annuelle/mensuelle. Scroll manuel "Aujourd'hui".
-- Filtres catégorie uniquement. Semaine commence Lundi.
-- Catégories custom (8 colonnes, JSON).
+- **Timeline trimestrielle**: Affiche 3 mois (T1-T4) en colonne verticale.
+- **Navigation**: Boutons Précédent/Suivant (±3 mois), "Aujourd'hui", flèches clavier.
+- **Jours fériés**: Grisés automatiquement (week-ends + fériés français).
+- **Scroll depuis Home**: Navigation automatique vers le trimestre d'un événement.
+- **Filtres**: Catégorie uniquement. Semaine commence Lundi.
+- **Catégories custom**: 8 colonnes, JSON.
 
 ### Releases
 - **Export**: Markdown/HTML avec détails FF/MF.
@@ -103,13 +105,19 @@ Settings: GET/PUT /api/settings
 - **FF/MF**: Clients, Caisses, OS, Versions.
 
 ## Points Techniques
-- **Scroll**: `Subject` (pas BehaviorSubject).
+- **TimelineView**: Type unique `'quarter'` (Vue trimestrielle).
+- **Navigation trimestrielle**: `nextPeriod()` / `previousPeriod()` avancent/reculent de 3 mois.
+- **Jours fériés**: Algorithme Computus pour Pâques + fériés fixes français.
+- **Scroll**: `Subject` (pas BehaviorSubject) pour `scrollToToday$`.
 - **Dark Mode**: Classe `.dark` sur `html`.
 - **Squad Complete**: `squad.actions.every(a => a.isCompleted)`.
 
 ## Scripts & Notes
 - **Run**: `npm start` (Front :4200), `npm run dev` (Back :3000). `npx prisma db push/studio`.
-- **Dec 2024 Updates**: Renommé "Ma Banque Tools", Design unifié, Dark mode adouci, Export détaillé.
+- **Dec 2024 Updates**:
+  - Renommé "Ma Banque Tools", Design unifié, Dark mode adouci, Export détaillé.
+  - **Vue trimestrielle** (Dec 6): Fusion annuelle/mensuelle → Vue unique 3 mois en colonne.
+  - Jours fériés grisés (sans badge), navigation T1-T4, scroll auto depuis Home.
 - **Auth**: Password "NMB". **Version**: Incluse dans nom release. **Prisma**: Cascade delete.
 
 ---

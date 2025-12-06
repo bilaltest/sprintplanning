@@ -11,14 +11,20 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio"
   },
-  "keywords": ["event", "planning", "api", "express"],
+  "keywords": [
+    "event",
+    "planning",
+    "api",
+    "express"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
+    "@prisma/client": "^5.7.1",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "@prisma/client": "^5.7.1",
+    "express": "^4.18.2",
     "express-validator": "^7.0.1"
   },
   "devDependencies": {

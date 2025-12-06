@@ -4,6 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HistoryService } from '@services/history.service';
 import { EventService } from '@services/event.service';
 import { CategoryService } from '@services/category.service';
+import { ConfirmationService } from '@services/confirmation.service';
+import { ToastService } from '@services/toast.service';
 import { HistoryEntry } from '@models/history.model';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -54,7 +56,7 @@ import { fr } from 'date-fns/locale';
           <div class="space-y-4">
           <div
             *ngFor="let entry of getPaginatedHistory()"
-            class="flex items-start space-x-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+            class="flex items-start space-x-4 p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
           >
             <!-- Icon -->
             <div
@@ -103,9 +105,14 @@ import { fr } from 'date-fns/locale';
                     </span>
                   </div>
 
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {{ getRelativeTime(entry.timestamp) }}
-                  </p>
+                  <div class="mt-1 flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                    <span>{{ getRelativeTime(entry.timestamp) }}</span>
+                    <span *ngIf="entry.userDisplayName" class="flex items-center space-x-1">
+                      <span>•</span>
+                      <span class="material-icons" style="font-size: 12px;">person</span>
+                      <span class="font-medium text-primary-600 dark:text-primary-400">{{ entry.userDisplayName }}</span>
+                    </span>
+                  </div>
                 </div>
 
                 <button
@@ -198,7 +205,7 @@ import { fr } from 'date-fns/locale';
           </div>
 
           <!-- Pagination controls -->
-          <div class="flex items-center justify-center space-x-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-center space-x-2 mt-6 pt-6 border-t border-gray-200 dark:border-gray-600">
             <button
               (click)="previousPage()"
               [disabled]="currentPage === 1"
@@ -256,7 +263,9 @@ export class HistoryComponent implements OnInit {
   constructor(
     private historyService: HistoryService,
     private eventService: EventService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private confirmationService: ConfirmationService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -361,9 +370,13 @@ export class HistoryComponent implements OnInit {
   async rollback(entry: HistoryEntry): Promise<void> {
     if (!entry.id) return;
 
-    const confirmed = confirm(
-      `Voulez-vous vraiment annuler cette action ?\n\n${this.getActionDescription(entry)}`
-    );
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Annuler cette action ?',
+      message: `Voulez-vous vraiment annuler cette action ?\n\n${this.getActionDescription(entry)}`,
+      confirmText: 'Annuler l\'action',
+      cancelText: 'Conserver',
+      confirmButtonClass: 'warning'
+    });
 
     if (!confirmed) return;
 
@@ -371,23 +384,28 @@ export class HistoryComponent implements OnInit {
       await this.historyService.rollback(entry.id);
       // Rafraîchir l'historique et les événements
       await this.historyService.refresh();
-      alert('Action annulée avec succès');
+      this.toastService.success('Action annulée', 'L\'action a été annulée avec succès');
     } catch (error) {
-      alert('Erreur lors de l\'annulation');
+      this.toastService.error('Erreur', 'Erreur lors de l\'annulation');
     }
   }
 
   async clearHistory(): Promise<void> {
-    const confirmed = confirm(
-      'Êtes-vous sûr de vouloir effacer tout l\'historique ?\nCette action est irréversible.'
-    );
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Effacer l\'historique ?',
+      message: 'Êtes-vous sûr de vouloir effacer tout l\'historique ? Cette action est irréversible.',
+      confirmText: 'Effacer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
 
     if (!confirmed) return;
 
     try {
       await this.historyService.clearHistory();
+      this.toastService.success('Historique effacé', 'L\'historique a été effacé avec succès');
     } catch (error) {
-      alert('Erreur lors de l\'effacement de l\'historique');
+      this.toastService.error('Erreur', 'Erreur lors de l\'effacement de l\'historique');
     }
   }
 }

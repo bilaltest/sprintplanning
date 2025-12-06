@@ -8,6 +8,8 @@ export interface HistoryEntry {
   eventId?: string;
   eventData: any; // Event ou null
   previousData?: any; // Event ou null
+  userId?: string;
+  userDisplayName?: string; // Format: "Prenom N."
   timestamp: Date;
 }
 

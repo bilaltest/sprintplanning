@@ -5,8 +5,14 @@ import eventRoutes from './routes/event.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import historyRoutes from './routes/history.routes.js';
 import releaseRoutes from './routes/release.routes.js';
+import authRoutes from './routes/auth.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import { initAdminAccount } from './utils/initAdmin.js';
 
 dotenv.config();
+
+// Initialiser le compte admin au démarrage
+initAdminAccount();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +32,8 @@ app.use((req, res, next) => {
 });
 
 // Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/history', historyRoutes);

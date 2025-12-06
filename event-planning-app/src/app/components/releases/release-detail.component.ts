@@ -75,7 +75,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           </div>
           <div *ngIf="expandedSections.has('tontons')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-b-lg">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm flex flex-col space-y-3">
+              <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-sm flex flex-col space-y-3">
                 <div class="flex justify-between items-center">
                   <span class="font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</span>
                   <app-progress-ring
@@ -127,8 +127,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           </div>
           <div *ngIf="expandedSections.has('features')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm h-full">
-              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm h-full">
+              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-2">
                 <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
                 <button
                   (click)="startAddingFeature(squad)"
@@ -165,7 +165,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               </div>
 
               <!-- Features List -->
-              <div class="space-y-2 pl-4 border-l-2 border-gray-100 dark:border-gray-700 max-h-48 overflow-y-auto custom-scrollbar">
+              <div class="space-y-2 pl-4 border-l-2 border-gray-100 dark:border-gray-600 max-h-48 overflow-y-auto custom-scrollbar">
                 <div *ngFor="let feature of squad.features" class="flex items-start justify-between group p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                   <div class="flex-1">
                     <h4 class="font-medium text-gray-900 dark:text-white">{{ feature.title }}</h4>
@@ -180,7 +180,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                     </button>
                   </div>
                 </div>
-                <div *ngIf="squad.features.length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
+                <div *ngIf="squad.features.length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
                   <span class="material-icons text-gray-400 text-3xl mb-2">playlist_add_check</span>
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune fonctionnalité majeure</p>
                   <label class="relative inline-flex items-center cursor-pointer">
@@ -210,8 +210,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           </div>
           <div *ngIf="expandedSections.has('pre_mep')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm h-full">
-              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm h-full">
+              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-2">
                 <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
                 <button
                   (click)="startAddingAction(squad, 'pre_mep')"
@@ -405,9 +405,9 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 <!-- Non-flipping actions -->
                 <div *ngIf="getNonFlippingActions(squad, 'pre_mep').length > 0">
                     <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Actions Standard</h4>
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                         <table class="min-w-full text-sm">
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
                                 <tr *ngFor="let action of getNonFlippingActions(squad, 'pre_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                     <td class="px-4 py-3">
                                         <div class="flex items-center space-x-3">
@@ -432,7 +432,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 <!-- Flipping actions grouped by type in tables -->
                 <div *ngFor="let entry of getFlippingActionsByType(squad, 'pre_mep') | keyvalue" class="overflow-x-auto">
                   <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
-                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                     <table class="min-w-full text-xs">
                         <thead class="bg-gray-50 dark:bg-gray-700/50">
                         <tr>
@@ -446,7 +446,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                             <th class="px-3 py-2"></th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
                         <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
                             <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
@@ -477,7 +477,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   </div>
                 </div>
 
-                <div *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
+                <div *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
 
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune action pré-MEP</p>
                   <label class="relative inline-flex items-center cursor-pointer">
@@ -507,8 +507,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           </div>
           <div *ngIf="expandedSections.has('post_mep')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 shadow-sm h-full">
-              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm h-full">
+              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-2">
                 <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
                 <button
                   (click)="startAddingAction(squad, 'post_mep')"
@@ -702,9 +702,9 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 <!-- Non-flipping actions -->
                 <div *ngIf="getNonFlippingActions(squad, 'post_mep').length > 0">
                     <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Actions Standard</h4>
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                         <table class="min-w-full text-sm">
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
                                 <tr *ngFor="let action of getNonFlippingActions(squad, 'post_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                     <td class="px-4 py-3">
                                         <div class="flex items-center space-x-3">
@@ -729,7 +729,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 <!-- Flipping actions grouped by type in tables -->
                 <div *ngFor="let entry of getFlippingActionsByType(squad, 'post_mep') | keyvalue" class="overflow-x-auto">
                   <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
-                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                     <table class="min-w-full text-xs">
                         <thead class="bg-gray-50 dark:bg-gray-700/50">
                         <tr>
@@ -743,7 +743,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                             <th class="px-3 py-2"></th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
                         <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
                             <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
@@ -774,7 +774,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   </div>
                 </div>
 
-                <div *ngIf="getActionsByPhase(squad, 'post_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
+                <div *ngIf="getActionsByPhase(squad, 'post_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
 
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune action post-MEP</p>
                   <label class="relative inline-flex items-center cursor-pointer">

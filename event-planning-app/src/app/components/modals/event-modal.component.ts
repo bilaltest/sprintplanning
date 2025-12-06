@@ -137,7 +137,7 @@ import { ConfirmationService } from '@services/confirmation.service';
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
             <div>
               <button
                 *ngIf="isEditMode"

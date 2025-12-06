@@ -1,5 +1,6 @@
 import prisma from '../config/database.js';
 import { validationResult } from 'express-validator';
+import { extractUserIdFromToken, getUserDisplayName } from '../utils/auth.js';
 
 // GET /api/events - Récupérer tous les événements
 export const getAllEvents = async (req, res, next) => {
@@ -86,13 +87,26 @@ export const createEvent = async (req, res, next) => {
       }
     });
 
+    // Récupérer l'utilisateur pour l'historique
+    const userId = extractUserIdFromToken(req);
+    let userDisplayName = null;
+
+    if (userId) {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user) {
+        userDisplayName = getUserDisplayName(user);
+      }
+    }
+
     // Enregistrer dans l'historique
     await prisma.history.create({
       data: {
         action: 'create',
         eventId: event.id,
         eventData: JSON.stringify(event),
-        previousData: null
+        previousData: null,
+        userId,
+        userDisplayName
       }
     });
 
@@ -134,13 +148,26 @@ export const updateEvent = async (req, res, next) => {
       }
     });
 
+    // Récupérer l'utilisateur pour l'historique
+    const userId = extractUserIdFromToken(req);
+    let userDisplayName = null;
+
+    if (userId) {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user) {
+        userDisplayName = getUserDisplayName(user);
+      }
+    }
+
     // Enregistrer dans l'historique
     await prisma.history.create({
       data: {
         action: 'update',
         eventId: event.id,
         eventData: JSON.stringify(event),
-        previousData: JSON.stringify(oldEvent)
+        previousData: JSON.stringify(oldEvent),
+        userId,
+        userDisplayName
       }
     });
 
@@ -163,13 +190,26 @@ export const deleteEvent = async (req, res, next) => {
 
     await prisma.event.delete({ where: { id } });
 
+    // Récupérer l'utilisateur pour l'historique
+    const userId = extractUserIdFromToken(req);
+    let userDisplayName = null;
+
+    if (userId) {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (user) {
+        userDisplayName = getUserDisplayName(user);
+      }
+    }
+
     // Enregistrer dans l'historique
     await prisma.history.create({
       data: {
         action: 'delete',
         eventId: id,
         eventData: 'null',
-        previousData: JSON.stringify(event)
+        previousData: JSON.stringify(event),
+        userId,
+        userDisplayName
       }
     });
 

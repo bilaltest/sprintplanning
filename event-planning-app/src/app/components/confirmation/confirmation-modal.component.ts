@@ -22,11 +22,11 @@ import { ConfirmationOptions } from '@models/confirmation.model';
 
       <!-- Modal -->
       <div
-        class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 max-w-md w-full mx-4 overflow-hidden"
+        class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-600 max-w-md w-full mx-4 overflow-hidden"
         [@slideIn]
       >
         <!-- Header -->
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
           <div class="flex items-center space-x-3">
             <!-- Icon based on type -->
             <div
@@ -64,7 +64,7 @@ import { ConfirmationOptions } from '@models/confirmation.model';
         </div>
 
         <!-- Actions -->
-        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900/50 flex items-center justify-end space-x-3">
+        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-750/50 flex items-center justify-end space-x-3">
           <button
             (click)="cancel()"
             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"

@@ -1,42 +1,95 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  themePreference: 'light' | 'dark';
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface LoginResponse {
+  message: string;
+  token: string;
+  user: User;
+}
+
+interface RegisterResponse {
+  message: string;
+  user: User;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private readonly API_URL = 'http://localhost:3000/api/auth';
   private readonly STORAGE_KEY = 'planning_auth_token';
-  private readonly TEMP_PASSWORD = 'NMB'; // Mot de passe temporaire
+  private readonly USER_KEY = 'planning_user';
 
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.checkInitialAuth());
   public isAuthenticated$: Observable<boolean> = this.isAuthenticatedSubject.asObservable();
 
-  constructor() {}
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getStoredUser());
+  public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
+
+  constructor(private http: HttpClient) {}
 
   private checkInitialAuth(): boolean {
     return !!sessionStorage.getItem(this.STORAGE_KEY);
   }
 
+  private getStoredUser(): User | null {
+    const userJson = sessionStorage.getItem(this.USER_KEY);
+    return userJson ? JSON.parse(userJson) : null;
+  }
+
   /**
-   * Authentifie l'utilisateur avec un mot de passe simple
-   * Plus tard, cette méthode appelera une API d'authentification externe
+   * Enregistre un nouvel utilisateur
    */
-  async login(password: string): Promise<boolean> {
-    // TODO: Remplacer par un appel API réel
-    // const response = await fetch('/api/auth/login', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ password })
-    // });
+  async register(email: string, password: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<RegisterResponse>(`${this.API_URL}/register`, { email, password })
+      );
 
-    if (password === this.TEMP_PASSWORD) {
-      const token = this.generateTempToken();
-      sessionStorage.setItem(this.STORAGE_KEY, token);
-      this.isAuthenticatedSubject.next(true);
-      return true;
+      return { success: true, message: response.message };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.error?.error || 'Erreur lors de la création du compte'
+      };
     }
+  }
 
-    return false;
+  /**
+   * Authentifie l'utilisateur avec email et mot de passe
+   */
+  async login(email: string, password: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<LoginResponse>(`${this.API_URL}/login`, { email, password })
+      );
+
+      // Stocker le token et les infos utilisateur
+      sessionStorage.setItem(this.STORAGE_KEY, response.token);
+      sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+
+      this.isAuthenticatedSubject.next(true);
+      this.currentUserSubject.next(response.user);
+
+      return { success: true, message: response.message };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.error?.error || 'Erreur lors de la connexion'
+      };
+    }
   }
 
   /**
@@ -44,7 +97,9 @@ export class AuthService {
    */
   logout(): void {
     sessionStorage.removeItem(this.STORAGE_KEY);
+    sessionStorage.removeItem(this.USER_KEY);
     this.isAuthenticatedSubject.next(false);
+    this.currentUserSubject.next(null);
   }
 
   /**
@@ -55,18 +110,83 @@ export class AuthService {
   }
 
   /**
-   * Génère un token temporaire
-   * Plus tard, le token sera fourni par l'API
-   */
-  private generateTempToken(): string {
-    return `temp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-  }
-
-  /**
    * Récupère le token actuel
-   * Utile pour les appels API futurs
    */
   getToken(): string | null {
     return sessionStorage.getItem(this.STORAGE_KEY);
+  }
+
+  /**
+   * Récupère l'utilisateur actuellement connecté
+   */
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  /**
+   * Récupère les informations de l'utilisateur depuis l'API
+   */
+  async fetchCurrentUser(): Promise<User | null> {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        return null;
+      }
+
+      const response = await firstValueFrom(
+        this.http.get<{ user: User }>(`${this.API_URL}/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      );
+
+      sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      this.currentUserSubject.next(response.user);
+
+      return response.user;
+    } catch (error) {
+      console.error('Erreur lors de la récupération de l\'utilisateur:', error);
+      this.logout();
+      return null;
+    }
+  }
+
+  /**
+   * Met à jour les préférences de l'utilisateur
+   */
+  async updatePreferences(themePreference: 'light' | 'dark'): Promise<boolean> {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        return false;
+      }
+
+      const response = await firstValueFrom(
+        this.http.put<{ user: User; message: string }>(`${this.API_URL}/preferences`,
+          { themePreference },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+      );
+
+      // Mettre à jour l'utilisateur stocké
+      sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      this.currentUserSubject.next(response.user);
+
+      return true;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des préférences:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Retourne le nom d'affichage de l'utilisateur au format "Prenom N."
+   */
+  getUserDisplayName(user: User | null = null): string {
+    const currentUser = user || this.getCurrentUser();
+    if (!currentUser) {
+      return 'Utilisateur';
+    }
+
+    return `${currentUser.firstName} ${currentUser.lastName.charAt(0)}.`;
   }
 }

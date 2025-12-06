@@ -99,7 +99,7 @@ module.exports = {
           900: '#064e3b',
         },
 
-        // Ajout de gray-850 pour une couleur intermédiaire entre gray-800 et gray-900
+        // Palette gray moderne optimisée pour le dark mode
         gray: {
           50: '#f9fafb',
           100: '#f3f4f6',
@@ -109,10 +109,11 @@ module.exports = {
           500: '#6b7280',
           600: '#4b5563',
           700: '#374151',
-          800: '#1f2937',
-          850: '#1a202c',  // Couleur intermédiaire entre 800 et 900
-          900: '#111827',
-          950: '#030712',
+          750: '#2d3748',  // Surface cards dark mode (slate doux)
+          800: '#1e293b',  // Fond principal dark mode (slate moderne)
+          850: '#1a2332',  // Couleur intermédiaire
+          900: '#0f172a',  // Réservé pour accents très sombres
+          950: '#020617',  // Réservé pour overlays
         },
 
         // Couleurs événements

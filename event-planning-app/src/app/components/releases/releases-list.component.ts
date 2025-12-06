@@ -47,11 +47,19 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
         </button>
       </div>
 
-      <!-- Releases Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          *ngFor="let release of (releases$ | async)"
-          class="card-releases p-6 cursor-pointer relative group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02]"
+      <!-- Upcoming Releases Section -->
+      <div *ngIf="upcomingReleases.length > 0">
+        <div class="flex items-center space-x-3 mb-4">
+          <span class="material-icons text-2xl text-primary-600 dark:text-primary-400">upcoming</span>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Releases à venir</h2>
+          <span class="px-3 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded-full text-sm font-semibold">
+            {{ upcomingReleases.length }}
+          </span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div
+            *ngFor="let release of upcomingReleases"
+            class="card-releases p-6 cursor-pointer relative group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02]"
           [class.hover:border-emerald-500]="release.type === 'release'"
           [class.hover:border-red-500]="release.type === 'hotfix'"
           (click)="viewRelease(release.id!, release.version)"
@@ -67,14 +75,23 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </span>
           </div>
 
-          <!-- Delete Button -->
-          <button
-            (click)="deleteRelease($event, release)"
-            class="absolute top-12 right-2 p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 z-10"
-            title="Supprimer la release"
-          >
-            <span class="material-icons text-lg">delete</span>
-          </button>
+          <!-- Action Buttons -->
+          <div class="absolute top-12 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
+            <button
+              (click)="startEditingDate(release, $event)"
+              class="p-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all duration-200 hover:scale-110"
+              title="Modifier la release"
+            >
+              <span class="material-icons text-lg">edit</span>
+            </button>
+            <button
+              (click)="deleteRelease($event, release)"
+              class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110"
+              title="Supprimer la release"
+            >
+              <span class="material-icons text-lg">delete</span>
+            </button>
+          </div>
 
           <!-- Header -->
           <div class="flex items-start justify-between mb-4 pt-12 pr-8">
@@ -86,18 +103,11 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </div>
           </div>
 
-          <!-- Date avec badge J-X et bouton édition -->
-          <div class="flex items-center justify-between text-sm mb-4" (click)="$event.stopPropagation()">
+          <!-- Date avec badge J-X -->
+          <div class="flex items-center justify-between text-sm mb-4">
             <div class="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
               <span class="material-icons text-sm text-gray-500 dark:text-gray-400">event</span>
               <span class="font-medium">{{ formatDate(release.releaseDate) }}</span>
-              <button
-                (click)="startEditingDate(release)"
-                class="p-1 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                title="Modifier la date de MEP"
-              >
-                <span class="material-icons text-sm">edit</span>
-              </button>
             </div>
             <span class="px-2 py-0.5 rounded-full text-xs font-medium"
                   [class.bg-amber-100]="getDaysUntilMep(release.releaseDate) <= 7 && getDaysUntilMep(release.releaseDate) >= 0"
@@ -144,7 +154,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           </div>
 
           <!-- Footer -->
-          <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
 
             <!-- Export Button -->
             <div class="relative" (click)="$event.stopPropagation()">
@@ -160,7 +170,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               <!-- Export Dropdown -->
               <div
                 *ngIf="exportMenuOpen === release.id"
-                class="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10"
+                class="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-10"
               >
                 <button
                   (click)="exportRelease(release, 'markdown')"
@@ -180,26 +190,160 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </div>
           </div>
         </div>
-
-        <!-- Empty state -->
-        <div
-          *ngIf="(releases$ | async)?.length === 0"
-          class="col-span-full flex flex-col items-center justify-center py-12 text-center"
-        >
-          <span class="material-icons text-6xl text-gray-400 dark:text-gray-600 mb-4">rocket_launch</span>
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            Aucune release
-          </h3>
-          <p class="text-gray-600 dark:text-gray-400 mb-4">
-            Commencez par créer votre première release pour organiser votre MEP
-          </p>
-          <button
-            (click)="showCreateModal = true"
-            class="btn btn-primary"
-          >
-            Créer une release
-          </button>
         </div>
+      </div>
+
+      <!-- Past Releases Section -->
+      <div *ngIf="pastReleases.length > 0">
+        <div class="flex items-center space-x-3 mb-4">
+          <span class="material-icons text-2xl text-gray-600 dark:text-gray-400">history</span>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Releases passées</h2>
+          <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-semibold">
+            {{ pastReleases.length }}
+          </span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            *ngFor="let release of pastReleases"
+            class="card-releases p-6 cursor-pointer relative group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] opacity-60 hover:opacity-90"
+            [class.hover:border-emerald-500]="release.type === 'release'"
+            [class.hover:border-red-500]="release.type === 'hotfix'"
+            (click)="viewRelease(release.id!, release.version)"
+          >
+            <!-- Type Badge -->
+            <div class="absolute top-0 right-0 z-10">
+              <span [class]="getReleaseTypeColors(release.type).badge"
+                    class="inline-flex items-center space-x-1 px-3 py-1 rounded-bl-lg rounded-tr-lg text-xs font-semibold shadow-sm">
+                <span class="material-icons text-sm">
+                  {{ release.type === 'hotfix' ? 'build_circle' : 'rocket_launch' }}
+                </span>
+                <span>{{ getReleaseTypeLabel(release.type) }}</span>
+              </span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="absolute top-12 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
+              <button
+                (click)="startEditingDate(release, $event)"
+                class="p-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all duration-200 hover:scale-110"
+                title="Modifier la release"
+              >
+                <span class="material-icons text-lg">edit</span>
+              </button>
+              <button
+                (click)="deleteRelease($event, release)"
+                class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110"
+                title="Supprimer la release"
+              >
+                <span class="material-icons text-lg">delete</span>
+              </button>
+            </div>
+
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-4 pt-12 pr-8">
+              <div class="flex-1">
+                <h3 [class]="getReleaseTypeColors(release.type).text"
+                    class="text-xl font-bold mb-1">
+                  {{ release.name }}
+                </h3>
+              </div>
+            </div>
+
+            <!-- Date avec badge J+X -->
+            <div class="flex items-center justify-between text-sm mb-4">
+              <div class="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
+                <span class="material-icons text-sm text-gray-500 dark:text-gray-400">event</span>
+                <span class="font-medium">{{ formatDate(release.releaseDate) }}</span>
+              </div>
+              <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                J+{{ Math.abs(getDaysUntilMep(release.releaseDate)) }}
+              </span>
+            </div>
+
+            <!-- Description -->
+            <p class="text-sm text-gray-700 dark:text-gray-300 mb-4 line-clamp-2" *ngIf="release.description">
+              {{ release.description }}
+            </p>
+
+            <!-- Progress Ring & Stats -->
+            <div class="flex items-center justify-between mb-4" *ngIf="release.squads.length > 0">
+              <div class="flex-1">
+                <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  <span class="font-medium">Progression</span>
+                  <span class="font-bold">{{ getCompletedSquads(release) }}/{{ release.squads.length }} squads</span>
+                </div>
+              </div>
+
+              <!-- Progress Ring -->
+              <div class="ml-4">
+                <app-progress-ring
+                  [percentage]="getProgressPercentage(release)"
+                  [size]="72"
+                  [strokeWidth]="6"
+                  [color]="getProgressPercentage(release) === 100 ? 'success' : (getProgressPercentage(release) >= 70 ? 'primary' : 'warning')"
+                  [customColor]="release.type === 'hotfix' ? '#ef4444' : undefined"
+                  [textClass]="getReleaseTypeColors(release.type).text"
+                ></app-progress-ring>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
+              <!-- Export Button -->
+              <div class="relative" (click)="$event.stopPropagation()">
+                <button
+                  (click)="toggleExportMenu(release.id!)"
+                  class="flex items-center space-x-1 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  title="Exporter la release"
+                >
+                  <span class="material-icons text-sm">download</span>
+                  <span>Export</span>
+                </button>
+
+                <!-- Export Dropdown -->
+                <div
+                  *ngIf="exportMenuOpen === release.id"
+                  class="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-10"
+                >
+                  <button
+                    (click)="exportRelease(release, 'markdown')"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg transition-colors flex items-center space-x-2"
+                  >
+                    <span class="material-icons text-sm">description</span>
+                    <span>Markdown</span>
+                  </button>
+                  <button
+                    (click)="exportRelease(release, 'html')"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg transition-colors flex items-center space-x-2"
+                  >
+                    <span class="material-icons text-sm">code</span>
+                    <span>HTML</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div
+        *ngIf="upcomingReleases.length === 0 && pastReleases.length === 0"
+        class="col-span-full flex flex-col items-center justify-center py-12 text-center"
+      >
+        <span class="material-icons text-6xl text-gray-400 dark:text-gray-600 mb-4">rocket_launch</span>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          Aucune release
+        </h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">
+          Commencez par créer votre première release pour organiser votre MEP
+        </p>
+        <button
+          (click)="showCreateModal = true"
+          class="btn btn-primary"
+        >
+          Créer une release
+        </button>
       </div>
 
       <!-- Create Modal -->
@@ -404,6 +548,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 })
 export class ReleasesListComponent implements OnInit {
   releases$ = this.releaseService.releases$;
+  upcomingReleases: Release[] = [];
+  pastReleases: Release[] = [];
 
   showCreateModal = false;
   isCreating = false;
@@ -438,6 +584,30 @@ export class ReleasesListComponent implements OnInit {
 
   ngOnInit(): void {
     this.releaseService.loadReleases();
+
+    // Subscribe to releases and split them into upcoming and past
+    this.releases$.subscribe(releases => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Upcoming releases: sorted by closest date first
+      this.upcomingReleases = releases
+        .filter(release => {
+          const releaseDate = new Date(release.releaseDate);
+          releaseDate.setHours(0, 0, 0, 0);
+          return releaseDate >= today;
+        })
+        .sort((a, b) => new Date(a.releaseDate).getTime() - new Date(b.releaseDate).getTime());
+
+      // Past releases: sorted by most recent first
+      this.pastReleases = releases
+        .filter(release => {
+          const releaseDate = new Date(release.releaseDate);
+          releaseDate.setHours(0, 0, 0, 0);
+          return releaseDate < today;
+        })
+        .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+    });
   }
 
   formatDate(dateString: string): string {
@@ -493,7 +663,10 @@ export class ReleasesListComponent implements OnInit {
     this.router.navigate(['/releases', routeParam]);
   }
 
-  startEditingDate(release: Release): void {
+  startEditingDate(release: Release, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
     this.editingRelease = release;
     this.newMepDate = release.releaseDate;
     this.newReleaseName = release.name;

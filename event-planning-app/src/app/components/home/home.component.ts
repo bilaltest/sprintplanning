@@ -31,7 +31,7 @@ import { interval, Subscription } from 'rxjs';
             <!-- Planning Card -->
               <div
                 (click)="navigateToPlanning()"
-                class="group cursor-pointer bg-white dark:bg-gray-900 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
+                class="group cursor-pointer bg-white dark:bg-gray-750 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
               >
                 <!-- Effet de brillance au hover -->
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
@@ -62,7 +62,7 @@ import { interval, Subscription } from 'rxjs';
               <!-- Releases Card -->
               <div
                 (click)="navigateToReleases()"
-                class="group cursor-pointer bg-white dark:bg-gray-900 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
+                class="group cursor-pointer bg-white dark:bg-gray-750 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
               >
                 <!-- Effet de brillance au hover -->
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
@@ -95,10 +95,10 @@ import { interval, Subscription } from 'rxjs';
           <!-- Decorative Separator -->
           <div class="relative py-4">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
-              <div class="w-full border-t-2 border-gray-200 dark:border-gray-700"></div>
+              <div class="w-full border-t-2 border-gray-200 dark:border-gray-600"></div>
             </div>
             <div class="relative flex justify-center">
-              <div class="bg-gray-100 dark:bg-gray-950 px-6 py-2 rounded-full">
+              <div class="bg-gray-100 dark:bg-gray-800 px-6 py-2 rounded-full">
                 <div class="flex items-center space-x-2">
                   <div class="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></div>
                   <div class="w-2 h-2 rounded-full bg-primary-500 animate-pulse" style="animation-delay: 0.2s"></div>
@@ -120,7 +120,7 @@ import { interval, Subscription } from 'rxjs';
             <!-- Widgets Grid -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <!-- Events Next 7 Days Widget -->
-            <div class="bg-white dark:bg-[#1a202c] rounded-2xl shadow-md p-4 border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-103 transition-all duration-300 aspect-[4/3] flex flex-col cursor-pointer" *ngIf="eventsNext7Days.length > 0">
+            <div class="bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border border-gray-200 dark:border-gray-600 hover:shadow-xl hover:scale-103 transition-all duration-300 aspect-[4/3] flex flex-col cursor-pointer" *ngIf="eventsNext7Days.length > 0">
               <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center space-x-2">
                   <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -153,14 +153,14 @@ import { interval, Subscription } from 'rxjs';
             </div>
 
             <!-- Empty state Events -->
-            <div class="bg-white dark:bg-[#1a202c] rounded-2xl shadow-md p-4 border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-103 transition-all duration-300 aspect-[4/3] flex flex-col items-center justify-center cursor-pointer" *ngIf="eventsNext7Days.length === 0">
+            <div class="bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border border-gray-200 dark:border-gray-600 hover:shadow-xl hover:scale-103 transition-all duration-300 aspect-[4/3] flex flex-col items-center justify-center cursor-pointer" *ngIf="eventsNext7Days.length === 0">
               <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">event_available</span>
               <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucun événement</p>
               <p class="text-xs text-gray-500 dark:text-gray-500 text-center">7 prochains jours</p>
             </div>
 
             <!-- Next MEP Widget -->
-            <div class="bg-white dark:bg-[#1a202c] rounded-2xl shadow-md p-4 border border-gray-200 dark:border-gray-700 transition-all duration-300 aspect-[4/3] flex flex-col"
+            <div class="bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border border-gray-200 dark:border-gray-600 transition-all duration-300 aspect-[4/3] flex flex-col"
                  [class.cursor-pointer]="nextMep"
                  [class.hover:shadow-xl]="nextMep"
                  [class.hover:scale-103]="nextMep"

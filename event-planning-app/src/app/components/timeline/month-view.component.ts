@@ -5,6 +5,7 @@ import { Event, CATEGORY_COLORS_DARK, EventCategory } from '@models/event.model'
 import { TimelineService } from '@services/timeline.service';
 import { SettingsService } from '@services/settings.service';
 import { CategoryService } from '@services/category.service';
+import { ConfirmationService } from '@services/confirmation.service';
 import { format, isSameDay, isToday, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -41,7 +42,7 @@ import { fr } from 'date-fns/locale';
           [class.ring-primary-500]="isToday(day)"
           [class.bg-gray-100]="isWeekendOrHoliday(day) && !isToday(day)"
           [class.dark:bg-gray-800/50]="isWeekendOrHoliday(day) && !isToday(day)"
-          class="aspect-square border border-gray-200 dark:border-gray-700 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative group"
+          class="aspect-square border border-gray-200 dark:border-gray-600 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative group"
           (click)="handleDayClick(day)"
         >
           <div class="flex flex-col h-full">
@@ -92,7 +93,7 @@ import { fr } from 'date-fns/locale';
       <!-- Panneau latéral détails du jour -->
       <div
         *ngIf="selectedDay"
-        class="fixed right-4 top-20 w-80 border border-gray-200 dark:border-gray-800 rounded-lg bg-gray-50 dark:bg-gray-900 p-4 shadow-xl animate-slide-in-right z-50"
+        class="fixed right-4 top-20 w-80 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-750 p-4 shadow-xl animate-slide-in-right z-50"
       >
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
@@ -204,7 +205,8 @@ export class MonthViewComponent implements OnChanges {
   constructor(
     private timelineService: TimelineService,
     private settingsService: SettingsService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private confirmationService: ConfirmationService
   ) {
     // Subscriptions avec cleanup automatique
     this.timelineService.state$
@@ -371,11 +373,15 @@ export class MonthViewComponent implements OnChanges {
     this.addEventClick.emit(dateStr);
   }
 
-  onDeleteEvent(mouseEvent: MouseEvent, event: Event): void {
+  async onDeleteEvent(mouseEvent: MouseEvent, event: Event): Promise<void> {
     mouseEvent.stopPropagation();
-    const confirmed = confirm(
-      `Voulez-vous vraiment supprimer l'événement "${event.title}" ?`
-    );
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer cet événement ?',
+      message: `Voulez-vous vraiment supprimer l'événement "${event.title}" ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
     if (confirmed) {
       this.deleteEventClick.emit(event);
     }

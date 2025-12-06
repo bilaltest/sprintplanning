@@ -36,7 +36,13 @@
       "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npx prisma generate:*)",
       "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npm run dev:*)",
       "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npx tsc:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npm run build:*)",
+      "Bash(cat:*)",
+      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npx ng build:*)",
+      "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npx ng build --configuration development)",
+      "Bash(npx ng build:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
