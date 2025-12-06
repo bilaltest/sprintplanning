@@ -11,69 +11,64 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'dashboard',
     pathMatch: 'full'
-  },
-  {
-    path: 'home',
-    loadComponent: () =>
-      import('./components/home/home.component').then(
-        m => m.HomeComponent
-      ),
-    canActivate: [authGuard]
   },
   {
     path: '',
     loadComponent: () =>
-      import('./layouts/planning-layout.component').then(
-        m => m.PlanningLayoutComponent
+      import('./layouts/main-layout.component').then(
+        m => m.MainLayoutComponent
       ),
     canActivate: [authGuard],
     children: [
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./components/home/home.component').then(
+            m => m.HomeComponent
+          ),
+        data: { breadcrumb: 'Dashboard' }
+      },
       {
         path: 'planning',
         loadComponent: () =>
           import('./components/timeline/timeline-container.component').then(
             m => m.TimelineContainerComponent
-          )
+          ),
+        data: { breadcrumb: 'Planning' }
       },
       {
         path: 'settings',
         loadComponent: () =>
           import('./components/settings/settings.component').then(
             m => m.SettingsComponent
-          )
+          ),
+        data: { breadcrumb: 'Paramètres' }
       },
       {
         path: 'history',
         loadComponent: () =>
           import('./components/history/history.component').then(
             m => m.HistoryComponent
-          )
-      }
-    ]
-  },
-  {
-    path: '',
-    loadComponent: () =>
-      import('./layouts/releases-layout.component').then(
-        m => m.ReleasesLayoutComponent
-      ),
-    canActivate: [authGuard],
-    children: [
+          ),
+        data: { breadcrumb: 'Historique' }
+      },
       {
         path: 'releases',
         loadComponent: () =>
           import('./components/releases/releases-list.component').then(
             m => m.ReleasesListComponent
-          )
+          ),
+        data: { breadcrumb: 'Releases' }
       },
       {
         path: 'releases/:id',
         loadComponent: () =>
           import('./components/releases/release-detail.component').then(
             m => m.ReleaseDetailComponent
-          )
+          ),
+        data: { breadcrumb: 'Détail Release' }
       }
     ]
   }

@@ -128,18 +128,6 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 <span class="font-medium">Progression</span>
                 <span class="font-bold">{{ getCompletedSquads(release) }}/{{ release.squads.length }} squads</span>
               </div>
-
-              <!-- Stats compacts -->
-              <div class="space-y-1">
-                <div class="flex items-center space-x-2 text-xs">
-                  <span class="material-icons text-base text-gray-500 dark:text-gray-400">groups</span>
-                  <span class="text-gray-700 dark:text-gray-300">{{ release.squads.length }} squads</span>
-                </div>
-                <div class="flex items-center space-x-2 text-xs">
-                  <span class="material-icons text-base text-gray-500 dark:text-gray-400">emoji_objects</span>
-                  <span class="text-gray-700 dark:text-gray-300">{{ getTotalFeatures(release) }} features</span>
-                </div>
-              </div>
             </div>
 
             <!-- Progress Ring -->

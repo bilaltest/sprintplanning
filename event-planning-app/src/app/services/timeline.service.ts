@@ -7,7 +7,7 @@ import { TimelineView, TimelineState } from '@models/timeline.model';
 })
 export class TimelineService {
   private stateSubject = new BehaviorSubject<TimelineState>({
-    view: 'annual',
+    view: 'quarter',
     currentDate: new Date()
   });
 
@@ -31,36 +31,16 @@ export class TimelineService {
   nextPeriod(): void {
     const state = this.stateSubject.value;
     const current = state.currentDate;
-    let newDate: Date;
-
-    switch (state.view) {
-      case 'annual':
-        // Vue annuelle : changer d'année (rester sur janvier pour cohérence)
-        newDate = new Date(current.getFullYear() + 1, 0, 1);
-        break;
-      case 'month':
-        newDate = new Date(current.getFullYear(), current.getMonth() + 1, 1);
-        break;
-    }
-
+    // Vue trimestrielle : avancer de 3 mois
+    const newDate = new Date(current.getFullYear(), current.getMonth() + 3, 1);
     this.setCurrentDate(newDate);
   }
 
   previousPeriod(): void {
     const state = this.stateSubject.value;
     const current = state.currentDate;
-    let newDate: Date;
-
-    switch (state.view) {
-      case 'annual':
-        // Vue annuelle : changer d'année (rester sur janvier pour cohérence)
-        newDate = new Date(current.getFullYear() - 1, 0, 1);
-        break;
-      case 'month':
-        newDate = new Date(current.getFullYear(), current.getMonth() - 1, 1);
-        break;
-    }
-
+    // Vue trimestrielle : reculer de 3 mois
+    const newDate = new Date(current.getFullYear(), current.getMonth() - 3, 1);
     this.setCurrentDate(newDate);
   }
 

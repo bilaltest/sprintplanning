@@ -1,4 +1,4 @@
-export type TimelineView = 'annual' | 'month';
+export type TimelineView = 'quarter';
 
 export interface TimelineState {
   view: TimelineView;

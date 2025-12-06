@@ -16,28 +16,7 @@ import { interval, Subscription } from 'rxjs';
   standalone: true,
   imports: [CommonModule, ProgressRingComponent],
   template: `
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-950 flex flex-col">
-      <!-- Header avec gradient vert -->
-      <header class="bg-gradient-planning shadow-lg py-4">
-        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
-          <h1 class="text-2xl font-bold text-white drop-shadow-md">
-            Ma Banque Tools
-          </h1>
-          <button
-            (click)="toggleTheme()"
-            class="p-2 rounded-lg hover:bg-white/10 transition-all duration-200"
-            title="Changer le thème"
-          >
-            <span class="material-icons text-white">
-              {{ (settingsService.preferences$ | async)?.theme === 'dark' ? 'light_mode' : 'dark_mode' }}
-            </span>
-          </button>
-        </div>
-      </header>
-
-      <!-- Main Content -->
-      <main class="flex-1 p-8">
-        <div class="max-w-7xl mx-auto space-y-8">
+    <div class="space-y-8">
           <!-- Applications Section -->
           <section class="space-y-6">
             <div class="text-center mb-6">
@@ -233,8 +212,6 @@ import { interval, Subscription } from 'rxjs';
             </div>
             </div>
           </section>
-        </div>
-      </main>
     </div>
   `,
   styles: [`

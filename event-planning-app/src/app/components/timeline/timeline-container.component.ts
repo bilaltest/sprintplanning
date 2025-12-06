@@ -10,8 +10,7 @@ import { TimelineView } from '@models/timeline.model';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Event } from '@models/event.model';
-import { AnnualViewComponent } from './annual-view.component';
-import { MonthViewComponent } from './month-view.component';
+import { QuarterlyViewComponent } from './quarterly-view.component';
 import { FilterBarComponent } from '../filters/filter-bar.component';
 import { EventModalComponent } from '../modals/event-modal.component';
 
@@ -20,8 +19,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
   standalone: true,
   imports: [
     CommonModule,
-    AnnualViewComponent,
-    MonthViewComponent,
+    QuarterlyViewComponent,
     FilterBarComponent,
     EventModalComponent
   ],
@@ -157,21 +155,12 @@ import { EventModalComponent } from '../modals/event-modal.component';
 
       <!-- Timeline view -->
       <div id="timeline-export" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <app-annual-view
-          *ngIf="(currentView$ | async) === 'annual'"
+        <app-quarterly-view
           [events]="filteredEvents$ | async"
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
           (deleteEventClick)="handleDeleteEvent($event)"
-        ></app-annual-view>
-
-        <app-month-view
-          *ngIf="(currentView$ | async) === 'month'"
-          [events]="filteredEvents$ | async"
-          (eventClick)="openEditEventModal($event)"
-          (addEventClick)="openCreateEventModalWithDate($event)"
-          (deleteEventClick)="handleDeleteEvent($event)"
-        ></app-month-view>
+        ></app-quarterly-view>
       </div>
 
       <!-- Bottom navigation -->
@@ -224,8 +213,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
 })
 export class TimelineContainerComponent implements OnInit {
   views = [
-    { value: 'annual' as TimelineView, label: 'Année', icon: 'calendar_view_month' },
-    { value: 'month' as TimelineView, label: 'Mois', icon: 'calendar_today' }
+    { value: 'quarter' as TimelineView, label: 'Trimestre', icon: 'calendar_view_month' }
   ];
 
   currentView$!: Observable<TimelineView>;
@@ -268,23 +256,36 @@ export class TimelineContainerComponent implements OnInit {
   }
 
   private scrollToEvent(eventId: string): void {
-    // First, try to find and open the event modal
+    // Find the event and navigate to its quarter
     this.eventService.events$.subscribe(events => {
       const event = events.find(e => e.id === eventId);
       if (event) {
-        // Navigate to the correct month/year for the event
+        // Navigate to the correct quarter/year for the event
         const eventDate = new Date(event.date);
         this.timelineService.setCurrentDate(eventDate);
 
-        // Switch to month view for better visibility
-        this.timelineService.setView('month');
-
-        // Wait a bit for the view to update, then open the event modal
+        // Wait for the view to update, then scroll to the day
         setTimeout(() => {
-          this.openEditEventModal(event);
-        }, 300);
+          this.scrollToDay(event.date);
+        }, 500);
       }
     }).unsubscribe();
+  }
+
+  private scrollToDay(dateStr: string): void {
+    // Find the day element by date
+    const dayElements = document.querySelectorAll('[data-date]');
+    const targetElement = Array.from(dayElements).find(
+      el => el.getAttribute('data-date') === dateStr
+    ) as HTMLElement;
+
+    if (targetElement) {
+      // Scroll to the element
+      targetElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
   }
 
   setView(view: TimelineView): void {
@@ -308,17 +309,9 @@ export class TimelineContainerComponent implements OnInit {
     const date = state.currentDate;
     const year = date.getFullYear();
     const month = date.getMonth();
+    const quarter = Math.floor(month / 3) + 1;
 
-    switch (state.view) {
-      case 'annual':
-        return `${year}`;
-      case 'month':
-        const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-          'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-        return `${monthNames[month]} ${year}`;
-      default:
-        return `${year}`;
-    }
+    return `T${quarter} ${year}`;
   }
 
   openCreateEventModal(): void {

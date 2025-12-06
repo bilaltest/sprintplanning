@@ -1,90 +1,111 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, AfterViewInit, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Event, CATEGORY_COLORS_DARK, EventCategory } from '@models/event.model';
+import { Event, EventCategory, CATEGORY_COLORS_DARK } from '@models/event.model';
 import { TimelineService } from '@services/timeline.service';
 import { SettingsService } from '@services/settings.service';
 import { CategoryService } from '@services/category.service';
-import { format, isSameDay, isToday, parseISO } from 'date-fns';
+import { format, getDaysInMonth, getDay, isToday, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 @Component({
-  selector: 'app-month-view',
+  selector: 'app-quarterly-view',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="month-view">
-      <!-- Days of week header -->
-      <div class="grid grid-cols-7 gap-2 mb-4">
+    <div class="quarterly-view">
+      <!-- 3 mois en colonne -->
+      <div class="space-y-6">
         <div
-          *ngFor="let day of daysOfWeek"
-          class="text-center text-sm font-semibold text-gray-600 dark:text-gray-400 py-2"
+          *ngFor="let month of months; let i = index"
+          [attr.data-month-index]="i"
+          [id]="'month-' + i"
+          class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
         >
-          {{ day }}
-        </div>
-      </div>
+          <!-- En-tête mois -->
+          <div class="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-3">
+            <h3 class="text-lg font-semibold">
+              {{ getMonthName(month) }}
+            </h3>
+          </div>
 
-      <!-- Calendar grid -->
-      <div class="grid grid-cols-7 gap-2">
-        <!-- Empty cells for days before month starts -->
-        <div
-          *ngFor="let _ of emptyDays"
-          class="aspect-square"
-        ></div>
-
-        <!-- Days of month -->
-        <div
-          *ngFor="let day of days"
-          [class.bg-primary-50]="isToday(day) && !isDark"
-          [class.dark:bg-primary-900/20]="isToday(day)"
-          [class.ring-2]="isToday(day)"
-          [class.ring-primary-500]="isToday(day)"
-          [class.bg-gray-100]="isWeekendOrHoliday(day) && !isToday(day)"
-          [class.dark:bg-gray-800/50]="isWeekendOrHoliday(day) && !isToday(day)"
-          class="aspect-square border border-gray-200 dark:border-gray-700 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative group"
-          (click)="handleDayClick(day)"
-        >
-          <div class="flex flex-col h-full">
-            <!-- Day number -->
-            <div
-              [class.font-bold]="isToday(day)"
-              [class.text-primary-600]="isToday(day) && !isDark"
-              [class.dark:text-primary-400]="isToday(day)"
-              class="text-sm text-gray-700 dark:text-gray-300 mb-1"
-            >
-              {{ day.getDate() }}
-            </div>
-
-            <!-- Events for this day -->
-            <div class="flex-1 space-y-1 overflow-y-auto custom-scrollbar">
+          <!-- Calendrier du mois -->
+          <div class="p-3">
+            <!-- Jours de la semaine -->
+            <div class="grid grid-cols-7 gap-1 mb-2">
               <div
-                *ngFor="let event of getEventsForDay(day)"
-                [style.background-color]="getEventColor(event)"
-                class="text-xs text-white px-2 py-1 rounded truncate cursor-pointer hover:opacity-80 transition-opacity flex items-center space-x-1"
-                [title]="event.title"
-                (click)="onEventClick($event, event)"
+                *ngFor="let day of daysOfWeek"
+                class="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 py-1"
               >
-                <span class="material-icons" style="font-size: 12px;">{{ event.icon }}</span>
-                <span class="truncate">{{ event.title }}</span>
-              </div>
-
-              <!-- More events indicator -->
-              <div
-                *ngIf="getEventsForDay(day).length > 3"
-                class="text-xs text-gray-500 dark:text-gray-400 px-2"
-              >
-                +{{ getEventsForDay(day).length - 3 }} autres
+                {{ day }}
               </div>
             </div>
 
-            <!-- Add event button (shown on hover) -->
-            <button
-              class="absolute bottom-1 right-1 p-1 bg-primary-500 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
-              (click)="onAddEvent($event, day)"
-              title="Ajouter un événement"
-            >
-              <span class="material-icons" style="font-size: 14px;">add</span>
-            </button>
+            <!-- Grille des jours -->
+            <div class="grid grid-cols-7 gap-1">
+              <!-- Empty cells for days before month starts -->
+              <div
+                *ngFor="let _ of getEmptyDays(month)"
+                class="h-[90px]"
+              ></div>
+
+              <!-- Days of month -->
+              <div
+                *ngFor="let day of getDaysInMonth(month)"
+                [attr.data-date]="formatDate(day)"
+                [class.bg-primary-50]="isToday(day)"
+                [class.dark:bg-primary-900/20]="isToday(day)"
+                [class.ring-2]="isToday(day)"
+                [class.ring-primary-500]="isToday(day)"
+                [class.bg-gray-100]="isWeekendOrHoliday(day) && !isToday(day)"
+                [class.dark:bg-gray-800/50]="isWeekendOrHoliday(day) && !isToday(day)"
+                class="h-[100px] border border-gray-200 dark:border-gray-700 rounded p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative group"
+                (click)="handleDayClick(day)"
+              >
+                <div class="flex flex-col h-full">
+                  <!-- Day number -->
+                  <div
+                    [class.font-bold]="isToday(day)"
+                    [class.text-primary-600]="isToday(day) && !isDark"
+                    [class.dark:text-primary-400]="isToday(day)"
+                    class="text-xs text-gray-700 dark:text-gray-300 mb-1"
+                  >
+                    {{ day.getDate() }}
+                  </div>
+
+                  <!-- Events for this day -->
+                  <div class="flex-1 space-y-0.5 overflow-y-auto custom-scrollbar">
+                    <div
+                      *ngFor="let event of getEventsForDay(day)"
+                      [style.background-color]="getEventColor(event)"
+                      class="text-[10px] text-white px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition-opacity flex items-center space-x-1"
+                      [title]="event.title"
+                      (click)="onEventClick($event, event)"
+                    >
+                      <span class="material-icons" style="font-size: 10px;">{{ event.icon }}</span>
+                      <span class="truncate">{{ event.title }}</span>
+                    </div>
+
+                    <!-- More events indicator -->
+                    <div
+                      *ngIf="getEventsForDay(day).length > 3"
+                      class="text-[9px] text-gray-500 dark:text-gray-400 px-1"
+                    >
+                      +{{ getEventsForDay(day).length - 3 }} autres
+                    </div>
+                  </div>
+
+                  <!-- Add event button (shown on hover) -->
+                  <button
+                    class="absolute bottom-1 right-1 p-0.5 bg-primary-500 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                    (click)="onAddEvent($event, day)"
+                    title="Ajouter un événement"
+                  >
+                    <span class="material-icons" style="font-size: 12px;">add</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -178,54 +199,62 @@ import { fr } from 'date-fns/locale';
     </div>
   `,
   styles: [`
-    .month-view {
-      min-height: 600px;
-    }
-
-    .aspect-square {
-      aspect-ratio: 1 / 1;
+    .quarterly-view {
+      min-height: 500px;
     }
   `]
 })
-export class MonthViewComponent implements OnChanges {
+export class QuarterlyViewComponent implements AfterViewInit {
   @Input() events: Event[] | null = [];
   @Output() eventClick = new EventEmitter<Event>();
   @Output() addEventClick = new EventEmitter<string>();
   @Output() deleteEventClick = new EventEmitter<Event>();
 
-  daysOfWeek: string[] = [];
-  days: Date[] = [];
-  emptyDays: number[] = [];
-  isDark = false;
+  months: Date[] = [];
   selectedDay: Date | null = null;
-
-  private currentMonth!: Date;
+  isDark = false;
+  daysOfWeek: string[] = [];
 
   constructor(
     private timelineService: TimelineService,
     private settingsService: SettingsService,
-    private categoryService: CategoryService
+    private categoryService: CategoryService,
+    private elementRef: ElementRef
   ) {
     // Subscriptions avec cleanup automatique
     this.timelineService.state$
       .pipe(takeUntilDestroyed())
       .subscribe(state => {
-        this.currentMonth = state.currentDate;
-        this.generateCalendar();
+        // Afficher 3 mois du trimestre
+        const currentMonth = state.currentDate.getMonth();
+        const year = state.currentDate.getFullYear();
+        const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
+
+        this.months = Array.from({ length: 3 }, (_, i) =>
+          new Date(year, quarterStartMonth + i, 1)
+        );
       });
 
+    // Détecter le mode sombre
     this.settingsService.preferences$
       .pipe(takeUntilDestroyed())
       .subscribe(prefs => {
         this.isDark = prefs.theme === 'dark';
         this.updateDaysOfWeek(true); // Toujours commencer par lundi
       });
+
+    // Écouter le signal de scroll vers aujourd'hui
+    this.timelineService.scrollToToday$
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        setTimeout(() => {
+          this.scrollToCurrentMonth();
+        }, 100);
+      });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['events']) {
-      // Re-render when events change
-    }
+  ngAfterViewInit(): void {
+    // Ne plus faire de scroll automatique au chargement
   }
 
   private updateDaysOfWeek(startMonday: boolean): void {
@@ -236,47 +265,37 @@ export class MonthViewComponent implements OnChanges {
     }
   }
 
-  private generateCalendar(): void {
-    const year = this.currentMonth.getFullYear();
-    const month = this.currentMonth.getMonth();
+  private scrollToCurrentMonth(): void {
+    const currentMonth = new Date().getMonth();
+    const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
+    const monthIndexInQuarter = currentMonth - quarterStartMonth;
 
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+    const monthElement = this.elementRef.nativeElement.querySelector(`#month-${monthIndexInQuarter}`);
+    if (monthElement) {
+      monthElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
 
+  getMonthName(month: Date): string {
+    const monthName = format(month, 'MMMM yyyy', { locale: fr });
+    return monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  }
+
+  getDaysInMonth(month: Date): Date[] {
+    const year = month.getFullYear();
+    const monthNum = month.getMonth();
+    const daysCount = getDaysInMonth(month);
+    return Array.from({ length: daysCount }, (_, i) => new Date(year, monthNum, i + 1));
+  }
+
+  getEmptyDays(month: Date): number[] {
+    const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
     const startDayOfWeek = firstDay.getDay();
-    const daysInMonth = lastDay.getDate();
 
     // Ajuster pour commencer par lundi
     const offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
 
-    this.emptyDays = Array(offset).fill(0);
-    this.days = Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1));
-  }
-
-  getEventsForDay(day: Date): Event[] {
-    if (!this.events) return [];
-    const dateStr = format(day, 'yyyy-MM-dd');
-    return this.events.filter(event => event.date === dateStr).slice(0, 4);
-  }
-
-  isToday(day: Date): boolean {
-    return isToday(day);
-  }
-
-  handleDayClick(day: Date): void {
-    const dayEvents = this.getEventsForDay(day);
-    if (dayEvents.length > 0) {
-      // If there are events, show the detail panel
-      this.selectedDay = day;
-    } else {
-      // If no events, directly add an event
-      const dateStr = format(day, 'yyyy-MM-dd');
-      this.addEventClick.emit(dateStr);
-    }
-  }
-
-  closeDetails(): void {
-    this.selectedDay = null;
+    return Array(offset).fill(0);
   }
 
   isWeekendOrHoliday(day: Date): boolean {
@@ -340,6 +359,36 @@ export class MonthViewComponent implements OnChanges {
     const month = Math.floor((h + l - 7 * m + 114) / 31);
     const day = ((h + l - 7 * m + 114) % 31) + 1;
     return new Date(year, month - 1, day);
+  }
+
+  getEventsForDay(day: Date): Event[] {
+    if (!this.events) return [];
+    const dateStr = format(day, 'yyyy-MM-dd');
+    return this.events.filter(event => event.date === dateStr).slice(0, 4);
+  }
+
+  isToday(day: Date): boolean {
+    return isToday(day);
+  }
+
+  formatDate(day: Date): string {
+    return format(day, 'yyyy-MM-dd');
+  }
+
+  handleDayClick(day: Date): void {
+    const dayEvents = this.getEventsForDay(day);
+    if (dayEvents.length > 0) {
+      // If there are events, show the detail panel
+      this.selectedDay = day;
+    } else {
+      // If no events, directly add an event
+      const dateStr = format(day, 'yyyy-MM-dd');
+      this.addEventClick.emit(dateStr);
+    }
+  }
+
+  closeDetails(): void {
+    this.selectedDay = null;
   }
 
   formatSelectedDay(): string {
