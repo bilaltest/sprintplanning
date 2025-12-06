@@ -29,11 +29,12 @@ import {
 } from '@models/release.model';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { ProgressRingComponent } from '../shared/progress-ring.component';
 
 @Component({
   selector: 'app-release-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProgressRingComponent],
   template: `
     <div class="max-w-7xl mx-auto space-y-6" *ngIf="release">
       <!-- Header -->
@@ -77,12 +78,13 @@ import { fr } from 'date-fns/locale';
               <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm flex flex-col space-y-3">
                 <div class="flex justify-between items-center">
                   <span class="font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</span>
-                  <div class="flex items-center space-x-2 cursor-help" [attr.data-tooltip]="getMissingSteps(squad)">
-                    <div class="w-24 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                      <div class="bg-green-600 h-2 rounded-full transition-all duration-500" [style.width.%]="getSquadProgress(squad)"></div>
-                    </div>
-                    <span class="text-xs text-gray-500 dark:text-gray-400 w-8 text-right">{{ getSquadProgress(squad) }}%</span>
-                  </div>
+                  <app-progress-ring
+                    [percentage]="getSquadProgress(squad)"
+                    [size]="48"
+                    [strokeWidth]="4"
+                    [color]="getSquadProgress(squad) === 100 ? 'success' : (getSquadProgress(squad) >= 70 ? 'primary' : 'warning')"
+                    [showPercentage]="true"
+                  ></app-progress-ring>
                 </div>
                 <div class="flex items-center space-x-2">
                   <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Tonton :</span>

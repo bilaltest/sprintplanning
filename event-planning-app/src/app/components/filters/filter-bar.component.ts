@@ -1,4 +1,4 @@
-import { Component, OnInit, DestroyRef, inject, HostListener } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -12,27 +12,10 @@ import { EventFilter } from '@models/filter.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div
-      class="glass-planning rounded-xl shadow-lg transition-all duration-300"
-      [style.height]="isCollapsed ? '0px' : 'auto'"
-      [style.overflow]="isCollapsed ? 'hidden' : 'visible'"
-      [class.p-4]="!isCollapsed"
-    >
-      <!-- Toggle button (visible only when sticky and scrolled) -->
-      <button
-        *ngIf="isSticky"
-        (click)="onToggleCollapse()"
-        class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 glass-planning rounded-b-xl px-4 py-1.5 text-xs text-planning-700 dark:text-planning-300 hover:text-planning-900 dark:hover:text-planning-100 transition-all shadow-md z-30"
-        title="{{ isCollapsed ? 'Afficher les filtres' : 'Masquer les filtres' }}"
-      >
-        <span class="material-icons text-sm">
-          {{ isCollapsed ? 'expand_more' : 'expand_less' }}
-        </span>
-      </button>
-
+    <div class="glass-planning rounded-xl shadow-lg p-4">
       <div class="flex items-center justify-between gap-4">
         <!-- Label Catégories -->
-        <label class="text-sm font-semibold text-planning-700 dark:text-planning-300 whitespace-nowrap">
+        <label class="text-sm font-semibold text-gray-700 dark:text-gray-300 whitespace-nowrap">
           Catégories
         </label>
 
@@ -66,7 +49,7 @@ import { EventFilter } from '@models/filter.model';
         <button
           *ngIf="hasActiveFilters"
           (click)="resetFilters()"
-          class="px-3 py-1.5 text-xs font-semibold text-planning-600 dark:text-planning-400 hover:text-planning-700 dark:hover:text-planning-300 hover:bg-planning-100 dark:hover:bg-planning-900/30 rounded-lg transition-all whitespace-nowrap"
+          class="px-3 py-1.5 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-900/30 rounded-lg transition-all whitespace-nowrap"
         >
           Réinitialiser
         </button>
@@ -84,15 +67,13 @@ export class FilterBarComponent implements OnInit {
   selectedCategories: string[] = [];
   hasActiveFilters = false;
   hasSelectedCategories = false;
-  isSticky = false;
-  isCollapsed = false;
 
   private destroyRef = inject(DestroyRef);
 
   constructor(
     private filterService: FilterService,
     private categoryService: CategoryService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // S'abonner aux catégories (défaut + personnalisées)
@@ -112,11 +93,6 @@ export class FilterBarComponent implements OnInit {
       });
   }
 
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
-    this.isSticky = window.scrollY > 100;
-  }
-
   toggleCategory(categoryId: string): void {
     this.filterService.toggleCategory(categoryId as EventCategory);
   }
@@ -127,9 +103,5 @@ export class FilterBarComponent implements OnInit {
 
   resetFilters(): void {
     this.filterService.resetFilters();
-  }
-
-  onToggleCollapse(): void {
-    this.isCollapsed = !this.isCollapsed;
   }
 }

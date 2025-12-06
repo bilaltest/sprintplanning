@@ -1,5 +1,6 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { TimelineService } from '@services/timeline.service';
 import { EventService } from '@services/event.service';
 import { FilterService } from '@services/filter.service';
@@ -138,8 +139,20 @@ import { EventModalComponent } from '../modals/event-modal.component';
       </div>
 
       <!-- Filter bar -->
-      <div class="sticky z-30" [style.top.px]="96">
+      <div [class.sticky]="!isStickyDisabled" class="z-30" [style.top.px]="82">
         <app-filter-bar></app-filter-bar>
+        
+        <!-- Toggle button (visible when scrolled) -->
+        <button
+          *ngIf="isScrolled"
+          (click)="toggleFilterSticky()"
+          class="relative z-40 left-1/2 transform -translate-x-1/2 glass-planning rounded-b-xl px-4 py-1.5 text-xs text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-all shadow-md -mt-2"
+          [title]="isStickyDisabled ? 'Activer le mode sticky' : 'Désactiver le mode sticky'"
+        >
+          <span class="material-icons text-sm">
+            {{ isStickyDisabled ? 'expand_more' : 'expand_less' }}
+          </span>
+        </button>
       </div>
 
       <!-- Timeline view -->
@@ -221,13 +234,16 @@ export class TimelineContainerComponent implements OnInit {
   showEventModal = false;
   selectedEvent?: Event;
   showExportMenu = false;
+  isStickyDisabled = false;
+  isScrolled = false;
 
   constructor(
     private timelineService: TimelineService,
     private eventService: EventService,
     private filterService: FilterService,
     private exportService: ExportService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private route: ActivatedRoute
   ) {
     // Initialisation des observables
     this.filteredEvents$ = this.filterService.filteredEvents$;
@@ -239,7 +255,36 @@ export class TimelineContainerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Rien à initialiser ici
+    // Listen for query parameters to scroll to specific event
+    this.route.queryParams.subscribe(params => {
+      const eventId = params['eventId'];
+      if (eventId) {
+        // Wait for the view to render before scrolling
+        setTimeout(() => {
+          this.scrollToEvent(eventId);
+        }, 500);
+      }
+    });
+  }
+
+  private scrollToEvent(eventId: string): void {
+    // First, try to find and open the event modal
+    this.eventService.events$.subscribe(events => {
+      const event = events.find(e => e.id === eventId);
+      if (event) {
+        // Navigate to the correct month/year for the event
+        const eventDate = new Date(event.date);
+        this.timelineService.setCurrentDate(eventDate);
+
+        // Switch to month view for better visibility
+        this.timelineService.setView('month');
+
+        // Wait a bit for the view to update, then open the event modal
+        setTimeout(() => {
+          this.openEditEventModal(event);
+        }, 300);
+      }
+    }).unsubscribe();
   }
 
   setView(view: TimelineView): void {
@@ -269,7 +314,7 @@ export class TimelineContainerComponent implements OnInit {
         return `${year}`;
       case 'month':
         const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-                           'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+          'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
         return `${monthNames[month]} ${year}`;
       default:
         return `${year}`;
@@ -307,6 +352,14 @@ export class TimelineContainerComponent implements OnInit {
 
   handleEventSave(event: Event): void {
     this.closeEventModal();
+  }
+
+  onStickyDisabled(isDisabled: boolean): void {
+    this.isStickyDisabled = isDisabled;
+  }
+
+  toggleFilterSticky(): void {
+    this.isStickyDisabled = !this.isStickyDisabled;
   }
 
   async handleDeleteEvent(event: Event): Promise<void> {
@@ -373,6 +426,11 @@ export class TimelineContainerComponent implements OnInit {
     if (!target.closest('.relative')) {
       this.showExportMenu = false;
     }
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.isScrolled = window.scrollY > 100;
   }
 
   @HostListener('window:keydown', ['$event'])

@@ -39,6 +39,8 @@ import { fr } from 'date-fns/locale';
           [class.dark:bg-primary-900/20]="isToday(day)"
           [class.ring-2]="isToday(day)"
           [class.ring-primary-500]="isToday(day)"
+          [class.bg-gray-100]="isWeekendOrHoliday(day) && !isToday(day)"
+          [class.dark:bg-gray-800/50]="isWeekendOrHoliday(day) && !isToday(day)"
           class="aspect-square border border-gray-200 dark:border-gray-700 rounded-lg p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative group"
           (click)="handleDayClick(day)"
         >
@@ -48,9 +50,10 @@ import { fr } from 'date-fns/locale';
               [class.font-bold]="isToday(day)"
               [class.text-primary-600]="isToday(day) && !isDark"
               [class.dark:text-primary-400]="isToday(day)"
-              class="text-sm text-gray-700 dark:text-gray-300 mb-1"
+              class="text-sm text-gray-700 dark:text-gray-300 mb-1 flex items-center justify-between"
             >
-              {{ day.getDate() }}
+              <span>{{ day.getDate() }}</span>
+              <span *ngIf="isHoliday(day)" class="text-[10px] px-1 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded" title="Jour férié">F</span>
             </div>
 
             <!-- Events for this day -->
@@ -275,6 +278,69 @@ export class MonthViewComponent implements OnChanges {
 
   closeDetails(): void {
     this.selectedDay = null;
+  }
+
+  isWeekendOrHoliday(day: Date): boolean {
+    const dayOfWeek = day.getDay();
+    return dayOfWeek === 0 || dayOfWeek === 6 || this.isHoliday(day);
+  }
+
+  isHoliday(day: Date): boolean {
+    const year = day.getFullYear();
+    const month = day.getMonth() + 1; // 0-indexed
+    const date = day.getDate();
+
+    // Fixed holidays
+    const fixedHolidays = [
+      { month: 1, date: 1 },   // Jour de l'an
+      { month: 5, date: 1 },   // Fête du travail
+      { month: 5, date: 8 },   // Victoire 1945
+      { month: 7, date: 14 },  // Fête nationale
+      { month: 8, date: 15 },  // Assomption
+      { month: 11, date: 1 },  // Toussaint
+      { month: 11, date: 11 }, // Armistice 1918
+      { month: 12, date: 25 }  // Noël
+    ];
+
+    // Check fixed holidays
+    if (fixedHolidays.some(h => h.month === month && h.date === date)) {
+      return true;
+    }
+
+    // Easter-based holidays (Pâques, Lundi de Pâques, Ascension, Pentecôte)
+    const easter = this.getEasterDate(year);
+    const easterMonday = new Date(easter);
+    easterMonday.setDate(easter.getDate() + 1);
+    const ascension = new Date(easter);
+    ascension.setDate(easter.getDate() + 39);
+    const pentecostMonday = new Date(easter);
+    pentecostMonday.setDate(easter.getDate() + 50);
+
+    const easterHolidays = [easter, easterMonday, ascension, pentecostMonday];
+    return easterHolidays.some(holiday =>
+      holiday.getFullYear() === year &&
+      holiday.getMonth() === day.getMonth() &&
+      holiday.getDate() === date
+    );
+  }
+
+  // Calculate Easter date using Computus algorithm
+  private getEasterDate(year: number): Date {
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
   }
 
   formatSelectedDay(): string {

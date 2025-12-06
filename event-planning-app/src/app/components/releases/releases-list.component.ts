@@ -9,6 +9,9 @@ import {
   Release,
   STATUS_LABELS,
   STATUS_COLORS,
+  RELEASE_TYPE_LABELS,
+  RELEASE_TYPE_COLORS,
+  ReleaseType,
   Action,
   ActionType,
   Feature,
@@ -18,11 +21,12 @@ import {
 } from '@models/release.model';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { ProgressRingComponent } from '../shared/progress-ring.component';
 
 @Component({
   selector: 'app-releases-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProgressRingComponent],
   template: `
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- Header -->
@@ -47,29 +51,36 @@ import { fr } from 'date-fns/locale';
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
           *ngFor="let release of (releases$ | async)"
-          class="card-releases p-6 cursor-pointer relative group"
+          class="card-releases p-6 cursor-pointer relative group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02]"
+          [class.hover:border-emerald-500]="release.type === 'release'"
+          [class.hover:border-red-500]="release.type === 'hotfix'"
           (click)="viewRelease(release.id!, release.version)"
         >
-          <!-- Alert Badge -->
-          <div *ngIf="shouldShowAlert(release)"
-               class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg z-10 animate-pulse"
-               title="Squads incomplètes - MEP dans {{ getDaysUntilMep(release.releaseDate) }} jour(s)">
-            <span class="material-icons text-white text-sm">warning</span>
+          <!-- Type Badge -->
+          <div class="absolute top-0 right-0 z-10">
+            <span [class]="getReleaseTypeColors(release.type).badge"
+                  class="inline-flex items-center space-x-1 px-3 py-1 rounded-bl-lg rounded-tr-lg text-xs font-semibold shadow-sm">
+              <span class="material-icons text-sm">
+                {{ release.type === 'hotfix' ? 'build_circle' : 'rocket_launch' }}
+              </span>
+              <span>{{ getReleaseTypeLabel(release.type) }}</span>
+            </span>
           </div>
 
           <!-- Delete Button -->
           <button
             (click)="deleteRelease($event, release)"
-            class="absolute top-4 right-4 p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+            class="absolute top-12 right-2 p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 z-10"
             title="Supprimer la release"
           >
             <span class="material-icons text-lg">delete</span>
           </button>
 
           <!-- Header -->
-          <div class="flex items-start justify-between mb-4 pr-8">
+          <div class="flex items-start justify-between mb-4 pt-12 pr-8">
             <div class="flex-1">
-              <h3 class="text-xl font-bold text-releases-700 dark:text-releases-300 mb-1">
+              <h3 [class]="getReleaseTypeColors(release.type).text"
+                  class="text-xl font-bold mb-1">
                 {{ release.name }}
               </h3>
             </div>
@@ -110,32 +121,37 @@ import { fr } from 'date-fns/locale';
             {{ release.description }}
           </p>
 
-          <!-- Progress Bar -->
-          <div class="mb-4" *ngIf="release.squads.length > 0">
-            <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
-              <span>Progression</span>
-              <span class="font-semibold">{{ getProgressPercentage(release) }}%</span>
-            </div>
-            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-              <div class="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-300"
-                   [style.width.%]="getProgressPercentage(release)"></div>
-            </div>
-            <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-              <span>{{ getCompletedSquads(release) }}/{{ release.squads.length }} squads complétées</span>
-            </div>
-          </div>
+          <!-- Progress Ring & Stats -->
+          <div class="flex items-center justify-between mb-4" *ngIf="release.squads.length > 0">
+            <div class="flex-1">
+              <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
+                <span class="font-medium">Progression</span>
+                <span class="font-bold">{{ getCompletedSquads(release) }}/{{ release.squads.length }} squads</span>
+              </div>
 
-          <!-- Statistics -->
-          <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="flex items-center space-x-2 text-sm">
-              <span class="material-icons text-lg text-gray-500 dark:text-gray-400">groups</span>
-              <span class="text-gray-700 dark:text-gray-300 font-semibold">{{ release.squads.length }} squads</span>
+              <!-- Stats compacts -->
+              <div class="space-y-1">
+                <div class="flex items-center space-x-2 text-xs">
+                  <span class="material-icons text-base text-gray-500 dark:text-gray-400">groups</span>
+                  <span class="text-gray-700 dark:text-gray-300">{{ release.squads.length }} squads</span>
+                </div>
+                <div class="flex items-center space-x-2 text-xs">
+                  <span class="material-icons text-base text-gray-500 dark:text-gray-400">emoji_objects</span>
+                  <span class="text-gray-700 dark:text-gray-300">{{ getTotalFeatures(release) }} features</span>
+                </div>
+              </div>
             </div>
-            <div class="flex items-center space-x-2 text-sm">
-              <span class="material-icons text-lg text-gray-500 dark:text-gray-400">emoji_objects</span>
-              <span class="text-gray-700 dark:text-gray-300 font-semibold">
-                {{ getTotalFeatures(release) }} features
-              </span>
+
+            <!-- Progress Ring -->
+            <div class="ml-4">
+              <app-progress-ring
+                [percentage]="getProgressPercentage(release)"
+                [size]="72"
+                [strokeWidth]="6"
+                [color]="getProgressPercentage(release) === 100 ? 'success' : (getProgressPercentage(release) >= 70 ? 'primary' : 'warning')"
+                [customColor]="release.type === 'hotfix' ? '#ef4444' : undefined"
+                [textClass]="getReleaseTypeColors(release.type).text"
+              ></app-progress-ring>
             </div>
           </div>
 
@@ -225,6 +241,62 @@ import { fr } from 'date-fns/locale';
                 class="input"
                 placeholder="Ex: Release v40.5 - Sprint 2024.12"
               />
+            </div>
+
+            <!-- Type selector with visual feedback -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Type de déploiement
+              </label>
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  (click)="newRelease.type = 'release'"
+                  [class.bg-gradient-to-br]="newRelease.type === 'release'"
+                  [class.from-emerald-500]="newRelease.type === 'release'"
+                  [class.to-emerald-600]="newRelease.type === 'release'"
+                  [class.text-white]="newRelease.type === 'release'"
+                  [class.border-emerald-600]="newRelease.type === 'release'"
+                  [class.shadow-lg]="newRelease.type === 'release'"
+                  [class.scale-105]="newRelease.type === 'release'"
+                  [class.bg-white]="newRelease.type !== 'release'"
+                  [class.dark:bg-gray-800]="newRelease.type !== 'release'"
+                  [class.text-gray-700]="newRelease.type !== 'release'"
+                  [class.dark:text-gray-300]="newRelease.type !== 'release'"
+                  [class.border-gray-300]="newRelease.type !== 'release'"
+                  [class.dark:border-gray-600]="newRelease.type !== 'release'"
+                  [class.hover:border-emerald-400]="newRelease.type !== 'release'"
+                  class="flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 hover:shadow-md"
+                >
+                  <span class="material-icons text-3xl mb-2">rocket_launch</span>
+                  <span class="font-semibold">Release</span>
+                  <span class="text-xs mt-1 opacity-80">Déploiement standard</span>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="newRelease.type = 'hotfix'"
+                  [class.bg-gradient-to-br]="newRelease.type === 'hotfix'"
+                  [class.from-red-500]="newRelease.type === 'hotfix'"
+                  [class.to-rose-600]="newRelease.type === 'hotfix'"
+                  [class.text-white]="newRelease.type === 'hotfix'"
+                  [class.border-red-600]="newRelease.type === 'hotfix'"
+                  [class.shadow-lg]="newRelease.type === 'hotfix'"
+                  [class.scale-105]="newRelease.type === 'hotfix'"
+                  [class.bg-white]="newRelease.type !== 'hotfix'"
+                  [class.dark:bg-gray-800]="newRelease.type !== 'hotfix'"
+                  [class.text-gray-700]="newRelease.type !== 'hotfix'"
+                  [class.dark:text-gray-300]="newRelease.type !== 'hotfix'"
+                  [class.border-gray-300]="newRelease.type !== 'hotfix'"
+                  [class.dark:border-gray-600]="newRelease.type !== 'hotfix'"
+                  [class.hover:border-red-400]="newRelease.type !== 'hotfix'"
+                  class="flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all duration-200 hover:shadow-md"
+                >
+                  <span class="material-icons text-3xl mb-2">build_circle</span>
+                  <span class="font-semibold">Hotfix</span>
+                  <span class="text-xs mt-1 opacity-80">Correction urgente</span>
+                </button>
+              </div>
             </div>
 
             <div>
@@ -355,15 +427,18 @@ export class ReleasesListComponent implements OnInit {
   newMepDate = '';
   newReleaseName = '';
 
-  newRelease = {
+  newRelease: any = {
     name: '',
     version: '',
     releaseDate: '',
+    type: 'release' as ReleaseType,
     description: ''
   };
 
   STATUS_LABELS = STATUS_LABELS;
   STATUS_COLORS = STATUS_COLORS;
+  RELEASE_TYPE_LABELS = RELEASE_TYPE_LABELS;
+  RELEASE_TYPE_COLORS = RELEASE_TYPE_COLORS;
   Math = Math;
 
   constructor(
@@ -414,6 +489,14 @@ export class ReleasesListComponent implements OnInit {
   shouldShowAlert(release: Release): boolean {
     const daysUntil = this.getDaysUntilMep(release.releaseDate);
     return daysUntil >= 0 && daysUntil <= 6 && this.hasIncompleteSquads(release);
+  }
+
+  getReleaseTypeLabel(type: ReleaseType): string {
+    return this.RELEASE_TYPE_LABELS[type || 'release'];
+  }
+
+  getReleaseTypeColors(type: ReleaseType): { gradient: string; badge: string; text: string } {
+    return this.RELEASE_TYPE_COLORS[type || 'release'];
   }
 
   viewRelease(id: string, version?: string): void {
@@ -500,6 +583,7 @@ export class ReleasesListComponent implements OnInit {
         name: '',
         version: '',
         releaseDate: '',
+        type: 'release' as ReleaseType,
         description: ''
       };
 

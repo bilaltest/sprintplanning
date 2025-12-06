@@ -1,6 +1,9 @@
 // Release status
 export type ReleaseStatus = 'draft' | 'in_progress' | 'completed' | 'cancelled';
 
+// Release type
+export type ReleaseType = 'release' | 'hotfix';
+
 // Action phase
 export type ActionPhase = 'pre_mep' | 'post_mep';
 
@@ -98,6 +101,7 @@ export interface Release {
   version: string;
   releaseDate: string; // ISO format
   status: ReleaseStatus;
+  type: ReleaseType; // release ou hotfix
   description?: string;
   squads: Squad[];
   createdAt?: string;
@@ -109,6 +113,7 @@ export interface CreateReleaseDto {
   name: string;
   version: string;
   releaseDate: string;
+  type: ReleaseType; // release ou hotfix
   description?: string;
 }
 
@@ -119,6 +124,7 @@ export interface UpdateReleaseDto {
   releaseDate?: string;
   description?: string;
   status?: ReleaseStatus;
+  type?: ReleaseType;
 }
 
 // DTO pour créer une feature
@@ -178,4 +184,22 @@ export const STATUS_COLORS: Record<ReleaseStatus, string> = {
   in_progress: 'bg-blue-500',
   completed: 'bg-green-500',
   cancelled: 'bg-red-500'
+};
+
+export const RELEASE_TYPE_LABELS: Record<ReleaseType, string> = {
+  release: 'Release',
+  hotfix: 'Hotfix'
+};
+
+export const RELEASE_TYPE_COLORS: Record<ReleaseType, { gradient: string; badge: string; text: string }> = {
+  release: {
+    gradient: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+    badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
+    text: 'text-emerald-600 dark:text-emerald-400'
+  },
+  hotfix: {
+    gradient: 'bg-gradient-to-br from-red-500 to-rose-600',
+    badge: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+    text: 'text-red-600 dark:text-red-400'
+  }
 };
