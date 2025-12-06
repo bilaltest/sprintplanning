@@ -44,12 +44,19 @@ import { fr } from 'date-fns/locale';
       </div>
 
       <!-- Releases Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="(releases$ | async) as releases">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
-          *ngFor="let release of releases"
+          *ngFor="let release of (releases$ | async)"
           class="card-releases p-6 cursor-pointer relative group"
           (click)="viewRelease(release.id!, release.version)"
         >
+          <!-- Alert Badge -->
+          <div *ngIf="shouldShowAlert(release)"
+               class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg z-10 animate-pulse"
+               title="Squads incomplètes - MEP dans {{ getDaysUntilMep(release.releaseDate) }} jour(s)">
+            <span class="material-icons text-white text-sm">warning</span>
+          </div>
+
           <!-- Delete Button -->
           <button
             (click)="deleteRelease($event, release)"
@@ -68,10 +75,34 @@ import { fr } from 'date-fns/locale';
             </div>
           </div>
 
-          <!-- Date -->
-          <div class="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 mb-4">
-            <span class="material-icons text-sm text-gray-500 dark:text-gray-400">event</span>
-            <span class="font-medium">{{ formatDate(release.releaseDate) }}</span>
+          <!-- Date avec badge J-X et bouton édition -->
+          <div class="flex items-center justify-between text-sm mb-4" (click)="$event.stopPropagation()">
+            <div class="flex items-center space-x-2 text-gray-700 dark:text-gray-300">
+              <span class="material-icons text-sm text-gray-500 dark:text-gray-400">event</span>
+              <span class="font-medium">{{ formatDate(release.releaseDate) }}</span>
+              <button
+                (click)="startEditingDate(release)"
+                class="p-1 text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                title="Modifier la date de MEP"
+              >
+                <span class="material-icons text-sm">edit</span>
+              </button>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium"
+                  [class.bg-amber-100]="getDaysUntilMep(release.releaseDate) <= 7 && getDaysUntilMep(release.releaseDate) >= 0"
+                  [class.text-amber-800]="getDaysUntilMep(release.releaseDate) <= 7 && getDaysUntilMep(release.releaseDate) >= 0"
+                  [class.dark:bg-amber-900]="getDaysUntilMep(release.releaseDate) <= 7 && getDaysUntilMep(release.releaseDate) >= 0"
+                  [class.dark:text-amber-200]="getDaysUntilMep(release.releaseDate) <= 7 && getDaysUntilMep(release.releaseDate) >= 0"
+                  [class.bg-primary-100]="getDaysUntilMep(release.releaseDate) > 7"
+                  [class.text-primary-800]="getDaysUntilMep(release.releaseDate) > 7"
+                  [class.dark:bg-primary-900]="getDaysUntilMep(release.releaseDate) > 7"
+                  [class.dark:text-primary-200]="getDaysUntilMep(release.releaseDate) > 7"
+                  [class.bg-gray-100]="getDaysUntilMep(release.releaseDate) < 0"
+                  [class.text-gray-600]="getDaysUntilMep(release.releaseDate) < 0"
+                  [class.dark:bg-gray-700]="getDaysUntilMep(release.releaseDate) < 0"
+                  [class.dark:text-gray-400]="getDaysUntilMep(release.releaseDate) < 0">
+              J{{ getDaysUntilMep(release.releaseDate) >= 0 ? '-' : '+' }}{{ Math.abs(getDaysUntilMep(release.releaseDate)) }}
+            </span>
           </div>
 
           <!-- Description -->
@@ -79,12 +110,37 @@ import { fr } from 'date-fns/locale';
             {{ release.description }}
           </p>
 
-          <!-- Squads Summary -->
-          <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+          <!-- Progress Bar -->
+          <div class="mb-4" *ngIf="release.squads.length > 0">
+            <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+              <span>Progression</span>
+              <span class="font-semibold">{{ getProgressPercentage(release) }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full transition-all duration-300"
+                   [style.width.%]="getProgressPercentage(release)"></div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <span>{{ getCompletedSquads(release) }}/{{ release.squads.length }} squads complétées</span>
+            </div>
+          </div>
+
+          <!-- Statistics -->
+          <div class="grid grid-cols-2 gap-3 mb-4">
             <div class="flex items-center space-x-2 text-sm">
               <span class="material-icons text-lg text-gray-500 dark:text-gray-400">groups</span>
               <span class="text-gray-700 dark:text-gray-300 font-semibold">{{ release.squads.length }} squads</span>
             </div>
+            <div class="flex items-center space-x-2 text-sm">
+              <span class="material-icons text-lg text-gray-500 dark:text-gray-400">emoji_objects</span>
+              <span class="text-gray-700 dark:text-gray-300 font-semibold">
+                {{ getTotalFeatures(release) }} features
+              </span>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
 
             <!-- Export Button -->
             <div class="relative" (click)="$event.stopPropagation()">
@@ -123,7 +179,7 @@ import { fr } from 'date-fns/locale';
 
         <!-- Empty state -->
         <div
-          *ngIf="releases.length === 0"
+          *ngIf="(releases$ | async)?.length === 0"
           class="col-span-full flex flex-col items-center justify-center py-12 text-center"
         >
           <span class="material-icons text-6xl text-gray-400 dark:text-gray-600 mb-4">rocket_launch</span>
@@ -216,6 +272,68 @@ import { fr } from 'date-fns/locale';
           </form>
         </div>
       </div>
+
+      <!-- Edit Release Modal -->
+      <div
+        *ngIf="showEditDateModal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        (click)="cancelEditRelease()"
+      >
+        <div
+          class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4"
+          (click)="$event.stopPropagation()"
+        >
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Modifier la release
+          </h2>
+
+          <form (submit)="saveRelease($event)" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Nom de la release
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="newReleaseName"
+                name="releaseName"
+                required
+                class="input"
+                placeholder="Nom de la release"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Date de MEP
+              </label>
+              <input
+                type="date"
+                [(ngModel)]="newMepDate"
+                name="newDate"
+                required
+                class="input"
+              />
+            </div>
+
+            <div class="flex space-x-3 pt-4">
+              <button
+                type="submit"
+                class="btn btn-primary flex-1"
+                [disabled]="isUpdatingDate"
+              >
+                {{ isUpdatingDate ? 'Mise à jour...' : 'Mettre à jour' }}
+              </button>
+              <button
+                type="button"
+                (click)="cancelEditRelease()"
+                class="btn btn-secondary flex-1"
+              >
+                Annuler
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -231,6 +349,12 @@ export class ReleasesListComponent implements OnInit {
   isCreating = false;
   exportMenuOpen: string | null = null;
 
+  showEditDateModal = false;
+  isUpdatingDate = false;
+  editingRelease: Release | null = null;
+  newMepDate = '';
+  newReleaseName = '';
+
   newRelease = {
     name: '',
     version: '',
@@ -240,6 +364,7 @@ export class ReleasesListComponent implements OnInit {
 
   STATUS_LABELS = STATUS_LABELS;
   STATUS_COLORS = STATUS_COLORS;
+  Math = Math;
 
   constructor(
     private releaseService: ReleaseService,
@@ -260,10 +385,105 @@ export class ReleasesListComponent implements OnInit {
     return release.squads.reduce((total, squad) => total + squad.actions.length, 0);
   }
 
+  getTotalFeatures(release: Release): number {
+    return release.squads.reduce((total, squad) => total + squad.features.length, 0);
+  }
+
+  getCompletedSquads(release: Release): number {
+    return release.squads.filter(squad => squad.isCompleted).length;
+  }
+
+  getProgressPercentage(release: Release): number {
+    const totalSquads = release.squads.length;
+    if (totalSquads === 0) return 0;
+    return Math.round((this.getCompletedSquads(release) / totalSquads) * 100);
+  }
+
+  getDaysUntilMep(dateString: string): number {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const mepDate = new Date(dateString);
+    mepDate.setHours(0, 0, 0, 0);
+    return Math.ceil((mepDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  hasIncompleteSquads(release: Release): boolean {
+    return release.squads.some(squad => !squad.isCompleted);
+  }
+
+  shouldShowAlert(release: Release): boolean {
+    const daysUntil = this.getDaysUntilMep(release.releaseDate);
+    return daysUntil >= 0 && daysUntil <= 6 && this.hasIncompleteSquads(release);
+  }
+
   viewRelease(id: string, version?: string): void {
     // Utiliser la version pour l'URL si disponible, sinon utiliser l'ID
     const routeParam = version || id;
     this.router.navigate(['/releases', routeParam]);
+  }
+
+  startEditingDate(release: Release): void {
+    this.editingRelease = release;
+    this.newMepDate = release.releaseDate;
+    this.newReleaseName = release.name;
+    this.showEditDateModal = true;
+  }
+
+  cancelEditRelease(): void {
+    this.showEditDateModal = false;
+    this.editingRelease = null;
+    this.newMepDate = '';
+    this.newReleaseName = '';
+  }
+
+  async saveRelease(event: Event): Promise<void> {
+    event.preventDefault();
+
+    if (this.isUpdatingDate || !this.editingRelease) return;
+
+    try {
+      this.isUpdatingDate = true;
+      const oldName = this.editingRelease.name;
+      const oldDate = this.formatDate(this.editingRelease.releaseDate);
+      const newDate = this.formatDate(this.newMepDate);
+
+      const updates: any = {};
+      let changeMessages: string[] = [];
+
+      // Check if name changed
+      if (this.newReleaseName !== oldName) {
+        updates.name = this.newReleaseName;
+        changeMessages.push(`nom changé de "${oldName}" à "${this.newReleaseName}"`);
+      }
+
+      // Check if date changed
+      if (this.newMepDate !== this.editingRelease.releaseDate) {
+        updates.releaseDate = this.newMepDate;
+        changeMessages.push(`date changée du ${oldDate} au ${newDate}`);
+      }
+
+      if (changeMessages.length === 0) {
+        this.cancelEditRelease();
+        return;
+      }
+
+      await this.releaseService.updateRelease(this.editingRelease.id!, updates);
+
+      this.toastService.success(
+        'Release mise à jour',
+        changeMessages.join(' et ')
+      );
+
+      this.cancelEditRelease();
+    } catch (error) {
+      console.error('Error updating release:', error);
+      this.toastService.error(
+        'Erreur de mise à jour',
+        'Impossible de mettre à jour la release. Veuillez réessayer.'
+      );
+    } finally {
+      this.isUpdatingDate = false;
+    }
   }
 
   async createRelease(event: Event): Promise<void> {
