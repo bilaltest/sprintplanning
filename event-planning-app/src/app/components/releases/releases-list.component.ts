@@ -425,9 +425,10 @@ export class ReleasesListComponent implements OnInit {
     // Memory Flipping
     if (grouped.memory_flipping.length > 0) {
       md += `#### Memory Flipping\n\n`;
-      const headers = ['Nom du MF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const headers = ['Nom du MF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.memory_flipping.map(a => [
         a.flipping?.ruleName || '',
+        a.description || '',
         a.flipping?.theme || '',
         this.getRuleActionLabel(a.flipping?.ruleAction || ''),
         this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
@@ -442,9 +443,10 @@ export class ReleasesListComponent implements OnInit {
     // Feature Flipping
     if (grouped.feature_flipping.length > 0) {
       md += `#### Feature Flipping\n\n`;
-      const headers = ['Nom du FF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const headers = ['Nom du FF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.feature_flipping.map(a => [
         a.flipping?.ruleName || '',
+        a.description || '',
         a.flipping?.theme || '',
         this.getRuleActionLabel(a.flipping?.ruleAction || ''),
         this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
@@ -583,9 +585,10 @@ export class ReleasesListComponent implements OnInit {
     // Memory Flipping
     if (grouped.memory_flipping.length > 0) {
       html += `<h4>Memory Flipping</h4>`;
-      const headers = ['Nom du MF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const headers = ['Nom du MF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.memory_flipping.map(a => [
         a.flipping?.ruleName || '',
+        a.description || '',
         a.flipping?.theme || '',
         this.getRuleActionLabel(a.flipping?.ruleAction || ''),
         this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
@@ -599,9 +602,10 @@ export class ReleasesListComponent implements OnInit {
     // Feature Flipping
     if (grouped.feature_flipping.length > 0) {
       html += `<h4>Feature Flipping</h4>`;
-      const headers = ['Nom du FF', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const headers = ['Nom du FF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.feature_flipping.map(a => [
         a.flipping?.ruleName || '',
+        a.description || '',
         a.flipping?.theme || '',
         this.getRuleActionLabel(a.flipping?.ruleAction || ''),
         this.getFlippingClientsDisplay(a.flipping?.targetClients || []),

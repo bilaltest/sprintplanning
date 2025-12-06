@@ -1,0 +1,14 @@
+:art: Redesign de la page de détail d'une release
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Date:      Sat Dec 6 00:45:57 2025 +0100
+# Committer: Bilal MBPRO <bilal@MacBook-Pro-de-Bilal.local>
+#
+# On branch main
+# Your branch is up to date with 'bilaltest/main'.
+#
+# Changes to be committed:
+#	modified:   event-planning-app/src/app/components/releases/release-detail.component.ts
+#

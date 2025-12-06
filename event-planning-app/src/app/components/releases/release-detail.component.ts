@@ -65,19 +65,19 @@ import { fr } from 'date-fns/locale';
       <div class="space-y-6">
 
         <!-- 1. Tontons MEP Table -->
-        <div class="card overflow-hidden">
-          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('tontons')">
+        <div class="card">
+          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer rounded-t-lg" [class.rounded-b-lg]="!expandedSections.has('tontons')" (click)="toggleSection('tontons')">
             <h2 class="text-lg font-bold text-gray-900 dark:text-white">Tontons MEP</h2>
             <span class="material-icons text-gray-500">
               {{ expandedSections.has('tontons') ? 'expand_less' : 'expand_more' }}
             </span>
           </div>
-          <div *ngIf="expandedSections.has('tontons')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
+          <div *ngIf="expandedSections.has('tontons')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-b-lg">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 shadow-sm flex flex-col space-y-3">
                 <div class="flex justify-between items-center">
                   <span class="font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</span>
-                  <div class="flex items-center space-x-2">
+                  <div class="flex items-center space-x-2 cursor-help" [attr.data-tooltip]="getMissingSteps(squad)">
                     <div class="w-24 bg-gray-200 rounded-full h-2 dark:bg-gray-700">
                       <div class="bg-green-600 h-2 rounded-full transition-all duration-500" [style.width.%]="getSquadProgress(squad)"></div>
                     </div>
@@ -178,20 +178,19 @@ import { fr } from 'date-fns/locale';
                     </button>
                   </div>
                 </div>
-                <div *ngIf="squad.features.length === 0" class="pl-2 space-y-2">
-                  <p class="text-sm text-gray-400 italic">Aucune fonctionnalité majeure</p>
-                  <div class="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      [checked]="squad.featuresEmptyConfirmed"
-                      (change)="toggleEmptyStatus(squad, 'features')"
-                      id="features-empty-{{squad.id}}"
-                      class="rounded text-primary-600 focus:ring-primary-500 cursor-pointer"
-                    />
-                    <label for="features-empty-{{squad.id}}" class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
-                      Néant (Rien à signaler)
-                    </label>
-                  </div>
+                <div *ngIf="squad.features.length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
+                  <span class="material-icons text-gray-400 text-3xl mb-2">playlist_add_check</span>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune fonctionnalité majeure</p>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      [checked]="squad.featuresEmptyConfirmed" 
+                      (change)="toggleEmptyStatus(squad, 'features')" 
+                      class="sr-only peer"
+                    >
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Rien à signaler (Néant)</span>
+                  </label>
                 </div>
               </div>
             </div>
@@ -476,20 +475,19 @@ import { fr } from 'date-fns/locale';
                   </div>
                 </div>
 
-                <div *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0" class="text-center py-2 space-y-2">
-                  <p class="text-sm text-gray-500 dark:text-gray-400">Aucune action pré-MEP</p>
-                  <div class="flex items-center justify-center space-x-2">
-                    <input
-                      type="checkbox"
-                      [checked]="squad.preMepEmptyConfirmed"
-                      (change)="toggleEmptyStatus(squad, 'pre_mep')"
-                      id="pre-mep-empty-{{squad.id}}"
-                      class="rounded text-primary-600 focus:ring-primary-500 cursor-pointer"
-                    />
-                    <label for="pre-mep-empty-{{squad.id}}" class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
-                      Néant (Rien à signaler)
-                    </label>
-                  </div>
+                <div *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
+
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune action pré-MEP</p>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      [checked]="squad.preMepEmptyConfirmed" 
+                      (change)="toggleEmptyStatus(squad, 'pre_mep')" 
+                      class="sr-only peer"
+                    >
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Rien à signaler (Néant)</span>
+                  </label>
                 </div>
               </div>
             </div>
@@ -774,20 +772,19 @@ import { fr } from 'date-fns/locale';
                   </div>
                 </div>
 
-                <div *ngIf="getActionsByPhase(squad, 'post_mep').length === 0" class="text-center py-2 space-y-2">
-                  <p class="text-sm text-gray-500 dark:text-gray-400">Aucune action post-MEP</p>
-                  <div class="flex items-center justify-center space-x-2">
-                    <input
-                      type="checkbox"
-                      [checked]="squad.postMepEmptyConfirmed"
-                      (change)="toggleEmptyStatus(squad, 'post_mep')"
-                      id="post-mep-empty-{{squad.id}}"
-                      class="rounded text-primary-600 focus:ring-primary-500 cursor-pointer"
-                    />
-                    <label for="post-mep-empty-{{squad.id}}" class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
-                      Néant (Rien à signaler)
-                    </label>
-                  </div>
+                <div *ngIf="getActionsByPhase(squad, 'post_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
+
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune action post-MEP</p>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      [checked]="squad.postMepEmptyConfirmed" 
+                      (change)="toggleEmptyStatus(squad, 'post_mep')" 
+                      class="sr-only peer"
+                    >
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Rien à signaler (Néant)</span>
+                  </label>
                 </div>
               </div>
             </div>
@@ -801,6 +798,57 @@ import { fr } from 'date-fns/locale';
   styles: [`
     :host {
       display: block;
+    }
+    
+    /* Custom CSS Tooltip */
+    [data-tooltip] {
+      position: relative;
+    }
+    
+    [data-tooltip]:before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 10px;
+      background-color: #1f2937; /* gray-800 */
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: normal;
+      max-width: 250px;
+      text-align: center;
+      line-height: 1.4;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease-in-out;
+      pointer-events: none;
+      z-index: 50;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      margin-bottom: 8px;
+    }
+    
+    [data-tooltip]:after {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: #1f2937 transparent transparent transparent;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease-in-out;
+      margin-bottom: -4px; /* Overlap slightly */
+      z-index: 50;
+    }
+    
+    [data-tooltip]:hover:before,
+    [data-tooltip]:hover:after {
+      opacity: 1;
+      visibility: visible;
     }
   `]
 
@@ -1456,6 +1504,34 @@ export class ReleaseDetailComponent implements OnInit {
     }
 
     return Math.round((completedSections / totalSections) * 100);
+  }
+
+  getMissingSteps(squad: Squad): string {
+    const missing: string[] = [];
+
+    if (!squad.tontonMep || squad.tontonMep.trim() === '') {
+      missing.push('Tonton MEP');
+    }
+
+    if (squad.features.length === 0 && !squad.featuresEmptyConfirmed) {
+      missing.push('Fonctionnalités');
+    }
+
+    const preMepActions = this.getActionsByPhase(squad, 'pre_mep');
+    if (preMepActions.length === 0 && !squad.preMepEmptyConfirmed) {
+      missing.push('Actions Pré-MEP');
+    }
+
+    const postMepActions = this.getActionsByPhase(squad, 'post_mep');
+    if (postMepActions.length === 0 && !squad.postMepEmptyConfirmed) {
+      missing.push('Actions Post-MEP');
+    }
+
+    if (missing.length === 0) {
+      return 'Complet !';
+    }
+
+    return 'Manquant : ' + missing.join(', ');
   }
 
   async toggleEmptyStatus(squad: Squad, section: 'features' | 'pre_mep' | 'post_mep'): Promise<void> {
