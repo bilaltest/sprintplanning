@@ -147,6 +147,25 @@ model FeatureFlipping {
   @@index([ruleName])
 }
 
+// ===== RELEASE HISTORY MODEL =====
+
+model ReleaseHistory {
+  id              String   @id @default(cuid())
+  action          String   // 'create', 'update', 'delete'
+  releaseId       String?
+  releaseData     String   // Snapshot de la release (JSON en String pour SQLite)
+  previousData    String?  // Pour rollback (JSON en String pour SQLite)
+  userId          String?  // ID de l'utilisateur qui a fait l'action
+  userDisplayName String?  // Format: "Prenom N." (ex: "Jean D.")
+  timestamp       DateTime @default(now())
+
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([timestamp])
+  @@index([userId])
+  @@index([releaseId])
+}
+
 // ===== USER AUTHENTICATION MODEL =====
 
 model User {
@@ -156,10 +175,12 @@ model User {
   firstName       String
   lastName        String
   themePreference String   @default("light") // 'light' ou 'dark'
+  widgetOrder     String   @default("[]") // Ordre des widgets sur la home (JSON en String pour SQLite)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   histories       History[]
+  releaseHistories ReleaseHistory[]
 
   @@index([email])
 }

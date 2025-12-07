@@ -272,3 +272,50 @@ export async function updatePreferences(req, res) {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 }
+
+/**
+ * PUT /api/auth/widget-order
+ * Met à jour l'ordre des widgets sur la home pour l'utilisateur
+ */
+export async function updateWidgetOrder(req, res) {
+  try {
+    const userId = extractUserIdFromToken(req);
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Non authentifié' });
+    }
+
+    const { widgetOrder } = req.body;
+
+    // Validation
+    if (!Array.isArray(widgetOrder)) {
+      return res.status(400).json({ error: 'widgetOrder doit être un tableau' });
+    }
+
+    // Vérifier que les IDs sont des strings
+    const validOrder = widgetOrder.every(id => typeof id === 'string');
+    if (!validOrder) {
+      return res.status(400).json({ error: 'Les IDs des widgets doivent être des strings' });
+    }
+
+    // Mettre à jour l'ordre des widgets
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        widgetOrder: JSON.stringify(widgetOrder)
+      }
+    });
+
+    // Ne pas retourner le mot de passe
+    const { password: _, ...userWithoutPassword } = updatedUser;
+
+    res.json({
+      message: 'Ordre des widgets mis à jour',
+      user: userWithoutPassword
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de l\'ordre des widgets:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+}

@@ -41,6 +41,18 @@ import { filter } from 'rxjs/operators';
               <span class="action-label">Paramètres</span>
             </button>
           </div>
+
+          <!-- Releases Contextual Actions -->
+          <div class="contextual-actions" *ngIf="isReleasesRoute">
+            <button
+              routerLink="/release-history"
+              class="action-btn"
+              title="Historique des releases"
+            >
+              <span class="material-icons">history</span>
+              <span class="action-label">Historique</span>
+            </button>
+          </div>
         </div>
 
         <!-- Page content -->
@@ -99,6 +111,7 @@ import { filter } from 'rxjs/operators';
 export class MainLayoutComponent implements OnInit {
   isSidebarCollapsed = false;
   isPlanningRoute = false;
+  isReleasesRoute = false;
 
   constructor(
     private sidebarService: SidebarService,
@@ -114,18 +127,19 @@ export class MainLayoutComponent implements OnInit {
       this.isSidebarCollapsed = collapsed;
     });
 
-    // Check if current route is planning
-    this.checkPlanningRoute(this.router.url);
+    // Check if current route is planning or releases
+    this.checkRoutes(this.router.url);
 
     // Listen to route changes
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        this.checkPlanningRoute(event.url);
+        this.checkRoutes(event.url);
       });
   }
 
-  private checkPlanningRoute(url: string): void {
-    this.isPlanningRoute = url.startsWith('/planning');
+  private checkRoutes(url: string): void {
+    this.isPlanningRoute = url.startsWith('/planning') || url.startsWith('/history') || url.startsWith('/settings');
+    this.isReleasesRoute = url.startsWith('/releases') || url.startsWith('/release-history');
   }
 }

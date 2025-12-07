@@ -195,12 +195,18 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
       <!-- Past Releases Section -->
       <div *ngIf="pastReleases.length > 0">
-        <div class="flex items-center space-x-3 mb-4">
-          <span class="material-icons text-2xl text-gray-600 dark:text-gray-400">history</span>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Releases passées</h2>
-          <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-semibold">
-            {{ pastReleases.length }}
-          </span>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-3">
+            <span class="material-icons text-2xl text-gray-600 dark:text-gray-400">history</span>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Releases passées</h2>
+            <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full text-sm font-semibold">
+              {{ pastReleases.length }}
+            </span>
+          </div>
+          <div class="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+            <span class="material-icons" style="font-size: 14px;">info</span>
+            <span>Historique conservé : 20 dernières releases</span>
+          </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
@@ -661,6 +667,10 @@ export class ReleasesListComponent implements OnInit {
     // Utiliser la version pour l'URL si disponible, sinon utiliser l'ID
     const routeParam = version || id;
     this.router.navigate(['/releases', routeParam]);
+  }
+
+  navigateToHistory(): void {
+    this.router.navigate(['/release-history']);
   }
 
   startEditingDate(release: Release, event?: MouseEvent): void {

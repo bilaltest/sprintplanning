@@ -9,6 +9,7 @@ export interface User {
   firstName: string;
   lastName: string;
   themePreference: 'light' | 'dark';
+  widgetOrder: string; // JSON string containing widget order array
   createdAt: string;
   updatedAt: string;
 }
@@ -171,10 +172,70 @@ export class AuthService {
       sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
       this.currentUserSubject.next(response.user);
 
+      // Appliquer le thème immédiatement
+      this.applyTheme(themePreference);
+
       return true;
     } catch (error) {
       console.error('Erreur lors de la mise à jour des préférences:', error);
       return false;
+    }
+  }
+
+  /**
+   * Applique le thème à l'élément HTML
+   */
+  private applyTheme(theme: 'light' | 'dark'): void {
+    const htmlElement = document.documentElement;
+    if (theme === 'dark') {
+      htmlElement.classList.add('dark');
+    } else {
+      htmlElement.classList.remove('dark');
+    }
+  }
+
+  /**
+   * Met à jour l'ordre des widgets pour l'utilisateur
+   */
+  async updateWidgetOrder(widgetOrder: string[]): Promise<boolean> {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        return false;
+      }
+
+      const response = await firstValueFrom(
+        this.http.put<{ user: User; message: string }>(`${this.API_URL}/widget-order`,
+          { widgetOrder },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+      );
+
+      // Mettre à jour l'utilisateur stocké
+      sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      this.currentUserSubject.next(response.user);
+
+      return true;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de l\'ordre des widgets:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Récupère l'ordre des widgets de l'utilisateur
+   */
+  getWidgetOrder(): string[] {
+    const user = this.getCurrentUser();
+    if (!user || !user.widgetOrder) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(user.widgetOrder);
+    } catch (error) {
+      console.error('Erreur lors du parsing de widgetOrder:', error);
+      return [];
     }
   }
 

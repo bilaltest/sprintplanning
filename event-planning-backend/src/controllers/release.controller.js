@@ -26,7 +26,15 @@ const transformRelease = (release) => {
 // Get all releases
 export const getReleases = async (req, res) => {
   try {
-    const releases = await prisma.release.findMany({
+    const now = new Date();
+
+    // Récupérer toutes les releases à venir
+    const upcomingReleases = await prisma.release.findMany({
+      where: {
+        releaseDate: {
+          gte: now
+        }
+      },
       include: {
         squads: {
           include: {
@@ -50,7 +58,41 @@ export const getReleases = async (req, res) => {
       }
     });
 
-    const transformedReleases = releases.map(transformRelease);
+    // Récupérer les 20 dernières releases passées
+    const pastReleases = await prisma.release.findMany({
+      where: {
+        releaseDate: {
+          lt: now
+        }
+      },
+      include: {
+        squads: {
+          include: {
+            features: true,
+            actions: {
+              include: {
+                flipping: true
+              },
+              orderBy: {
+                order: 'asc'
+              }
+            }
+          },
+          orderBy: {
+            squadNumber: 'asc'
+          }
+        }
+      },
+      orderBy: {
+        releaseDate: 'desc'
+      },
+      take: 20  // Limiter aux 20 dernières releases passées
+    });
+
+    // Combiner les releases
+    const allReleases = [...upcomingReleases, ...pastReleases];
+
+    const transformedReleases = allReleases.map(transformRelease);
     res.json(transformedReleases);
   } catch (error) {
     console.error('Error fetching releases:', error);
@@ -160,6 +202,26 @@ export const createRelease = async (req, res) => {
       }
     });
 
+    // Enregistrer dans l'historique
+    const user = req.user; // Récupéré par le middleware d'auth
+    await prisma.releaseHistory.create({
+      data: {
+        action: 'create',
+        releaseId: release.id,
+        releaseData: JSON.stringify({
+          id: release.id,
+          name: release.name,
+          version: release.version,
+          releaseDate: release.releaseDate.toISOString(),
+          type: release.type,
+          description: release.description,
+          status: release.status
+        }),
+        userId: user?.id,
+        userDisplayName: user ? `${user.firstName} ${user.lastName.charAt(0)}.` : null
+      }
+    });
+
     res.status(201).json(release);
   } catch (error) {
     console.error('Error creating release:', error);
@@ -172,6 +234,11 @@ export const updateRelease = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, version, releaseDate, type, description, status } = req.body;
+
+    // Récupérer l'ancienne version pour l'historique
+    const oldRelease = await prisma.release.findUnique({
+      where: { id }
+    });
 
     const release = await prisma.release.update({
       where: { id },
@@ -200,6 +267,35 @@ export const updateRelease = async (req, res) => {
       }
     });
 
+    // Enregistrer dans l'historique
+    const user = req.user;
+    await prisma.releaseHistory.create({
+      data: {
+        action: 'update',
+        releaseId: release.id,
+        releaseData: JSON.stringify({
+          id: release.id,
+          name: release.name,
+          version: release.version,
+          releaseDate: release.releaseDate.toISOString(),
+          type: release.type,
+          description: release.description,
+          status: release.status
+        }),
+        previousData: JSON.stringify({
+          id: oldRelease.id,
+          name: oldRelease.name,
+          version: oldRelease.version,
+          releaseDate: oldRelease.releaseDate.toISOString(),
+          type: oldRelease.type,
+          description: oldRelease.description,
+          status: oldRelease.status
+        }),
+        userId: user?.id,
+        userDisplayName: user ? `${user.firstName} ${user.lastName.charAt(0)}.` : null
+      }
+    });
+
     res.json(release);
   } catch (error) {
     console.error('Error updating release:', error);
@@ -211,6 +307,36 @@ export const updateRelease = async (req, res) => {
 export const deleteRelease = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Récupérer la release avant suppression pour l'historique
+    const release = await prisma.release.findUnique({
+      where: { id }
+    });
+
+    if (!release) {
+      return res.status(404).json({ error: 'Release not found' });
+    }
+
+    // Enregistrer dans l'historique avant la suppression
+    const user = req.user;
+    await prisma.releaseHistory.create({
+      data: {
+        action: 'delete',
+        releaseId: release.id,
+        releaseData: 'null',
+        previousData: JSON.stringify({
+          id: release.id,
+          name: release.name,
+          version: release.version,
+          releaseDate: release.releaseDate.toISOString(),
+          type: release.type,
+          description: release.description,
+          status: release.status
+        }),
+        userId: user?.id,
+        userDisplayName: user ? `${user.firstName} ${user.lastName.charAt(0)}.` : null
+      }
+    });
 
     await prisma.release.delete({
       where: { id }

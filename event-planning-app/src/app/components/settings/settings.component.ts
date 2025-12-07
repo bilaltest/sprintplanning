@@ -1,6 +1,7 @@
 import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SettingsService } from '@services/settings.service';
 import { CategoryService } from '@services/category.service';
@@ -15,6 +16,13 @@ import { Theme, UserPreferences } from '@models/settings.model';
   template: `
     <div class="max-w-4xl mx-auto space-y-6">
       <div class="flex items-center space-x-3">
+        <button
+          (click)="goBack()"
+          class="btn btn-secondary p-2"
+          title="Retour au planning"
+        >
+          <span class="material-icons">arrow_back</span>
+        </button>
         <span class="material-icons text-3xl text-primary-600 dark:text-primary-400">settings</span>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Paramètres</h1>
       </div>
@@ -266,7 +274,8 @@ export class SettingsComponent implements OnInit {
     private settingsService: SettingsService,
     private categoryService: CategoryService,
     private confirmationService: ConfirmationService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -354,5 +363,9 @@ export class SettingsComponent implements OnInit {
         this.toastService.error('Erreur', 'Erreur lors de la suppression de la catégorie');
       }
     }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/planning']);
   }
 }

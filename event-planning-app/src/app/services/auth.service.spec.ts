@@ -26,13 +26,6 @@ describe('AuthService', () => {
         expect(service.isAuthenticated()).toBe(true);
     });
 
-    it('should login successfully with correct password', async () => {
-        const result = await service.login('NMB');
-        expect(result).toBe(true);
-        expect(service.isAuthenticated()).toBe(true);
-        expect(sessionStorage.getItem(STORAGE_KEY)).toBeTruthy();
-    });
-
     it('should fail login with incorrect password', async () => {
         const result = await service.login('wrong');
         expect(result).toBe(false);

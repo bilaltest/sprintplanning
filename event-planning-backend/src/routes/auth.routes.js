@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getCurrentUser, updatePreferences } from '../controllers/auth.controller.js';
+import { register, login, getCurrentUser, updatePreferences, updateWidgetOrder } from '../controllers/auth.controller.js';
 
 const router = express.Router();
 
@@ -26,5 +26,11 @@ router.get('/me', getCurrentUser);
  * Mettre à jour les préférences de l'utilisateur
  */
 router.put('/preferences', updatePreferences);
+
+/**
+ * PUT /api/auth/widget-order
+ * Mettre à jour l'ordre des widgets sur la home
+ */
+router.put('/widget-order', updateWidgetOrder);
 
 export default router;

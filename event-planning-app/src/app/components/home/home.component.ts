@@ -4,17 +4,24 @@ import { Router } from '@angular/router';
 import { SettingsService } from '@services/settings.service';
 import { EventService } from '@services/event.service';
 import { ReleaseService } from '@services/release.service';
+import { AuthService } from '@services/auth.service';
 import { Event } from '@models/event.model';
 import { Release } from '@models/release.model';
 import { format, isThisWeek, isFuture, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { ProgressRingComponent } from '../shared/progress-ring.component';
 import { interval, Subscription } from 'rxjs';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+
+interface Widget {
+  id: string;
+  type: 'events7days' | 'nextMep';
+}
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ProgressRingComponent],
+  imports: [CommonModule, ProgressRingComponent, DragDropModule],
   template: `
     <div class="space-y-8">
           <!-- Applications Section -->
@@ -117,99 +124,115 @@ import { interval, Subscription } from 'rxjs';
               </div>
             </div>
 
-            <!-- Widgets Grid -->
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <!-- Events Next 7 Days Widget -->
-            <div class="bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border border-gray-200 dark:border-gray-600 hover:shadow-xl hover:scale-103 transition-all duration-300 aspect-[4/3] flex flex-col cursor-pointer" *ngIf="eventsNext7Days.length > 0">
-              <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center space-x-2">
-                  <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                    <span class="material-icons text-sm text-blue-600 dark:text-blue-400">calendar_today</span>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">Événements</h2>
-                    <p class="text-xs text-gray-600 dark:text-gray-400">7 jours</p>
-                  </div>
-                </div>
-                <div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                  {{ eventsNext7Days.length }}
-                </div>
-              </div>
-              <div class="space-y-1 flex-1 overflow-y-auto custom-scrollbar-thin">
-                <div *ngFor="let event of eventsNext7Days.slice(0, 3)"
-                     class="flex items-center space-x-2 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
-                     (click)="navigateToEvent(event, $event)">
-                  <div class="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" [style.background-color]="event.color"></div>
-                  <span class="material-icons text-xs flex-shrink-0" [style.color]="event.color">{{ event.icon }}</span>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ event.title }}</p>
-                  </div>
-                </div>
-                <div *ngIf="eventsNext7Days.length > 3"
-                     class="text-xs text-center text-gray-500 dark:text-gray-400 pt-1">
-                  +{{ eventsNext7Days.length - 3 }} autres
-                </div>
-              </div>
-            </div>
+            <!-- Widgets Grid avec Drag & Drop -->
+            <div
+              cdkDropList
+              [cdkDropListAutoScrollDisabled]="false"
+              (cdkDropListDropped)="onWidgetDrop($event)"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 
-            <!-- Empty state Events -->
-            <div class="bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border border-gray-200 dark:border-gray-600 hover:shadow-xl hover:scale-103 transition-all duration-300 aspect-[4/3] flex flex-col items-center justify-center cursor-pointer" *ngIf="eventsNext7Days.length === 0">
-              <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">event_available</span>
-              <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucun événement</p>
-              <p class="text-xs text-gray-500 dark:text-gray-500 text-center">7 prochains jours</p>
-            </div>
+              <!-- Iterate through ordered widgets -->
+              <ng-container *ngFor="let widget of orderedWidgets">
+                <div cdkDrag class="relative group">
+                  <!-- Drag indicator (visible on hover) -->
+                  <div class="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none p-1 bg-primary-500/90 dark:bg-primary-600/90 rounded shadow-lg">
+                    <span class="material-icons text-xs text-white">open_with</span>
+                  </div>
 
-            <!-- Next MEP Widget -->
-            <div class="bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border border-gray-200 dark:border-gray-600 transition-all duration-300 aspect-[4/3] flex flex-col"
-                 [class.cursor-pointer]="nextMep"
-                 [class.hover:shadow-xl]="nextMep"
-                 [class.hover:scale-103]="nextMep"
-                 (click)="nextMep && navigateToRelease(nextMep)">
-              <div *ngIf="nextMep" class="flex flex-col h-full">
-                <div class="flex items-center justify-between mb-2">
-                  <div class="flex items-center space-x-2 flex-1 min-w-0">
-                    <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <span class="material-icons text-sm text-emerald-600 dark:text-emerald-400">rocket_launch</span>
+                  <!-- Events Next 7 Days Widget -->
+                  <div *ngIf="widget.type === 'events7days' && eventsNext7Days.length > 0"
+                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col cursor-move"
+                       (click)="handleWidgetClick($event, 'planning')">
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                          <span class="material-icons text-sm text-blue-600 dark:text-blue-400">calendar_today</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">Événements</h2>
+                          <p class="text-xs text-gray-600 dark:text-gray-400">7 jours</p>
+                        </div>
+                      </div>
+                      <div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        {{ eventsNext7Days.length }}
+                      </div>
                     </div>
-                    <div class="flex-1 min-w-0">
-                      <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">MEP</h2>
+                    <div class="space-y-1 flex-1 overflow-y-auto custom-scrollbar-thin">
+                      <div *ngFor="let event of eventsNext7Days.slice(0, 3)"
+                           class="flex items-center space-x-2 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
+                           (click)="navigateToEvent(event, $event)">
+                        <div class="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" [style.background-color]="event.color"></div>
+                        <span class="material-icons text-xs flex-shrink-0" [style.color]="event.color">{{ event.icon }}</span>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ event.title }}</p>
+                        </div>
+                      </div>
+                      <div *ngIf="eventsNext7Days.length > 3"
+                           class="text-xs text-center text-gray-500 dark:text-gray-400 pt-1">
+                        +{{ eventsNext7Days.length - 3 }} autres
+                      </div>
                     </div>
                   </div>
-                  <span class="px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0"
-                        [class.bg-amber-100]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
-                        [class.text-amber-800]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
-                        [class.dark:bg-amber-900]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
-                        [class.dark:text-amber-200]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
-                        [class.bg-emerald-100]="getDaysUntilMep(nextMep.releaseDate) > 7"
-                        [class.text-emerald-800]="getDaysUntilMep(nextMep.releaseDate) > 7"
-                        [class.dark:bg-emerald-900]="getDaysUntilMep(nextMep.releaseDate) > 7"
-                        [class.dark:text-emerald-200]="getDaysUntilMep(nextMep.releaseDate) > 7">
-                    J-{{ getDaysUntilMep(nextMep.releaseDate) }}
-                  </span>
-                </div>
 
-                <div class="flex-1 flex flex-col items-center justify-center min-h-0">
-                  <app-progress-ring
-                    [percentage]="getNextMepProgress()"
-                    [size]="56"
-                    [strokeWidth]="5"
-                    [color]="getNextMepProgress() === 100 ? 'success' : 'warning'"
-                  ></app-progress-ring>
-                  <p class="text-xs font-semibold text-gray-900 dark:text-white mt-2 text-center truncate w-full px-1">
-                    {{ nextMep.name }}
-                  </p>
-                  <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    {{ getCompletedSquadsCount() }}/{{ getTotalSquadsCount() }} squads
-                  </p>
-                </div>
-              </div>
+                  <!-- Empty state Events -->
+                  <div *ngIf="widget.type === 'events7days' && eventsNext7Days.length === 0"
+                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col items-center justify-center cursor-move">
+                    <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">event_available</span>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucun événement</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-500 text-center">7 prochains jours</p>
+                  </div>
 
-              <!-- Empty state -->
-              <div class="flex flex-col items-center justify-center h-full" *ngIf="!nextMep">
-                <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">rocket</span>
-                <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucune MEP planifiée</p>
-              </div>
-            </div>
+                  <!-- Next MEP Widget -->
+                  <div *ngIf="widget.type === 'nextMep'"
+                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col cursor-move"
+                       (click)="handleWidgetClick($event, nextMep ? 'release' : null, nextMep)">
+                    <div *ngIf="nextMep" class="flex flex-col h-full">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-2 flex-1 min-w-0">
+                          <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span class="material-icons text-sm text-emerald-600 dark:text-emerald-400">rocket_launch</span>
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">MEP</h2>
+                          </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0"
+                              [class.bg-amber-100]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
+                              [class.text-amber-800]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
+                              [class.dark:bg-amber-900]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
+                              [class.dark:text-amber-200]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
+                              [class.bg-emerald-100]="getDaysUntilMep(nextMep.releaseDate) > 7"
+                              [class.text-emerald-800]="getDaysUntilMep(nextMep.releaseDate) > 7"
+                              [class.dark:bg-emerald-900]="getDaysUntilMep(nextMep.releaseDate) > 7"
+                              [class.dark:text-emerald-200]="getDaysUntilMep(nextMep.releaseDate) > 7">
+                          J-{{ getDaysUntilMep(nextMep.releaseDate) }}
+                        </span>
+                      </div>
+
+                      <div class="flex-1 flex flex-col items-center justify-center min-h-0">
+                        <app-progress-ring
+                          [percentage]="getNextMepProgress()"
+                          [size]="56"
+                          [strokeWidth]="5"
+                          [color]="getNextMepProgress() === 100 ? 'success' : 'warning'"
+                        ></app-progress-ring>
+                        <p class="text-xs font-semibold text-gray-900 dark:text-white mt-2 text-center truncate w-full px-1">
+                          {{ nextMep.name }}
+                        </p>
+                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          {{ getCompletedSquadsCount() }}/{{ getTotalSquadsCount() }} squads
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div class="flex flex-col items-center justify-center h-full" *ngIf="!nextMep">
+                      <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">rocket</span>
+                      <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucune MEP planifiée</p>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
             </div>
           </section>
     </div>
@@ -219,11 +242,43 @@ import { interval, Subscription } from 'rxjs';
       display: block;
       height: 100vh;
     }
+
+    /* Widget cards styles */
+    .widget-card {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      cursor: move;
+    }
+
+    /* Preview du widget pendant le drag */
+    .cdk-drag-preview .widget-card {
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+      opacity: 0.9;
+      border: 2px solid #10b981 !important;
+    }
+
+    /* Placeholder - zone où le widget sera déposé */
+    .cdk-drag-placeholder {
+      opacity: 0;
+    }
+
+    /* Animation fluide pendant le drag */
+    .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+      transition: transform 250ms cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+
+    /* Cursor pendant le drag */
+    .cdk-drag-dragging {
+      cursor: grabbing !important;
+    }
   `]
 })
 export class HomeComponent implements OnInit, OnDestroy {
   nextMep: Release | null = null;
   eventsNext7Days: Event[] = [];
+  orderedWidgets: Widget[] = [];
 
   // Stats pour compteurs animés
   totalEvents = 0;
@@ -239,20 +294,85 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private animationSubscription?: Subscription;
 
+  // Default widget order
+  private readonly DEFAULT_WIDGETS: Widget[] = [
+    { id: 'events7days', type: 'events7days' },
+    { id: 'nextMep', type: 'nextMep' }
+  ];
+
   constructor(
     private router: Router,
     public settingsService: SettingsService,
     private eventService: EventService,
-    private releaseService: ReleaseService
+    private releaseService: ReleaseService,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
+    this.loadWidgetOrder();
     this.loadStatistics();
   }
 
   ngOnDestroy(): void {
     if (this.animationSubscription) {
       this.animationSubscription.unsubscribe();
+    }
+  }
+
+  /**
+   * Charge l'ordre des widgets depuis les préférences utilisateur
+   */
+  private loadWidgetOrder(): void {
+    const savedOrder = this.authService.getWidgetOrder();
+
+    if (savedOrder.length > 0) {
+      // Reconstruct widgets based on saved order
+      this.orderedWidgets = savedOrder
+        .map(id => this.DEFAULT_WIDGETS.find(w => w.id === id))
+        .filter((w): w is Widget => w !== undefined);
+
+      // Add any new widgets that aren't in saved order
+      const missingWidgets = this.DEFAULT_WIDGETS.filter(
+        w => !savedOrder.includes(w.id)
+      );
+      this.orderedWidgets.push(...missingWidgets);
+    } else {
+      // Use default order
+      this.orderedWidgets = [...this.DEFAULT_WIDGETS];
+    }
+  }
+
+  /**
+   * Handler pour le drop event du drag & drop
+   */
+  async onWidgetDrop(event: CdkDragDrop<Widget[]>): Promise<void> {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    // Réorganiser les widgets
+    moveItemInArray(this.orderedWidgets, event.previousIndex, event.currentIndex);
+
+    // Sauvegarder l'ordre
+    const widgetIds = this.orderedWidgets.map(w => w.id);
+    await this.authService.updateWidgetOrder(widgetIds);
+  }
+
+  /**
+   * Gère les clics sur les widgets (uniquement si pas en train de drag)
+   */
+  handleWidgetClick(event: MouseEvent, type: string | null, release?: Release | null): void {
+    // Vérifier si c'est un vrai clic (pas un drag)
+    const target = event.target as HTMLElement;
+    if (target.closest('.cdk-drag-preview') || target.closest('.cdk-drag-placeholder')) {
+      return;
+    }
+
+    // Navigation selon le type
+    if (type === 'planning') {
+      this.navigateToPlanning();
+    } else if (type === 'release' && release) {
+      this.navigateToRelease(release);
     }
   }
 
@@ -396,8 +516,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
     return this.nextMep.squads.length;
   }
-
-
 
   formatDate(dateString: string): string {
     return format(new Date(dateString), 'dd MMMM yyyy', { locale: fr });

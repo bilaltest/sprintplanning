@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { UserPreferences, DEFAULT_PREFERENCES, Theme } from '@models/settings.model';
 import { environment } from '../../environments/environment';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,10 @@ export class SettingsService {
   private preferencesSubject = new BehaviorSubject<UserPreferences>(DEFAULT_PREFERENCES);
   public preferences$: Observable<UserPreferences> = this.preferencesSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService
+  ) {
     this.loadPreferences();
   }
 
@@ -23,11 +27,10 @@ export class SettingsService {
         this.http.get<UserPreferences>(this.apiUrl)
       );
       this.preferencesSubject.next(prefs);
-      this.applyTheme(prefs.theme);
+      // Ne pas appliquer le thème ici, c'est géré par AuthService via AppComponent
     } catch (error) {
       // En cas d'erreur, utiliser les préférences par défaut
       this.preferencesSubject.next(DEFAULT_PREFERENCES);
-      this.applyTheme(DEFAULT_PREFERENCES.theme);
     }
   }
 
@@ -43,8 +46,8 @@ export class SettingsService {
   }
 
   async setTheme(theme: Theme): Promise<void> {
-    const current = this.preferencesSubject.value;
-    await this.savePreferences({ ...current, theme });
+    // Utiliser AuthService pour sauvegarder le thème dans les préférences utilisateur
+    await this.authService.updatePreferences(theme);
     this.applyTheme(theme);
   }
 
@@ -55,7 +58,10 @@ export class SettingsService {
       id: current.id,
       createdAt: current.createdAt
     });
-    this.applyTheme(DEFAULT_PREFERENCES.theme);
+
+    // Réinitialiser aussi le thème utilisateur
+    await this.authService.updatePreferences('light');
+    this.applyTheme('light');
   }
 
   private applyTheme(theme: Theme): void {
@@ -75,9 +81,10 @@ export class SettingsService {
     await this.savePreferences(preferences);
   }
 
-  toggleTheme(): void {
-    const current = this.preferencesSubject.value;
-    const newTheme = current.theme === 'light' ? 'dark' : 'light';
-    this.setTheme(newTheme);
+  async toggleTheme(): Promise<void> {
+    const user = this.authService.getCurrentUser();
+    const currentTheme = user?.themePreference || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    await this.setTheme(newTheme);
   }
 }

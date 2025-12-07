@@ -79,6 +79,14 @@ export const routes: Routes = [
         data: { breadcrumb: 'Détail Release' }
       },
       {
+        path: 'release-history',
+        loadComponent: () =>
+          import('./components/releases/release-history.component').then(
+            m => m.ReleaseHistoryComponent
+          ),
+        data: { breadcrumb: 'Historique Releases' }
+      },
+      {
         path: 'admin',
         loadComponent: () =>
           import('./components/admin/admin.component').then(
