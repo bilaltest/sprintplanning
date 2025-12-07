@@ -20,5 +20,5 @@ export interface HistoryState {
 
 export const DEFAULT_HISTORY_STATE: HistoryState = {
   entries: [],
-  maxEntries: 20
+  maxEntries: 30
 };

@@ -120,4 +120,8 @@ export class EventService {
   async exportEvents(): Promise<Event[]> {
     return firstValueFrom(this.http.get<Event[]>(this.apiUrl));
   }
+
+  async refreshEvents(): Promise<void> {
+    await this.loadEvents();
+  }
 }

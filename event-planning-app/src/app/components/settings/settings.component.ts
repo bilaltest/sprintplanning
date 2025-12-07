@@ -19,7 +19,7 @@ import { Theme, UserPreferences } from '@models/settings.model';
         <button
           (click)="goBack()"
           class="btn btn-secondary p-2"
-          title="Retour au planning"
+          title="Retour au calendrier"
         >
           <span class="material-icons">arrow_back</span>
         </button>
@@ -366,6 +366,6 @@ export class SettingsComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/planning']);
+    this.router.navigate(['/calendar']);
   }
 }

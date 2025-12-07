@@ -48,7 +48,7 @@ interface NavItem {
           *ngFor="let item of getVisibleNavItems()"
           [routerLink]="item.route"
           routerLinkActive="active"
-          [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}"
+          [routerLinkActiveOptions]="{exact: item.route === '/home'}"
           class="nav-item"
           [class.collapsed]="isCollapsed"
           [title]="isCollapsed ? item.label : ''"
@@ -181,9 +181,9 @@ export class SidebarComponent implements OnInit {
   currentUser: User | null = null;
 
   navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'home', route: '/dashboard' },
-    { label: 'Planning', icon: 'calendar_month', route: '/planning' },
-    { label: 'Releases', icon: 'rocket_launch', route: '/releases' },
+    { label: 'Accueil', icon: 'home', route: '/home' },
+    { label: 'Calendrier', icon: 'calendar_month', route: '/calendar' },
+    { label: 'Prépa MEP', icon: 'rocket_launch', route: '/releases' },
     { label: 'Admin', icon: 'admin_panel_settings', route: '/admin' }
   ];
 

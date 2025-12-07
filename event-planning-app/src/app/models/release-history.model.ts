@@ -18,5 +18,5 @@ export interface ReleaseHistoryState {
 
 export const DEFAULT_RELEASE_HISTORY_STATE: ReleaseHistoryState = {
   entries: [],
-  maxEntries: 20
+  maxEntries: 30
 };

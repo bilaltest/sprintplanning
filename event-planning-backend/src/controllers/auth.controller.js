@@ -107,6 +107,14 @@ export async function register(req, res) {
       return res.status(409).json({ error: 'Un compte existe déjà avec cette adresse email' });
     }
 
+    // Vérifier la limite de 200 utilisateurs
+    const userCount = await prisma.user.count();
+    if (userCount >= 200) {
+      return res.status(403).json({
+        error: 'Limite d\'utilisateurs atteinte (200 max). Veuillez contacter l\'administrateur.'
+      });
+    }
+
     // Extraire prénom et nom depuis l'email
     const { firstName, lastName } = extractNameFromEmail(email);
 

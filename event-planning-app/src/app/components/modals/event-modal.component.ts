@@ -14,18 +14,20 @@ import { ConfirmationService } from '@services/confirmation.service';
   template: `
     <div class="modal-overlay" (click)="onOverlayClick($event)">
       <div class="modal-content-planning fade-in-scale" (click)="$event.stopPropagation()">
-        <div class="sticky top-0 glass-planning border-b-2 border-planning-300 dark:border-planning-700 px-6 py-4 flex items-center justify-between rounded-t-xl">
-          <div class="flex items-center space-x-2">
-            <span class="material-icons text-planning-600 dark:text-planning-400">
-              {{ isEditMode ? 'edit_calendar' : 'add_circle' }}
-            </span>
+        <div class="modal-header-glass">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-planning-100 dark:bg-planning-900/30 flex items-center justify-center">
+              <span class="material-icons text-planning-600 dark:text-planning-400">
+                {{ isEditMode ? 'edit_calendar' : 'add_circle' }}
+              </span>
+            </div>
             <h2 class="text-xl font-bold text-gray-900 dark:text-white">
               {{ isEditMode ? "Modifier l'événement" : "Nouvel événement" }}
             </h2>
           </div>
           <button
             (click)="close.emit()"
-            class="p-2 hover:bg-planning-100 dark:hover:bg-planning-900/30 rounded-lg transition-all"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <span class="material-icons text-gray-600 dark:text-gray-400">close</span>
           </button>

@@ -30,14 +30,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
   template: `
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <span class="material-icons text-4xl text-releases-500 dark:text-releases-400">rocket_launch</span>
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Préparation de MEP</h1>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Gérez vos releases et leurs déploiements</p>
-          </div>
-        </div>
+      <div class="flex items-center justify-end mb-2">
         <button
           (click)="showCreateModal = true"
           class="btn btn-primary flex items-center space-x-2 px-6 py-3"
@@ -51,7 +44,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
       <div *ngIf="upcomingReleases.length > 0">
         <div class="flex items-center space-x-3 mb-4">
           <span class="material-icons text-2xl text-primary-600 dark:text-primary-400">upcoming</span>
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Releases à venir</h2>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">MEP à venir</h2>
           <span class="px-3 py-1 bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 rounded-full text-sm font-semibold">
             {{ upcomingReleases.length }}
           </span>
@@ -355,18 +348,31 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
       <!-- Create Modal -->
       <div
         *ngIf="showCreateModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        class="modal-overlay"
         (click)="showCreateModal = false"
       >
         <div
-          class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4"
+          class="modal-content max-w-md fade-in-scale"
           (click)="$event.stopPropagation()"
         >
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Nouvelle Release
-          </h2>
+          <div class="modal-header-glass">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <span class="material-icons text-primary-600 dark:text-primary-400">add_circle</span>
+              </div>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                Nouvelle Release
+              </h2>
+            </div>
+            <button
+              (click)="showCreateModal = false"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <span class="material-icons text-gray-600 dark:text-gray-400">close</span>
+            </button>
+          </div>
 
-          <form (submit)="createRelease($event)" class="space-y-4">
+          <form (submit)="createRelease($event)" class="p-6 space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Nom de la release
@@ -463,20 +469,20 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               ></textarea>
             </div>
 
-            <div class="flex space-x-3 pt-4">
-              <button
-                type="submit"
-                class="btn btn-primary flex-1"
-                [disabled]="isCreating"
-              >
-                {{ isCreating ? 'Création...' : 'Créer' }}
-              </button>
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
               <button
                 type="button"
                 (click)="showCreateModal = false"
-                class="btn btn-secondary flex-1"
+                class="btn btn-secondary"
               >
                 Annuler
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="isCreating"
+              >
+                {{ isCreating ? 'Création...' : 'Créer' }}
               </button>
             </div>
           </form>
@@ -486,18 +492,31 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
       <!-- Edit Release Modal -->
       <div
         *ngIf="showEditDateModal"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        class="modal-overlay"
         (click)="cancelEditRelease()"
       >
         <div
-          class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4"
+          class="modal-content max-w-md fade-in-scale"
           (click)="$event.stopPropagation()"
         >
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Modifier la release
-          </h2>
+          <div class="modal-header-glass">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <span class="material-icons text-primary-600 dark:text-primary-400">edit</span>
+              </div>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                Modifier la release
+              </h2>
+            </div>
+            <button
+              (click)="cancelEditRelease()"
+              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <span class="material-icons text-gray-600 dark:text-gray-400">close</span>
+            </button>
+          </div>
 
-          <form (submit)="saveRelease($event)" class="space-y-4">
+          <form (submit)="saveRelease($event)" class="p-6 space-y-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Nom de la release
@@ -525,20 +544,20 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               />
             </div>
 
-            <div class="flex space-x-3 pt-4">
-              <button
-                type="submit"
-                class="btn btn-primary flex-1"
-                [disabled]="isUpdatingDate"
-              >
-                {{ isUpdatingDate ? 'Mise à jour...' : 'Mettre à jour' }}
-              </button>
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-600">
               <button
                 type="button"
                 (click)="cancelEditRelease()"
-                class="btn btn-secondary flex-1"
+                class="btn btn-secondary"
               >
                 Annuler
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="isUpdatingDate"
+              >
+                {{ isUpdatingDate ? 'Mise à jour...' : 'Mettre à jour' }}
               </button>
             </div>
           </form>

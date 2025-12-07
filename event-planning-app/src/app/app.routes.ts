@@ -19,7 +19,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'dashboard',
+    redirectTo: 'home',
     pathMatch: 'full'
   },
   {
@@ -31,20 +31,20 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       {
-        path: 'dashboard',
+        path: 'home',
         loadComponent: () =>
           import('./components/home/home.component').then(
             m => m.HomeComponent
           ),
-        data: { breadcrumb: 'Dashboard' }
+        data: { breadcrumb: 'Accueil' }
       },
       {
-        path: 'planning',
+        path: 'calendar',
         loadComponent: () =>
           import('./components/timeline/timeline-container.component').then(
             m => m.TimelineContainerComponent
           ),
-        data: { breadcrumb: 'Planning' }
+        data: { breadcrumb: 'Calendrier' }
       },
       {
         path: 'settings',
@@ -68,7 +68,7 @@ export const routes: Routes = [
           import('./components/releases/releases-list.component').then(
             m => m.ReleasesListComponent
           ),
-        data: { breadcrumb: 'Releases' }
+        data: { breadcrumb: 'Préparation des MEP' }
       },
       {
         path: 'releases/:id',
@@ -76,7 +76,7 @@ export const routes: Routes = [
           import('./components/releases/release-detail.component').then(
             m => m.ReleaseDetailComponent
           ),
-        data: { breadcrumb: 'Détail Release' }
+        data: { breadcrumb: 'Détail MEP' }
       },
       {
         path: 'release-history',
@@ -84,7 +84,7 @@ export const routes: Routes = [
           import('./components/releases/release-history.component').then(
             m => m.ReleaseHistoryComponent
           ),
-        data: { breadcrumb: 'Historique Releases' }
+        data: { breadcrumb: 'Historique MEP' }
       },
       {
         path: 'admin',

@@ -11,22 +11,18 @@ import { ConfirmationOptions } from '@models/confirmation.model';
   template: `
     <div
       *ngIf="confirmation$ | async as options"
-      class="fixed inset-0 z-[10000] flex items-center justify-center"
+      class="modal-overlay"
       [@fadeIn]
+      (click)="cancel()"
     >
-      <!-- Overlay -->
+      <!-- Modal with glassmorphism -->
       <div
-        class="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        (click)="cancel()"
-      ></div>
-
-      <!-- Modal -->
-      <div
-        class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-600 max-w-md w-full mx-4 overflow-hidden"
+        class="modal-content max-w-md fade-in-scale"
         [@slideIn]
+        (click)="$event.stopPropagation()"
       >
-        <!-- Header -->
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
+        <!-- Header with glassmorphism -->
+        <div class="modal-header-glass">
           <div class="flex items-center space-x-3">
             <!-- Icon based on type -->
             <div
@@ -64,20 +60,20 @@ import { ConfirmationOptions } from '@models/confirmation.model';
         </div>
 
         <!-- Actions -->
-        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-750/50 flex items-center justify-end space-x-3">
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-600 flex items-center justify-end space-x-3">
           <button
             (click)="cancel()"
-            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            class="btn btn-secondary"
           >
             {{ options.cancelText || 'Annuler' }}
           </button>
           <button
             (click)="confirm()"
-            class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+            class="btn"
             [ngClass]="{
-              'bg-red-600 hover:bg-red-700': options.confirmButtonClass === 'danger',
-              'bg-orange-600 hover:bg-orange-700': options.confirmButtonClass === 'warning',
-              'bg-blue-600 hover:bg-blue-700': options.confirmButtonClass === 'primary' || !options.confirmButtonClass
+              'btn-danger': options.confirmButtonClass === 'danger',
+              'bg-orange-600 hover:bg-orange-700 text-white focus:ring-orange-500': options.confirmButtonClass === 'warning',
+              'btn-primary': options.confirmButtonClass === 'primary' || !options.confirmButtonClass
             }"
           >
             {{ options.confirmText || 'Confirmer' }}

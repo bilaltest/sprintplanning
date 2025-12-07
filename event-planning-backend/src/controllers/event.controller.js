@@ -2,9 +2,38 @@ import prisma from '../config/database.js';
 import { validationResult } from 'express-validator';
 import { extractUserIdFromToken, getUserDisplayName } from '../utils/auth.js';
 
+// Archivage automatique : supprimer les événements de plus de 24 mois
+const archiveOldEvents = async () => {
+  try {
+    const now = new Date();
+    const cutoffDate = new Date(now);
+    cutoffDate.setMonth(cutoffDate.getMonth() - 24);
+
+    // Formater en YYYY-MM-DD pour SQLite
+    const cutoffDateString = cutoffDate.toISOString().split('T')[0];
+
+    const result = await prisma.event.deleteMany({
+      where: {
+        date: {
+          lt: cutoffDateString
+        }
+      }
+    });
+
+    if (result.count > 0) {
+      console.log(`Archived ${result.count} events older than 24 months`);
+    }
+  } catch (error) {
+    console.error('Error archiving events:', error);
+  }
+};
+
 // GET /api/events - Récupérer tous les événements
 export const getAllEvents = async (req, res, next) => {
   try {
+    // Archivage automatique
+    await archiveOldEvents();
+
     const { category, dateFrom, dateTo, search } = req.query;
 
     let where = {};

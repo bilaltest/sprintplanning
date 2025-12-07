@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 Application Angular 20 + Node.js/Express pour la DSI d'une banque.
-- **Modules**: Planning (Timeline trimestrielle), Releases (Squads, Features, Actions FF/MF)
+- **Modules**: Calendrier (Timeline trimestrielle), Préparation des MEP (Squads, Features, Actions FF/MF)
 
 ## Stack Technique
 - **Frontend**: Angular 20 standalone, Tailwind CSS, Material Icons, date-fns, RxJS. Ports: :4200
@@ -14,7 +14,7 @@ Application Angular 20 + Node.js/Express pour la DSI d'une banque.
 components/
 ├── auth/login.component.ts                  # Auth simple (password: "NMB")
 ├── filters/filter-bar.component.ts          # Filtres par catégorie uniquement
-├── home/home.component.ts                   # Page accueil avec nav Planning/Releases
+├── home/home.component.ts                   # Page accueil avec nav Calendrier/Prépa MEP
 ├── modals/event-modal.component.ts          # Formulaire événements
 ├── releases/
 │   ├── releases-list.component.ts           # Liste + Export Markdown/HTML
@@ -26,8 +26,7 @@ components/
     ├── quarterly-view.component.ts          # Vue trimestrielle (3 mois)
     └── timeline-container.component.ts      # Conteneur principal
 layouts/
-├── planning-layout.component.ts             # Layout Planning (header gradient)
-└── releases-layout.component.ts             # Layout Releases (header gradient)
+└── main-layout.component.ts                 # Layout principal avec sidebar
 services/
 ├── event.service.ts, release.service.ts     # CRUD
 ├── settings.service.ts, filter.service.ts   # Prefs & Filtres
@@ -90,15 +89,15 @@ Settings: GET/PUT /api/settings
 - **UI**: Filter bar sticky, Export dropdown z-50, Date MEP neutre.
 
 ## Fonctionnalités Clés
-### Planning
+### Calendrier
 - **Timeline trimestrielle**: Affiche 3 mois (T1-T4) en colonne verticale.
 - **Navigation**: Boutons Précédent/Suivant (±3 mois), "Aujourd'hui", flèches clavier.
 - **Jours fériés**: Grisés automatiquement (week-ends + fériés français).
-- **Scroll depuis Home**: Navigation automatique vers le trimestre d'un événement.
+- **Scroll depuis Accueil**: Navigation automatique vers le trimestre d'un événement.
 - **Filtres**: Catégorie uniquement. Semaine commence Lundi.
 - **Catégories custom**: 8 colonnes, JSON.
 
-### Releases
+### Préparation des MEP
 - **Export**: Markdown/HTML avec détails FF/MF.
 - **Squads**: Accordéon, indicateurs visuels (Vert/Amber).
 - **Actions**: Pre/Post MEP, toggle.
@@ -117,7 +116,8 @@ Settings: GET/PUT /api/settings
 - **Dec 2024 Updates**:
   - Renommé "Ma Banque Tools", Design unifié, Dark mode adouci, Export détaillé.
   - **Vue trimestrielle** (Dec 6): Fusion annuelle/mensuelle → Vue unique 3 mois en colonne.
-  - Jours fériés grisés (sans badge), navigation T1-T4, scroll auto depuis Home.
+  - Jours fériés grisés (sans badge), navigation T1-T4, scroll auto depuis Accueil.
+  - **Renommage** (Dec 7): Planning → Calendrier (route: /calendar), Dashboard → Accueil (route: /home), Releases → Préparation des MEP (affichage uniquement).
 - **Auth**: Password "NMB". **Version**: Incluse dans nom release. **Prisma**: Cascade delete.
 
 ---

@@ -1,11 +1,48 @@
 import prisma from '../config/database.js';
 
-// GET /api/release-history - Récupérer l'historique des releases (20 derniers)
+// Archivage automatique : supprimer les entrées d'historique au-delà de 30
+const archiveReleaseHistory = async () => {
+  try {
+    const historyCount = await prisma.releaseHistory.count();
+
+    // Si on dépasse 30, supprimer les plus anciennes
+    if (historyCount > 30) {
+      const entriesToDelete = await prisma.releaseHistory.findMany({
+        orderBy: {
+          timestamp: 'asc'
+        },
+        take: historyCount - 30,
+        select: {
+          id: true
+        }
+      });
+
+      const idsToDelete = entriesToDelete.map(e => e.id);
+
+      await prisma.releaseHistory.deleteMany({
+        where: {
+          id: {
+            in: idsToDelete
+          }
+        }
+      });
+
+      console.log(`Archived ${idsToDelete.length} old release history entries`);
+    }
+  } catch (error) {
+    console.error('Error archiving release history:', error);
+  }
+};
+
+// GET /api/release-history - Récupérer l'historique des releases (30 derniers)
 export const getReleaseHistory = async (req, res, next) => {
   try {
+    // Archivage automatique
+    await archiveReleaseHistory();
+
     const history = await prisma.releaseHistory.findMany({
       orderBy: { timestamp: 'desc' },
-      take: 20
+      take: 30
     });
 
     // Parser les JSON strings

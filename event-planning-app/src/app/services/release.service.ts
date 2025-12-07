@@ -243,4 +243,12 @@ export class ReleaseService {
       throw error;
     }
   }
+
+  async refreshReleases(): Promise<void> {
+    await this.loadReleases();
+    // Also refresh current release if one is selected
+    if (this.currentReleaseSubject.value?.id) {
+      await this.getRelease(this.currentReleaseSubject.value.id);
+    }
+  }
 }

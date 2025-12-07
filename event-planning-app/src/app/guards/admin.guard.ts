@@ -13,7 +13,7 @@ export const adminGuard = () => {
     return true;
   }
 
-  // Rediriger vers le dashboard si pas admin
-  router.navigate(['/dashboard']);
+  // Rediriger vers l'accueil si pas admin
+  router.navigate(['/home']);
   return false;
 };

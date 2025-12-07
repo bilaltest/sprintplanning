@@ -37,9 +37,9 @@ describe('HomeComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should navigate to planning', () => {
-        component.navigateToPlanning();
-        expect(router.navigate).toHaveBeenCalledWith(['/planning']);
+    it('should navigate to calendar', () => {
+        component.navigateToCalendar();
+        expect(router.navigate).toHaveBeenCalledWith(['/calendar']);
     });
 
     it('should navigate to releases', () => {

@@ -23,10 +23,61 @@ const transformRelease = (release) => {
   };
 };
 
+// Archivage automatique : supprimer les releases passées au-delà de 20
+const archivePastReleases = async () => {
+  try {
+    const now = new Date();
+
+    // Compter les releases passées
+    const pastReleasesCount = await prisma.release.count({
+      where: {
+        releaseDate: {
+          lt: now
+        }
+      }
+    });
+
+    // Si on dépasse 20, supprimer les plus anciennes
+    if (pastReleasesCount > 20) {
+      const releasesToDelete = await prisma.release.findMany({
+        where: {
+          releaseDate: {
+            lt: now
+          }
+        },
+        orderBy: {
+          releaseDate: 'asc'
+        },
+        take: pastReleasesCount - 20,
+        select: {
+          id: true
+        }
+      });
+
+      const idsToDelete = releasesToDelete.map(r => r.id);
+
+      await prisma.release.deleteMany({
+        where: {
+          id: {
+            in: idsToDelete
+          }
+        }
+      });
+
+      console.log(`Archived ${idsToDelete.length} old releases`);
+    }
+  } catch (error) {
+    console.error('Error archiving releases:', error);
+  }
+};
+
 // Get all releases
 export const getReleases = async (req, res) => {
   try {
     const now = new Date();
+
+    // Archivage automatique : supprimer les releases passées au-delà de 20
+    await archivePastReleases();
 
     // Récupérer toutes les releases à venir
     const upcomingReleases = await prisma.release.findMany({

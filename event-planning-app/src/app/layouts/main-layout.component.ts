@@ -22,8 +22,8 @@ import { filter } from 'rxjs/operators';
         <div class="content-header">
           <app-breadcrumb></app-breadcrumb>
 
-          <!-- Planning Contextual Actions -->
-          <div class="contextual-actions" *ngIf="isPlanningRoute">
+          <!-- Calendrier Contextual Actions -->
+          <div class="contextual-actions" *ngIf="isCalendarRoute">
             <button
               routerLink="/history"
               class="action-btn"
@@ -35,7 +35,7 @@ import { filter } from 'rxjs/operators';
             <button
               routerLink="/settings"
               class="action-btn"
-              title="Paramètres du planning"
+              title="Paramètres du calendrier"
             >
               <span class="material-icons">settings</span>
               <span class="action-label">Paramètres</span>
@@ -110,7 +110,7 @@ import { filter } from 'rxjs/operators';
 })
 export class MainLayoutComponent implements OnInit {
   isSidebarCollapsed = false;
-  isPlanningRoute = false;
+  isCalendarRoute = false;
   isReleasesRoute = false;
 
   constructor(
@@ -139,7 +139,7 @@ export class MainLayoutComponent implements OnInit {
   }
 
   private checkRoutes(url: string): void {
-    this.isPlanningRoute = url.startsWith('/planning') || url.startsWith('/history') || url.startsWith('/settings');
+    this.isCalendarRoute = url.startsWith('/calendar') || url.startsWith('/history') || url.startsWith('/settings');
     this.isReleasesRoute = url.startsWith('/releases') || url.startsWith('/release-history');
   }
 }

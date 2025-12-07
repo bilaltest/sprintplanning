@@ -97,7 +97,7 @@
     @apply bg-planning-500 hover:bg-planning-600 text-white focus:ring-planning-500 shadow-sm hover:shadow-md;
   }
 
-  /* Planning buttons */
+  /* Calendrier buttons */
   .btn-planning {
     @apply bg-planning-500 hover:bg-planning-600 text-white focus:ring-planning-500 shadow-sm hover:shadow-md;
   }
@@ -150,7 +150,7 @@
     @apply card hover:shadow-md transition-shadow duration-200;
   }
 
-  /* Planning cards - subtiles et apaisantes */
+  /* Calendrier cards - subtiles et apaisantes */
   .card-planning {
     @apply bg-white dark:bg-gray-750 rounded-lg shadow-sm border border-planning-200 dark:border-gray-600 hover:shadow-md transition-all duration-200;
   }
@@ -187,16 +187,29 @@
     @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-40 flex items-center justify-center p-4;
   }
 
+  /* Classe universelle pour toutes les modales */
   .modal-content {
-    @apply glass-strong rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar;
+    @apply glass-planning rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar border-2 border-gray-300 dark:border-gray-600;
   }
 
+  /* Classe spécifique Calendrier (identique à modal-content pour cohérence) */
   .modal-content-planning {
-    @apply glass-planning rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar border-2 border-planning-300 dark:border-gray-600;
+    @apply glass-planning rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar border-2 border-gray-300 dark:border-gray-600;
   }
 
+  /* Classe spécifique Releases (garde la variante colorée si besoin) */
   .modal-content-releases {
-    @apply glass-releases rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar border-2 border-releases-300 dark:border-gray-600;
+    @apply glass-planning rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar border-2 border-gray-300 dark:border-gray-600;
+  }
+
+  /* Header glassmorphism pour les modales */
+  .modal-header-glass {
+    @apply sticky top-0 glass-planning border-b-2 border-gray-300 dark:border-gray-600 px-6 py-4 flex items-center justify-between rounded-t-xl z-10;
+  }
+
+  /* Formulaire inline avec glassmorphism */
+  .form-inline-glass {
+    @apply p-4 glass-planning rounded-lg border-2 border-gray-300 dark:border-gray-600 shadow-md;
   }
 }
 

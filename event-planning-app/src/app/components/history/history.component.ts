@@ -17,26 +17,16 @@ import { fr } from 'date-fns/locale';
   imports: [CommonModule],
   template: `
     <div class="max-w-4xl mx-auto space-y-6">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <button
-            (click)="goBack()"
-            class="btn btn-secondary p-2"
-            title="Retour au planning"
-          >
-            <span class="material-icons">arrow_back</span>
-          </button>
-          <span class="material-icons text-3xl text-primary-600 dark:text-primary-400">history</span>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Historique</h1>
-        </div>
-
+      <div class="flex items-center space-x-3">
         <button
-          *ngIf="history.length > 0"
-          (click)="clearHistory()"
-          class="btn btn-secondary"
+          (click)="goBack()"
+          class="btn btn-secondary p-2"
+          title="Retour au calendrier"
         >
-          Effacer l'historique
+          <span class="material-icons">arrow_back</span>
         </button>
+        <span class="material-icons text-3xl text-primary-600 dark:text-primary-400">history</span>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Historique</h1>
       </div>
 
       <div class="card p-6">
@@ -391,34 +381,18 @@ export class HistoryComponent implements OnInit {
 
     try {
       await this.historyService.rollback(entry.id);
-      // Rafraîchir l'historique et les événements
+      // Rafraîchir l'historique
       await this.historyService.refresh();
+      // Forcer le rechargement des événements depuis le backend
+      await this.eventService.refreshEvents();
       this.toastService.success('Action annulée', 'L\'action a été annulée avec succès');
     } catch (error) {
       this.toastService.error('Erreur', 'Erreur lors de l\'annulation');
     }
   }
 
-  async clearHistory(): Promise<void> {
-    const confirmed = await this.confirmationService.confirm({
-      title: 'Effacer l\'historique ?',
-      message: 'Êtes-vous sûr de vouloir effacer tout l\'historique ? Cette action est irréversible.',
-      confirmText: 'Effacer',
-      cancelText: 'Annuler',
-      confirmButtonClass: 'danger'
-    });
-
-    if (!confirmed) return;
-
-    try {
-      await this.historyService.clearHistory();
-      this.toastService.success('Historique effacé', 'L\'historique a été effacé avec succès');
-    } catch (error) {
-      this.toastService.error('Erreur', 'Erreur lors de l\'effacement de l\'historique');
-    }
-  }
 
   goBack(): void {
-    this.router.navigate(['/planning']);
+    this.router.navigate(['/calendar']);
   }
 }

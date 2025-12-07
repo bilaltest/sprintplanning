@@ -44,9 +44,9 @@ interface Stats {
         </div>
       </div>
 
-      <!-- Stats Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" *ngIf="stats">
-        <div class="card p-6">
+      <!-- Stats Cards & Export/Import -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card p-6" *ngIf="stats">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Utilisateurs</p>
@@ -58,7 +58,7 @@ interface Stats {
           </div>
         </div>
 
-        <div class="card p-6">
+        <div class="card p-6" *ngIf="stats">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Releases</p>
@@ -66,6 +66,47 @@ interface Stats {
             </div>
             <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
               <span class="material-icons text-purple-600 dark:text-purple-400">rocket_launch</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Export/Import Card -->
+        <div class="card p-6">
+          <div class="flex flex-col space-y-3">
+            <div class="flex items-center space-x-2 mb-2">
+              <span class="material-icons text-amber-600 dark:text-amber-400">backup</span>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Sauvegarde</h3>
+            </div>
+
+            <button
+              (click)="exportDatabase()"
+              [disabled]="isExporting"
+              class="btn btn-primary w-full flex items-center justify-center space-x-2"
+            >
+              <span class="material-icons text-sm" [class.animate-spin]="isExporting">
+                {{ isExporting ? 'refresh' : 'download' }}
+              </span>
+              <span>{{ isExporting ? 'Export en cours...' : 'Exporter la BDD' }}</span>
+            </button>
+
+            <div class="relative">
+              <input
+                #fileInput
+                type="file"
+                accept=".json"
+                (change)="onFileSelected($event)"
+                class="hidden"
+              />
+              <button
+                (click)="fileInput.click()"
+                [disabled]="isImporting"
+                class="btn btn-secondary w-full flex items-center justify-center space-x-2"
+              >
+                <span class="material-icons text-sm" [class.animate-spin]="isImporting">
+                  {{ isImporting ? 'refresh' : 'upload' }}
+                </span>
+                <span>{{ isImporting ? 'Import en cours...' : 'Importer la BDD' }}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -203,6 +244,8 @@ export class AdminComponent implements OnInit {
   users: AdminUser[] = [];
   stats: Stats | null = null;
   isLoading = false;
+  isExporting = false;
+  isImporting = false;
 
   constructor(
     private http: HttpClient,
@@ -279,6 +322,85 @@ export class AdminComponent implements OnInit {
     return formatDistanceToNow(new Date(timestamp), {
       addSuffix: true,
       locale: fr
+    });
+  }
+
+  async exportDatabase(): Promise<void> {
+    this.isExporting = true;
+    try {
+      const response = await firstValueFrom(
+        this.http.get(`${this.API_URL}/export`, { responseType: 'blob' })
+      );
+
+      // Créer un lien de téléchargement
+      const blob = new Blob([response], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `ma-banque-tools-backup-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+
+      this.toastService.success('Export réussi', 'La base de données a été exportée avec succès');
+    } catch (error) {
+      console.error('Erreur lors de l\'export:', error);
+      this.toastService.error('Erreur', 'Impossible d\'exporter la base de données');
+    } finally {
+      this.isExporting = false;
+    }
+  }
+
+  async onFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    // Demander confirmation
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Importer la base de données ?',
+      message: `ATTENTION: Cette action va ÉCRASER toutes les données existantes.\n\nFichier: ${file.name}\nTaille: ${(file.size / 1024).toFixed(2)} KB\n\nCette action est irréversible. Voulez-vous continuer ?`,
+      confirmText: 'Importer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
+
+    if (!confirmed) {
+      input.value = '';
+      return;
+    }
+
+    this.isImporting = true;
+    try {
+      // Lire le fichier JSON
+      const fileContent = await this.readFileAsText(file);
+      const importData = JSON.parse(fileContent);
+
+      // Envoyer au backend
+      await firstValueFrom(
+        this.http.post(`${this.API_URL}/import`, importData)
+      );
+
+      this.toastService.success('Import réussi', 'La base de données a été importée avec succès');
+
+      // Recharger les données
+      await this.loadData();
+    } catch (error) {
+      console.error('Erreur lors de l\'import:', error);
+      this.toastService.error('Erreur', 'Impossible d\'importer la base de données. Vérifiez le format du fichier.');
+    } finally {
+      this.isImporting = false;
+      input.value = '';
+    }
+  }
+
+  private readFileAsText(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = (e) => reject(e);
+      reader.readAsText(file);
     });
   }
 }

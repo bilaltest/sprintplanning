@@ -35,9 +35,9 @@ interface Widget {
 
             <!-- Navigation Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Planning Card -->
+            <!-- Calendrier Card -->
               <div
-                (click)="navigateToPlanning()"
+                (click)="navigateToCalendar()"
                 class="group cursor-pointer bg-white dark:bg-gray-750 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
               >
                 <!-- Effet de brillance au hover -->
@@ -51,7 +51,7 @@ interface Widget {
                   </div>
                   <div>
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-                      Planning
+                      Calendrier
                     </h2>
                     <p class="text-gray-600 dark:text-gray-400 text-lg">
                       Gérez vos événements et planifiez vos activités
@@ -66,7 +66,7 @@ interface Widget {
                 </div>
               </div>
 
-              <!-- Releases Card -->
+              <!-- Préparation des MEP Card -->
               <div
                 (click)="navigateToReleases()"
                 class="group cursor-pointer bg-white dark:bg-gray-750 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
@@ -82,7 +82,7 @@ interface Widget {
                   </div>
                   <div>
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-                      Releases
+                      Préparation des MEP
                     </h2>
                     <p class="text-gray-600 dark:text-gray-400 text-lg">
                       Gérez vos mises en production et releases
@@ -142,7 +142,7 @@ interface Widget {
                   <!-- Events Next 7 Days Widget -->
                   <div *ngIf="widget.type === 'events7days' && eventsNext7Days.length > 0"
                        class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col cursor-move"
-                       (click)="handleWidgetClick($event, 'planning')">
+                       (click)="handleWidgetClick($event, 'calendar')">
                     <div class="flex items-center justify-between mb-3">
                       <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -369,8 +369,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
 
     // Navigation selon le type
-    if (type === 'planning') {
-      this.navigateToPlanning();
+    if (type === 'calendar') {
+      this.navigateToCalendar();
     } else if (type === 'release' && release) {
       this.navigateToRelease(release);
     }
@@ -529,13 +529,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     return differenceInDays(mepDate, today);
   }
 
-  navigateToPlanning(): void {
-    this.router.navigate(['/planning']);
+  navigateToCalendar(): void {
+    this.router.navigate(['/calendar']);
   }
 
   navigateToEvent(event: Event, mouseEvent: MouseEvent): void {
     mouseEvent.stopPropagation();
-    this.router.navigate(['/planning'], { queryParams: { eventId: event.id } });
+    this.router.navigate(['/calendar'], { queryParams: { eventId: event.id } });
   }
 
   navigateToReleases(): void {

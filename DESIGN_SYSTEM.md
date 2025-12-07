@@ -120,25 +120,32 @@ Appliqué **uniquement** sur les éléments clés pour préserver les performanc
 }
 ```
 
-#### Module Planning
+#### Style Unifié (Recommandé)
 ```css
 .glass-planning {
   backdrop-blur: 12px;
-  background: rgba(240, 253, 244, 0.8);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(255, 255, 255, 0.8);  /* Unifié pour tous les modules */
+  border: 1px solid rgba(229, 231, 235, 0.3);
 }
 ```
-**Utilisé sur** : Filter bar, modales
+**Utilisé sur** : Filter bar, toutes les modales, headers de modales, formulaires inline
 
-#### Module Releases
+#### Classes Spécialisées
 ```css
-.glass-releases {
+/* Pour les headers de modales */
+.modal-header-glass {
   backdrop-blur: 12px;
-  background: rgba(240, 253, 244, 0.8);
-  border: 1px solid rgba(4, 120, 87, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 2px solid rgba(229, 231, 235, 0.3);
+}
+
+/* Pour les formulaires inline */
+.form-inline-glass {
+  backdrop-blur: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(229, 231, 235, 0.3);
 }
 ```
-**Utilisé sur** : Modales releases
 
 ---
 
@@ -200,26 +207,62 @@ Appliqué **uniquement** sur les éléments clés pour préserver les performanc
 
 ### Modales
 
-#### Planning
+**Style Unifié** : Toutes les modales utilisent désormais le même style avec glassmorphisme pour une expérience cohérente.
+
+#### Classe Universelle (Recommandée)
 ```html
-<div class="modal-overlay">
-  <div class="modal-content-planning">
-    <!-- Header avec glassmorphism -->
-    <div class="glass-planning border-b-2 border-planning-300">
+<div class="modal-overlay" (click)="close()">
+  <div class="modal-content fade-in-scale" (click)="$event.stopPropagation()">
+    <!-- Header avec glassmorphism et icône dans cercle -->
+    <div class="modal-header-glass">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+          <span class="material-icons text-primary-600 dark:text-primary-400">icon_name</span>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Titre de la modale</h2>
+      </div>
+      <button (click)="close()" class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+        <span class="material-icons text-gray-600 dark:text-gray-400">close</span>
+      </button>
+    </div>
+
+    <!-- Contenu -->
+    <div class="p-6">
       ...
+    </div>
+
+    <!-- Actions -->
+    <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-600 flex items-center justify-end space-x-3">
+      <button class="btn btn-secondary">Annuler</button>
+      <button class="btn btn-primary">Confirmer</button>
     </div>
   </div>
 </div>
 ```
 
-#### Releases
+**Design Pattern** :
+- Icône dans un cercle coloré (40×40px) pour une meilleure hiérarchie visuelle
+- Espacement généreux (space-x-3) entre les éléments
+- Bouton de fermeture avec effet hover subtil
+- Bordure supérieure pour le footer avec flexbox justify-end
+
+#### Classes Spécifiques (Rétrocompatibilité)
 ```html
-<div class="modal-overlay">
-  <div class="modal-content-releases">
-    <div class="glass-releases border-b-2 border-releases-300">
-      ...
-    </div>
-  </div>
+<!-- Planning (identique à modal-content) -->
+<div class="modal-content-planning">...</div>
+
+<!-- Releases (identique à modal-content) -->
+<div class="modal-content-releases">...</div>
+```
+
+#### Formulaires Inline avec Glassmorphism
+Pour les formulaires intégrés dans les pages (non-modales) :
+```html
+<div class="form-inline-glass">
+  <h4 class="font-medium mb-3">Titre du formulaire</h4>
+  <form class="space-y-3">
+    ...
+  </form>
 </div>
 ```
 
@@ -420,6 +463,8 @@ text-releases-700 dark:text-releases-300
 ✅ **Releases** : Vert sapin/foncé + Orange (énergique, rappel nature + urgence)
 ✅ Gradients subtils (Planning) vs énergiques (Releases)
 ✅ Glassmorphism ciblé sur éléments clés
+✅ **Style de modales unifié** : Toutes les modales utilisent le même glassmorphisme
+✅ **Formulaires inline glassmorphisme** : Style cohérent pour tous les formulaires
 ✅ Boutons avec effets dynamiques (scale, shadow)
 ✅ Cards avec bordures colorées et gradients
 ✅ Headers avec gradients personnalisés

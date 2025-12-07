@@ -140,7 +140,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               </div>
 
               <!-- Add/Edit Feature Form -->
-              <div *ngIf="addingFeatureToSquad?.id === squad.id" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+              <div *ngIf="addingFeatureToSquad?.id === squad.id" class="form-inline-glass">
                 <h4 class="font-medium text-gray-900 dark:text-white mb-3">
                   {{ editingFeatureId ? "Modifier la fonctionnalité" : "Nouvelle fonctionnalité" }}
                 </h4>
@@ -224,7 +224,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
               <!-- Add Action Form -->
               <div *ngIf="addingActionToSquad?.id === squad.id && addingActionPhase === 'pre_mep'"
-                   class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                   class="mb-3 form-inline-glass">
                 <form (submit)="addAction(squad.id!, 'pre_mep', $event)" class="space-y-3">
                   <div class="flex items-center justify-between mb-2">
                     <h4 class="font-medium text-gray-900 dark:text-white">
@@ -254,7 +254,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   </div>
 
                   <!-- Feature Flipping / Memory Flipping Form -->
-                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800">
+                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-600">
                     <h4 class="font-medium text-gray-900 dark:text-white text-sm">Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}</h4>
 
                     <div>
@@ -521,7 +521,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
               <!-- Add Action Form -->
               <div *ngIf="addingActionToSquad?.id === squad.id && addingActionPhase === 'post_mep'"
-                   class="mb-3 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                   class="mb-3 form-inline-glass">
                 <form (submit)="addAction(squad.id!, 'post_mep', $event)" class="space-y-3">
                   <div class="flex items-center justify-between mb-2">
                     <h4 class="font-medium text-gray-900 dark:text-white">
@@ -551,7 +551,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   </div>
 
                   <!-- Feature Flipping / Memory Flipping Form -->
-                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800">
+                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-600">
                     <h4 class="font-medium text-gray-900 dark:text-white text-sm">Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}</h4>
 
                     <div>

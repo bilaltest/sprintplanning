@@ -16,26 +16,16 @@ import { fr } from 'date-fns/locale';
   imports: [CommonModule],
   template: `
     <div class="max-w-4xl mx-auto space-y-6">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <button
-            (click)="goBack()"
-            class="btn btn-secondary p-2"
-            title="Retour aux releases"
-          >
-            <span class="material-icons">arrow_back</span>
-          </button>
-          <span class="material-icons text-3xl text-releases-600 dark:text-releases-400">history</span>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Historique des Releases</h1>
-        </div>
-
+      <div class="flex items-center space-x-3">
         <button
-          *ngIf="history.length > 0"
-          (click)="clearHistory()"
-          class="btn btn-secondary"
+          (click)="goBack()"
+          class="btn btn-secondary p-2"
+          title="Retour aux releases"
         >
-          Effacer l'historique
+          <span class="material-icons">arrow_back</span>
         </button>
+        <span class="material-icons text-3xl text-releases-600 dark:text-releases-400">history</span>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Historique des Releases</h1>
       </div>
 
       <div class="card p-6">
@@ -374,32 +364,16 @@ export class ReleaseHistoryComponent implements OnInit {
 
     try {
       await this.releaseHistoryService.rollback(entry.id);
-      // Rafraîchir l'historique et les releases
+      // Rafraîchir l'historique
       await this.releaseHistoryService.refresh();
+      // Forcer le rechargement des releases depuis le backend
+      await this.releaseService.refreshReleases();
       this.toastService.success('Action annulée', 'L\'action a été annulée avec succès');
     } catch (error) {
       this.toastService.error('Erreur', 'Erreur lors de l\'annulation');
     }
   }
 
-  async clearHistory(): Promise<void> {
-    const confirmed = await this.confirmationService.confirm({
-      title: 'Effacer l\'historique ?',
-      message: 'Êtes-vous sûr de vouloir effacer tout l\'historique ? Cette action est irréversible.',
-      confirmText: 'Effacer',
-      cancelText: 'Annuler',
-      confirmButtonClass: 'danger'
-    });
-
-    if (!confirmed) return;
-
-    try {
-      await this.releaseHistoryService.clearHistory();
-      this.toastService.success('Historique effacé', 'L\'historique a été effacé avec succès');
-    } catch (error) {
-      this.toastService.error('Erreur', 'Erreur lors de l\'effacement de l\'historique');
-    }
-  }
 
   goBack(): void {
     this.router.navigate(['/releases']);
