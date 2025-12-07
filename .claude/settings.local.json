@@ -44,7 +44,9 @@
       "Bash(npx ng build:*)",
       "Bash(find:*)",
       "Bash(curl:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(node --check:*)",
+      "Bash(kill:*)"
     ],
     "deny": [],
     "ask": []

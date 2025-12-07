@@ -8,6 +8,7 @@ import releaseRoutes from './routes/release.routes.js';
 import releaseHistoryRoutes from './routes/release-history.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import gameRoutes from './routes/game.routes.js';
 import { initAdminAccount } from './utils/initAdmin.js';
 
 dotenv.config();
@@ -40,6 +41,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/releases', releaseRoutes);
 app.use('/api/release-history', releaseHistoryRoutes);
+app.use('/api/games', gameRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

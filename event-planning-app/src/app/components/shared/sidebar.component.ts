@@ -184,6 +184,7 @@ export class SidebarComponent implements OnInit {
     { label: 'Accueil', icon: 'home', route: '/home' },
     { label: 'Calendrier', icon: 'calendar_month', route: '/calendar' },
     { label: 'Prépa MEP', icon: 'rocket_launch', route: '/releases' },
+    { label: 'Playground', icon: 'sports_esports', route: '/playground' },
     { label: 'Admin', icon: 'admin_panel_settings', route: '/admin' }
   ];
 

@@ -94,6 +94,46 @@ export const routes: Routes = [
           ),
         canActivate: [adminGuard],
         data: { breadcrumb: 'Administration' }
+      },
+      {
+        path: 'playground',
+        loadComponent: () =>
+          import('./components/playground/playground.component').then(
+            m => m.PlaygroundComponent
+          ),
+        data: { breadcrumb: 'Playground' }
+      },
+      {
+        path: 'playground/typing-fr',
+        loadComponent: () =>
+          import('./components/playground/typing-game/typing-game.component').then(
+            m => m.TypingGameComponent
+          ),
+        data: { breadcrumb: 'Typing Challenge FR' }
+      },
+      {
+        path: 'playground/typing-en',
+        loadComponent: () =>
+          import('./components/playground/typing-game/typing-game.component').then(
+            m => m.TypingGameComponent
+          ),
+        data: { breadcrumb: 'Typing Challenge EN' }
+      },
+      {
+        path: 'playground/memory-game',
+        loadComponent: () =>
+          import('./components/playground/memory-game/memory-game.component').then(
+            m => m.MemoryGameComponent
+          ),
+        data: { breadcrumb: 'Memory Game' }
+      },
+      {
+        path: 'playground/math-rush',
+        loadComponent: () =>
+          import('./components/playground/math-rush/math-rush.component').then(
+            m => m.MathRushComponent
+          ),
+        data: { breadcrumb: 'Math Rush' }
       }
     ]
   }

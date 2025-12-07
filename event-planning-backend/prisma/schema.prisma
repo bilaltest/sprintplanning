@@ -179,8 +179,46 @@ model User {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  histories       History[]
+  histories        History[]
   releaseHistories ReleaseHistory[]
+  gameScores       GameScore[]
 
   @@index([email])
+}
+
+// ===== PLAYGROUND MODELS =====
+
+model Game {
+  id          String   @id @default(cuid())
+  slug        String   @unique  // 'typing-fr', 'typing-en', etc.
+  name        String
+  description String?
+  icon        String   @default("sports_esports")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  scores      GameScore[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model GameScore {
+  id          String   @id @default(cuid())
+  gameId      String
+  visitorName String?  // Pour les joueurs non connectés (optionnel)
+  userId      String?
+  score       Int      // Nombre de mots corrects
+  wpm         Int?     // Words per minute
+  accuracy    Float?   // Précision en pourcentage
+  metadata    String?  // JSON pour données supplémentaires
+  createdAt   DateTime @default(now())
+
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, score(sort: Desc)])
+  @@index([userId])
+  @@index([createdAt])
 }
