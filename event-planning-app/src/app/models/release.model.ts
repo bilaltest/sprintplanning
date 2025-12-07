@@ -161,10 +161,10 @@ export const FLIPPING_TYPE_LABELS: Record<FlippingType, string> = {
 };
 
 export const RULE_ACTION_LABELS: Record<RuleAction, string> = {
-  create_rule: 'Créer le FF/MF dans le référentiel',
-  obsolete_rule: 'Rendre obsolète le FF/MF dans le référentiel',
-  disable_rule: 'Ajouter une règle pour désactiver le FF/MF',
-  enable_rule: 'Ajouter une règle pour activer le FF/MF'
+  create_rule: 'Ajouter dans le référentiel et ne rien faire',
+  obsolete_rule: 'Ajouter dans le référentiel et désactiver la règle',
+  disable_rule: 'Désactiver la règle',
+  enable_rule: 'Activer la règle'
 };
 
 export const RULE_STATE_LABELS: Record<RuleState, string> = {

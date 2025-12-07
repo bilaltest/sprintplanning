@@ -68,7 +68,10 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
         <!-- 1. Tontons MEP Table -->
         <div class="card">
           <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer rounded-t-lg" [class.rounded-b-lg]="!expandedSections.has('tontons')" (click)="toggleSection('tontons')">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Tontons MEP</h2>
+            <div class="flex items-center space-x-3">
+              <span class="material-icons text-2xl text-primary-600 dark:text-primary-400">group</span>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Tontons MEP</h2>
+            </div>
             <span class="material-icons text-gray-500">
               {{ expandedSections.has('tontons') ? 'expand_less' : 'expand_more' }}
             </span>
@@ -87,7 +90,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   ></app-progress-ring>
                 </div>
                 <div class="flex items-center space-x-2">
-                  <span class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Tonton :</span>
+                  <span class="material-icons text-sm text-gray-400">person</span>
                   <div class="flex-1 flex items-center space-x-1">
                     <input
                       #tontonInput
@@ -120,7 +123,10 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
         <!-- 2. Fonctionnalités Majeures -->
         <div class="card overflow-hidden">
           <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('features')">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Fonctionnalités Majeures</h2>
+            <div class="flex items-center space-x-3">
+              <span class="material-icons text-2xl text-purple-600 dark:text-purple-400">star</span>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Fonctionnalités Majeures</h2>
+            </div>
             <span class="material-icons text-gray-500">
               {{ expandedSections.has('features') ? 'expand_less' : 'expand_more' }}
             </span>
@@ -165,29 +171,34 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               </div>
 
               <!-- Features List -->
-              <div class="space-y-2 pl-4 border-l-2 border-gray-100 dark:border-gray-600 max-h-48 overflow-y-auto custom-scrollbar">
-                <div *ngFor="let feature of squad.features" class="flex items-start justify-between group p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                  <div class="flex-1">
-                    <h4 class="font-medium text-gray-900 dark:text-white">{{ feature.title }}</h4>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5" *ngIf="feature.description">{{ feature.description }}</p>
-                  </div>
-                  <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
-                    <button (click)="startEditingFeature(squad, feature)" class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
-                      <span class="material-icons text-sm">edit</span>
-                    </button>
-                    <button (click)="deleteFeature(squad.id!, feature.id!)" class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
-                      <span class="material-icons text-sm">delete</span>
-                    </button>
+              <div class="mt-3">
+                <div *ngIf="squad.features.length > 0" class="space-y-2 pl-4 border-l-2 border-purple-200 dark:border-purple-600 max-h-48 overflow-y-auto custom-scrollbar">
+                  <div *ngFor="let feature of squad.features" class="flex items-start justify-between group p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <div class="flex items-start space-x-2 flex-1">
+                      <span class="material-icons text-sm text-purple-500 mt-0.5">label_important</span>
+                      <div class="flex-1">
+                        <h4 class="font-medium text-gray-900 dark:text-white">{{ feature.title }}</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5" *ngIf="feature.description">{{ feature.description }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
+                      <button (click)="startEditingFeature(squad, feature)" class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
+                        <span class="material-icons text-sm">edit</span>
+                      </button>
+                      <button (click)="deleteFeature(squad.id!, feature.id!)" class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
+                        <span class="material-icons text-sm">delete</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div *ngIf="squad.features.length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
                   <span class="material-icons text-gray-400 text-3xl mb-2">playlist_add_check</span>
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune fonctionnalité majeure</p>
                   <label class="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      [checked]="squad.featuresEmptyConfirmed" 
-                      (change)="toggleEmptyStatus(squad, 'features')" 
+                    <input
+                      type="checkbox"
+                      [checked]="squad.featuresEmptyConfirmed"
+                      (change)="toggleEmptyStatus(squad, 'features')"
                       class="sr-only peer"
                     >
                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
@@ -203,7 +214,10 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
         <!-- 3. Actions Pré-MEP -->
         <div class="card overflow-hidden">
           <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('pre_mep')">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Pré-MEP</h2>
+            <div class="flex items-center space-x-3">
+              <span class="material-icons text-2xl text-blue-600 dark:text-blue-400">schedule</span>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Pré-MEP</h2>
+            </div>
             <span class="material-icons text-gray-500">
               {{ expandedSections.has('pre_mep') ? 'expand_less' : 'expand_more' }}
             </span>
@@ -411,6 +425,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                                 <tr *ngFor="let action of getNonFlippingActions(squad, 'pre_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                     <td class="px-4 py-3">
                                         <div class="flex items-center space-x-3">
+                                            <span class="material-icons text-sm text-blue-500">start</span>
                                             <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
                                                 {{ getActionTypeLabel(action.type) }}
                                             </span>
@@ -431,7 +446,12 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
                 <!-- Flipping actions grouped by type in tables -->
                 <div *ngFor="let entry of getFlippingActionsByType(squad, 'pre_mep') | keyvalue" class="overflow-x-auto">
-                  <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="material-icons text-sm" [class.text-orange-500]="entry.key === 'feature_flipping'" [class.text-indigo-500]="entry.key === 'memory_flipping'">
+                      rule_settings
+                    </span>
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
+                  </div>
                   <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                     <table class="min-w-full text-xs">
                         <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -448,13 +468,35 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
                         <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                            <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
+                            <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">
+                              {{ action.flipping?.ruleName }}
+                            </td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
+                              <span class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded">{{ action.flipping?.theme }}</span>
+                            </td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">
+                              <span class="px-2 py-0.5 text-xs font-medium rounded"
+                                    [class.bg-green-100]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.text-green-800]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.dark:bg-green-900]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.dark:text-green-200]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.bg-red-100]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.text-red-800]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.dark:bg-red-900]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.dark:text-red-200]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'">
+                                {{ getRuleActionLabel(action.flipping?.ruleAction || '') }}
+                              </span>
+                            </td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">
+                              {{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}
+                            </td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
+                              {{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}
+                            </td>
                             <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
+                              {{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}
+                            </td>
                             <td class="px-3 py-2 text-right">
                             <div class="flex items-center justify-end space-x-2">
                                 <button
@@ -478,7 +520,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 </div>
 
                 <div *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
-
+                  <span class="material-icons text-gray-400 text-3xl mb-2">checklist</span>
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune action pré-MEP</p>
                   <label class="relative inline-flex items-center cursor-pointer">
                     <input 
@@ -500,7 +542,10 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
         <!-- 4. Actions Post-MEP -->
         <div class="card overflow-hidden">
           <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('post_mep')">
-            <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Post-MEP</h2>
+            <div class="flex items-center space-x-3">
+              <span class="material-icons text-2xl text-green-600 dark:text-green-400">check_circle</span>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Post-MEP</h2>
+            </div>
             <span class="material-icons text-gray-500">
               {{ expandedSections.has('post_mep') ? 'expand_less' : 'expand_more' }}
             </span>
@@ -708,6 +753,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                                 <tr *ngFor="let action of getNonFlippingActions(squad, 'post_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                     <td class="px-4 py-3">
                                         <div class="flex items-center space-x-3">
+                                            <span class="material-icons text-sm text-green-500">end</span>
                                             <span class="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
                                                 {{ getActionTypeLabel(action.type) }}
                                             </span>
@@ -728,7 +774,12 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
                 <!-- Flipping actions grouped by type in tables -->
                 <div *ngFor="let entry of getFlippingActionsByType(squad, 'post_mep') | keyvalue" class="overflow-x-auto">
-                  <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="material-icons text-sm" [class.text-orange-500]="entry.key === 'feature_flipping'" [class.text-indigo-500]="entry.key === 'memory_flipping'">
+                      rule_settings
+                    </span>
+                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
+                  </div>
                   <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                     <table class="min-w-full text-xs">
                         <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -745,13 +796,35 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
                         <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                            <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">{{ action.flipping?.ruleName }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">{{ getRuleActionLabel(action.flipping?.ruleAction || '') }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
+                            <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">
+                              {{ action.flipping?.ruleName }}
+                            </td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
+                              <span class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded">{{ action.flipping?.theme }}</span>
+                            </td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">
+                              <span class="px-2 py-0.5 text-xs font-medium rounded"
+                                    [class.bg-green-100]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.text-green-800]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.dark:bg-green-900]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.dark:text-green-200]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.bg-red-100]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.text-red-800]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.dark:bg-red-900]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.dark:text-red-200]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'">
+                                {{ getRuleActionLabel(action.flipping?.ruleAction || '') }}
+                              </span>
+                            </td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">
+                              {{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}
+                            </td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
+                              {{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}
+                            </td>
                             <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
+                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
+                              {{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}
+                            </td>
                             <td class="px-3 py-2 text-right">
                             <div class="flex items-center justify-end space-x-2">
                                 <button
@@ -775,7 +848,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 </div>
 
                 <div *ngIf="getActionsByPhase(squad, 'post_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
-
+                  <span class="material-icons text-gray-400 text-3xl mb-2">task</span>
                   <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune action post-MEP</p>
                   <label class="relative inline-flex items-center cursor-pointer">
                     <input 
@@ -1381,6 +1454,15 @@ export class ReleaseDetailComponent implements OnInit {
       return 'ALL';
     }
     return osList.join(', ').toUpperCase();
+  }
+
+  getFlippingOSDisplayWithIcons(targetOS: string | string[]): string {
+    const osList = this.getFlippingTargets(targetOS);
+    if (osList.length === 0 || (osList.includes('ios') && osList.includes('android'))) {
+      return '📱 iOS, 🤖 Android';
+    }
+    const icons = osList.map(os => os === 'ios' ? '📱 iOS' : '🤖 Android');
+    return icons.join(', ');
   }
 
   getFlippingVersionsDisplay(targetVersions: string | any[]): string {

@@ -32,8 +32,8 @@ import { AuthService } from '@services/auth.service';
             </div>
             <div class="podium-rank">2</div>
             <div class="podium-name">{{ getDisplayName(entries[1]) }}</div>
-            <div class="podium-score">{{ entries[1].score }} mots</div>
-            <div class="podium-wpm">{{ entries[1].wpm }} WPM</div>
+            <div class="podium-score">{{ entries[1].score }} {{ scoreUnit }}</div>
+            <div class="podium-wpm" *ngIf="showWpm">{{ entries[1].wpm }} WPM</div>
             <div class="podium-bar silver"></div>
           </div>
 
@@ -47,8 +47,8 @@ import { AuthService } from '@services/auth.service';
             </div>
             <div class="podium-rank">1</div>
             <div class="podium-name">{{ getDisplayName(entries[0]) }}</div>
-            <div class="podium-score">{{ entries[0].score }} mots</div>
-            <div class="podium-wpm">{{ entries[0].wpm }} WPM</div>
+            <div class="podium-score">{{ entries[0].score }} {{ scoreUnit }}</div>
+            <div class="podium-wpm" *ngIf="showWpm">{{ entries[0].wpm }} WPM</div>
             <div class="podium-bar gold"></div>
           </div>
 
@@ -59,8 +59,8 @@ import { AuthService } from '@services/auth.service';
             </div>
             <div class="podium-rank">3</div>
             <div class="podium-name">{{ getDisplayName(entries[2]) }}</div>
-            <div class="podium-score">{{ entries[2].score }} mots</div>
-            <div class="podium-wpm">{{ entries[2].wpm }} WPM</div>
+            <div class="podium-score">{{ entries[2].score }} {{ scoreUnit }}</div>
+            <div class="podium-wpm" *ngIf="showWpm">{{ entries[2].wpm }} WPM</div>
             <div class="podium-bar bronze"></div>
           </div>
         </div>
@@ -80,13 +80,13 @@ import { AuthService } from '@services/auth.service';
               <div class="avatar-small">{{ getInitials(entry) }}</div>
               <div class="player-info">
                 <div class="player-name">{{ getDisplayName(entry) }}</div>
-                <div class="player-stats">
+                <div class="player-stats" *ngIf="showWpm">
                   {{ entry.wpm }} WPM · {{ entry.accuracy?.toFixed(0) }}%
                 </div>
               </div>
               <div class="score-display">
                 <span class="score-value">{{ entry.score }}</span>
-                <span class="score-label">mots</span>
+                <span class="score-label">{{ scoreUnit }}</span>
               </div>
             </div>
           }
@@ -122,13 +122,13 @@ import { AuthService } from '@services/auth.service';
               </div>
               <div class="player-info">
                 <div class="player-name">{{ getDisplayName(entry) }}</div>
-                <div class="player-stats">
+                <div class="player-stats" *ngIf="showWpm">
                   {{ entry.wpm }} WPM · {{ entry.accuracy?.toFixed(0) }}%
                 </div>
               </div>
               <div class="score-display">
                 <span class="score-value">{{ entry.score }}</span>
-                <span class="score-label">mots</span>
+                <span class="score-label">{{ scoreUnit }}</span>
               </div>
             </div>
           }
@@ -312,6 +312,8 @@ export class LeaderboardComponent implements OnChanges {
   @Input() entries: LeaderboardEntry[] = [];
   @Input() isLoading = false;
   @Input() newEntryId: string | null = null;
+  @Input() scoreUnit = 'mots';
+  @Input() showWpm = true;
   @Output() refresh = new EventEmitter<void>();
 
   private currentUserId: string | null = null;

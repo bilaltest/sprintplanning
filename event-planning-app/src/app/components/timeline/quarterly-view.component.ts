@@ -79,8 +79,10 @@ import { fr } from 'date-fns/locale';
                     <div
                       *ngFor="let event of getEventsForDay(day)"
                       [style.background-color]="getEventColor(event)"
+                      [class.rounded-l-none]="isPeriodEvent(event) && !isFirstDayOfPeriod(event, day)"
+                      [class.rounded-r-none]="isPeriodEvent(event) && !isLastDayOfPeriod(event, day)"
                       class="text-[10px] text-white px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition-opacity flex items-center space-x-1"
-                      [title]="event.title"
+                      [title]="getEventTitle(event, day)"
                       (click)="onEventClick($event, event)"
                     >
                       <span class="material-icons" style="font-size: 10px;">{{ event.icon }}</span>
@@ -176,10 +178,9 @@ import { fr } from 'date-fns/locale';
                       <span>{{ getCategoryLabel(event.category) }}</span>
                     </span>
                   </p>
-                  <p *ngIf="event.startTime" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    <span class="material-icons" style="font-size: 14px;">schedule</span>
-                    {{ event.startTime }}
-                    <span *ngIf="event.endTime"> - {{ event.endTime }}</span>
+                  <p *ngIf="event.endDate" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    <span class="material-icons" style="font-size: 14px;">date_range</span>
+                    {{ formatEventPeriod(event) }}
                   </p>
                   <p *ngIf="event.description" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
                     {{ event.description }}
@@ -366,7 +367,14 @@ export class QuarterlyViewComponent implements AfterViewInit {
   getEventsForDay(day: Date): Event[] {
     if (!this.events) return [];
     const dateStr = format(day, 'yyyy-MM-dd');
-    return this.events.filter(event => event.date === dateStr).slice(0, 4);
+    return this.events.filter(event => {
+      // Si l'événement a une date de fin (période)
+      if (event.endDate) {
+        return dateStr >= event.date && dateStr <= event.endDate;
+      }
+      // Sinon, événement d'un seul jour
+      return event.date === dateStr;
+    }).slice(0, 4);
   }
 
   isToday(day: Date): boolean {
@@ -439,8 +447,44 @@ export class QuarterlyViewComponent implements AfterViewInit {
   getEventColor(event: Event): string {
     // En mode sombre, utiliser les couleurs adaptées
     if (this.isDark) {
-      return CATEGORY_COLORS_DARK[event.category];
+      // Pour les catégories par défaut, utiliser la couleur dark mode
+      // Pour les catégories personnalisées, utiliser leur couleur directement
+      return CATEGORY_COLORS_DARK[event.category] || event.color;
     }
     return event.color;
+  }
+
+  isPeriodEvent(event: Event): boolean {
+    return !!event.endDate && event.endDate !== event.date;
+  }
+
+  isFirstDayOfPeriod(event: Event, day: Date): boolean {
+    if (!event.endDate) return true;
+    const dateStr = format(day, 'yyyy-MM-dd');
+    return dateStr === event.date;
+  }
+
+  isLastDayOfPeriod(event: Event, day: Date): boolean {
+    if (!event.endDate) return true;
+    const dateStr = format(day, 'yyyy-MM-dd');
+    return dateStr === event.endDate;
+  }
+
+  getEventTitle(event: Event, day: Date): string {
+    if (!event.endDate) return event.title;
+    const dateStr = format(day, 'yyyy-MM-dd');
+    if (dateStr === event.date) {
+      return `${event.title} (Début)`;
+    } else if (dateStr === event.endDate) {
+      return `${event.title} (Fin)`;
+    }
+    return `${event.title} (En cours)`;
+  }
+
+  formatEventPeriod(event: Event): string {
+    if (!event.endDate) return '';
+    const startDate = new Date(event.date);
+    const endDate = new Date(event.endDate);
+    return `${format(startDate, 'd MMM', { locale: fr })} - ${format(endDate, 'd MMM yyyy', { locale: fr })}`;
   }
 }

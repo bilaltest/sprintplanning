@@ -52,6 +52,8 @@ interface GameStats {
             [entries]="leaderboard"
             [isLoading]="loadingLeaderboard"
             [newEntryId]="newEntryId"
+            [scoreUnit]="'pts'"
+            [showWpm]="false"
           ></app-leaderboard>
         </div>
 

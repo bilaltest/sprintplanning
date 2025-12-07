@@ -256,6 +256,12 @@ export const initGames = async (req, res, next) => {
         name: 'Math Rush',
         description: 'Résolvez un maximum de calculs en 60 secondes !',
         icon: 'calculate'
+      },
+      {
+        slug: 'flappy-dsi',
+        name: 'Flappy DSI',
+        description: 'Évitez les obstacles de la DSI et battez vos collègues !',
+        icon: 'flight'
       }
     ];
 

@@ -201,6 +201,8 @@ interface MemoryCard {
             [entries]="leaderboard"
             [isLoading]="isLoadingLeaderboard"
             [newEntryId]="highlightedEntryId"
+            [scoreUnit]="'pts'"
+            [showWpm]="false"
           />
         </div>
       </div>

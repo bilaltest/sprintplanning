@@ -10,7 +10,8 @@ export type EventIcon = string; // Accepte n'importe quelle icône Material pour
 export interface Event {
   id?: string;
   title: string;
-  date: string; // ISO format YYYY-MM-DD
+  date: string; // ISO format YYYY-MM-DD (date de début)
+  endDate?: string; // ISO format YYYY-MM-DD (date de fin optionnelle pour les périodes)
   startTime?: string; // HH:mm format
   endTime?: string; // HH:mm format
   color: EventColor;

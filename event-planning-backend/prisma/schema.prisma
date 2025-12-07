@@ -13,7 +13,8 @@ datasource db {
 model Event {
   id          String   @id @default(cuid())
   title       String
-  date        String   // ISO format YYYY-MM-DD
+  date        String   // ISO format YYYY-MM-DD (date de début)
+  endDate     String?  // ISO format YYYY-MM-DD (date de fin optionnelle pour les périodes)
   startTime   String?  // HH:mm format
   endTime     String?  // HH:mm format
   color       String

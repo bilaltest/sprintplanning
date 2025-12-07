@@ -370,6 +370,10 @@ export class PlaygroundComponent implements OnInit {
     'math-rush': {
       gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
       hoverGradient: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)'
+    },
+    'flappy-dsi': {
+      gradient: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%)',
+      hoverGradient: 'linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%)'
     }
   };
 

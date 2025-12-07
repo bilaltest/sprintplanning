@@ -53,11 +53,11 @@ import { ConfirmationService } from '@services/confirmation.service';
             </div>
           </div>
 
-          <!-- Date and time -->
-          <div class="grid grid-cols-3 gap-4">
+          <!-- Date -->
+          <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Date <span class="text-red-500">*</span>
+                Date de début <span class="text-red-500">*</span>
               </label>
               <input
                 type="date"
@@ -70,24 +70,13 @@ import { ConfirmationService } from '@services/confirmation.service';
 
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Heure début
+                Date de fin (optionnel)
               </label>
               <input
-                type="time"
-                [(ngModel)]="formData.startTime"
-                name="startTime"
-                class="input"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Heure fin
-              </label>
-              <input
-                type="time"
-                [(ngModel)]="formData.endTime"
-                name="endTime"
+                type="date"
+                [(ngModel)]="formData.endDate"
+                name="endDate"
+                [min]="formData.date"
                 class="input"
               />
             </div>
@@ -129,7 +118,7 @@ import { ConfirmationService } from '@services/confirmation.service';
               [(ngModel)]="formData.description"
               name="description"
               maxlength="500"
-              rows="4"
+              rows="2"
               class="input resize-none"
               placeholder="Description optionnelle..."
             ></textarea>
@@ -189,8 +178,7 @@ export class EventModalComponent implements OnInit {
   formData = {
     title: '',
     date: '',
-    startTime: '',
-    endTime: '',
+    endDate: '',
     category: 'mep' as string,
     color: '#22c55e',
     icon: 'rocket_launch',
@@ -215,8 +203,7 @@ export class EventModalComponent implements OnInit {
       this.formData = {
         title: this.event.title,
         date: this.event.date,
-        startTime: this.event.startTime || '',
-        endTime: this.event.endTime || '',
+        endDate: this.event.endDate || '',
         category: this.event.category,
         color: this.event.color,
         icon: this.event.icon,
@@ -248,8 +235,7 @@ export class EventModalComponent implements OnInit {
       const eventData = {
         title: this.formData.title.trim(),
         date: this.formData.date,
-        startTime: this.formData.startTime || undefined,
-        endTime: this.formData.endTime || undefined,
+        endDate: this.formData.endDate || undefined,
         category: this.formData.category,
         color: this.formData.color,
         icon: this.formData.icon,

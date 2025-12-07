@@ -134,6 +134,14 @@ export const routes: Routes = [
             m => m.MathRushComponent
           ),
         data: { breadcrumb: 'Math Rush' }
+      },
+      {
+        path: 'playground/flappy-dsi',
+        loadComponent: () =>
+          import('./components/playground/flappy-dsi/flappy-dsi.component').then(
+            m => m.FlappyDsiComponent
+          ),
+        data: { breadcrumb: 'Flappy DSI' }
       }
     ]
   }
