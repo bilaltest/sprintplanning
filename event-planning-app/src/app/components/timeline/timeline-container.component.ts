@@ -11,6 +11,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Event } from '@models/event.model';
 import { QuarterlyViewComponent } from './quarterly-view.component';
+import { NowViewComponent } from './now-view.component';
 import { FilterBarComponent } from '../filters/filter-bar.component';
 import { EventModalComponent } from '../modals/event-modal.component';
 
@@ -20,6 +21,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
   imports: [
     CommonModule,
     QuarterlyViewComponent,
+    NowViewComponent,
     FilterBarComponent,
     EventModalComponent
   ],
@@ -155,7 +157,16 @@ import { EventModalComponent } from '../modals/event-modal.component';
 
       <!-- Timeline view -->
       <div id="timeline-export" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-6">
+        <app-now-view
+          *ngIf="(currentView$ | async) === 'now'"
+          [events]="filteredEvents$ | async"
+          (eventClick)="openEditEventModal($event)"
+          (addEventClick)="openCreateEventModalWithDate($event)"
+          (deleteEventClick)="handleDeleteEvent($event)"
+        ></app-now-view>
+
         <app-quarterly-view
+          *ngIf="(currentView$ | async) === 'quarter'"
           [events]="filteredEvents$ | async"
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
@@ -213,6 +224,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
 })
 export class TimelineContainerComponent implements OnInit {
   views = [
+    { value: 'now' as TimelineView, label: 'Actualité', icon: 'schedule' },
     { value: 'quarter' as TimelineView, label: 'Trimestre', icon: 'calendar_view_month' }
   ];
 
