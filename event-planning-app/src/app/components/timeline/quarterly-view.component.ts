@@ -47,8 +47,14 @@ interface DayCard {
         <div class="space-y-8 pb-6">
           <div *ngFor="let monthCard of monthCards" class="month-section">
             <!-- En-tête du mois -->
-            <div class="sticky top-0 z-10 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-t-xl shadow-md mb-4">
-              <h3 class="text-xl font-bold">
+            <div class="sticky top-0 z-10 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-t-xl shadow-md mb-4 relative overflow-hidden">
+              <div class="absolute inset-0 bg-black/10"></div>
+              <!-- Déco géométrique - Bulles multiples -->
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/15 rounded-full"></div>
+              <div class="absolute right-16 top-1/2 -translate-y-1/2 w-5 h-5 bg-white/20 rounded-full"></div>
+              <div class="absolute right-28 top-1/2 -translate-y-1/2 w-6 h-6 bg-white/12 rounded-full"></div>
+              <div class="absolute right-40 top-1/2 -translate-y-1/2 w-4 h-4 bg-white/18 rounded-full"></div>
+              <h3 class="text-base font-bold relative z-10">
                 {{ monthCard.monthName }} {{ monthCard.year }}
               </h3>
             </div>
@@ -97,14 +103,17 @@ interface DayCard {
                         [class.to-gray-400]="day.isPast && !day.isToday && !day.isWeekend && !day.isHoliday"
                         [class.from-primary-400]="day.isFuture && !day.isToday && !day.isWeekend && !day.isHoliday"
                         [class.to-primary-600]="day.isFuture && !day.isToday && !day.isWeekend && !day.isHoliday"
-                        class="px-2 py-1.5 text-white relative"
+                        class="px-1.5 py-1 text-white relative overflow-hidden"
                       >
-                        <div class="text-center">
-                          <div class="text-[10px] uppercase tracking-wide font-semibold opacity-90">
+                        <div class="absolute inset-0 bg-black/10"></div>
+                        <div class="relative z-10 text-center">
+                          <div class="text-[9px] uppercase tracking-wide font-semibold opacity-90">
                             {{ day.dayName }}
                           </div>
-                          <div class="text-2xl font-bold">{{ day.dayNumber }}</div>
+                          <div class="text-xl font-bold">{{ day.dayNumber }}</div>
                         </div>
+                        <!-- Déco géométrique -->
+                        <div class="absolute -right-2 -bottom-2 w-12 h-12 bg-white/10 rounded-full"></div>
                       </div>
 
                       <!-- Corps de la carte - Événements -->
@@ -161,8 +170,9 @@ interface DayCard {
                           <button
                             (click)="onAddEvent(day.dateStr)"
                             class="w-full py-1 border border-dashed border-gray-300 dark:border-gray-600 rounded text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-colors text-[10px] font-medium flex items-center justify-center"
+                            title="Ajouter un événement"
                           >
-                            <span class="material-icons" style="font-size: 12px;">add_circle_outline</span>
+                            <span class="material-icons" style="font-size: 14px;">add</span>
                           </button>
                         </div>
                       </div>

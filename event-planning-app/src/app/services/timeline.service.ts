@@ -7,7 +7,7 @@ import { TimelineView, TimelineState } from '@models/timeline.model';
 })
 export class TimelineService {
   private stateSubject = new BehaviorSubject<TimelineState>({
-    view: 'now',
+    view: 'quarter',
     currentDate: new Date()
   });
 
@@ -26,22 +26,6 @@ export class TimelineService {
   selectDate(date: Date): void {
     const current = this.stateSubject.value;
     this.stateSubject.next({ ...current, selectedDate: date });
-  }
-
-  nextPeriod(): void {
-    const state = this.stateSubject.value;
-    const current = state.currentDate;
-    // Vue trimestrielle : avancer de 3 mois
-    const newDate = new Date(current.getFullYear(), current.getMonth() + 3, 1);
-    this.setCurrentDate(newDate);
-  }
-
-  previousPeriod(): void {
-    const state = this.stateSubject.value;
-    const current = state.currentDate;
-    // Vue trimestrielle : reculer de 3 mois
-    const newDate = new Date(current.getFullYear(), current.getMonth() - 3, 1);
-    this.setCurrentDate(newDate);
   }
 
   goToToday(): void {

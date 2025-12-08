@@ -52,28 +52,6 @@ import { EventModalComponent } from '../modals/event-modal.component';
           <!-- Navigation -->
           <div class="flex items-center space-x-4">
             <button
-              (click)="previousPeriod()"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              title="Période précédente"
-            >
-              <span class="material-icons text-gray-600 dark:text-gray-300">chevron_left</span>
-            </button>
-
-            <div class="text-center min-w-[200px]">
-              <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ getCurrentPeriodLabel() }}
-              </h2>
-            </div>
-
-            <button
-              (click)="nextPeriod()"
-              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              title="Période suivante"
-            >
-              <span class="material-icons text-gray-600 dark:text-gray-300">chevron_right</span>
-            </button>
-
-            <button
               (click)="goToToday()"
               class="btn btn-secondary btn-sm"
             >
@@ -174,38 +152,6 @@ import { EventModalComponent } from '../modals/event-modal.component';
         ></app-quarterly-view>
       </div>
 
-      <!-- Bottom navigation -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-4">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-2">
-            <button
-              (click)="previousPeriod()"
-              class="btn btn-secondary flex items-center space-x-2"
-            >
-              <span class="material-icons text-lg">chevron_left</span>
-              <span>Période précédente</span>
-            </button>
-          </div>
-
-          <button
-            (click)="goToToday()"
-            class="btn btn-primary"
-          >
-            <span class="material-icons text-lg">today</span>
-            Aujourd'hui
-          </button>
-
-          <div class="flex items-center space-x-2">
-            <button
-              (click)="nextPeriod()"
-              class="btn btn-secondary flex items-center space-x-2"
-            >
-              <span>Période suivante</span>
-              <span class="material-icons text-lg">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Event modal -->
@@ -224,8 +170,8 @@ import { EventModalComponent } from '../modals/event-modal.component';
 })
 export class TimelineContainerComponent implements OnInit {
   views = [
-    { value: 'now' as TimelineView, label: 'Timeline', icon: 'timeline' },
-    { value: 'quarter' as TimelineView, label: 'Calendrier', icon: 'calendar_view_month' }
+    { value: 'quarter' as TimelineView, label: 'Calendrier', icon: 'calendar_view_month' },
+    { value: 'now' as TimelineView, label: 'Timeline', icon: 'timeline' }
   ];
 
   currentView$!: Observable<TimelineView>;
@@ -304,26 +250,8 @@ export class TimelineContainerComponent implements OnInit {
     this.timelineService.setView(view);
   }
 
-  previousPeriod(): void {
-    this.timelineService.previousPeriod();
-  }
-
-  nextPeriod(): void {
-    this.timelineService.nextPeriod();
-  }
-
   goToToday(): void {
     this.timelineService.goToToday();
-  }
-
-  getCurrentPeriodLabel(): string {
-    const state = this.timelineService.getCurrentState();
-    const date = state.currentDate;
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const quarter = Math.floor(month / 3) + 1;
-
-    return `T${quarter} ${year}`;
   }
 
   openCreateEventModal(): void {
@@ -439,12 +367,4 @@ export class TimelineContainerComponent implements OnInit {
     this.isScrolled = window.scrollY > 100;
   }
 
-  @HostListener('window:keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'ArrowLeft') {
-      this.previousPeriod();
-    } else if (event.key === 'ArrowRight') {
-      this.nextPeriod();
-    }
-  }
 }

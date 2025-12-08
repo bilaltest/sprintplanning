@@ -6,7 +6,7 @@ import { SettingsService } from '@services/settings.service';
 import { TimelineService } from '@services/timeline.service';
 import { CategoryService } from '@services/category.service';
 import { ConfirmationService } from '@services/confirmation.service';
-import { format, addDays, subDays, isToday, isPast, isFuture, differenceInDays } from 'date-fns';
+import { format, addDays, subDays, isToday, isPast, isFuture } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface DayCard {
@@ -20,6 +20,7 @@ interface DayCard {
   isFuture: boolean;
   isWeekend: boolean;
   isHoliday: boolean;
+  weekNumber: number;
   events: Event[];
 }
 
@@ -72,40 +73,34 @@ interface DayCard {
                   [class.to-gray-400]="day.isPast && !day.isToday && !day.isWeekend && !day.isHoliday"
                   [class.from-primary-400]="day.isFuture && !day.isToday && !day.isWeekend && !day.isHoliday"
                   [class.to-primary-600]="day.isFuture && !day.isToday && !day.isWeekend && !day.isHoliday"
-                  class="p-4 text-white relative overflow-hidden"
+                  class="px-3 py-2 text-white relative overflow-hidden"
                 >
                   <div class="absolute inset-0 bg-black/10"></div>
                   <div class="relative z-10">
-                    <div class="text-xs uppercase tracking-wider opacity-90 font-semibold mb-1">
+                    <div class="text-[10px] uppercase tracking-wider opacity-90 font-semibold">
                       {{ day.dayName }}
                     </div>
-                    <div class="flex items-baseline space-x-2">
-                      <div class="text-5xl font-bold">{{ day.dayNumber }}</div>
-                      <div class="text-lg opacity-90">{{ day.monthName }}</div>
+                    <div class="flex items-baseline space-x-1.5">
+                      <div class="text-3xl font-bold">{{ day.dayNumber }}</div>
+                      <div class="text-sm opacity-90">{{ day.monthName }}</div>
                     </div>
                     <div
                       *ngIf="day.isToday"
-                      class="mt-2 flex items-center space-x-1 text-xs font-bold"
+                      class="mt-0.5 flex items-center space-x-1 text-[10px] font-bold"
                     >
-                      <span class="material-icons text-sm animate-pulse">fiber_manual_record</span>
+                      <span class="material-icons text-xs animate-pulse">fiber_manual_record</span>
                       <span>EN DIRECT</span>
                     </div>
                     <div
-                      *ngIf="!day.isToday && day.isFuture"
-                      class="mt-2 text-xs opacity-90"
+                      *ngIf="!day.isToday"
+                      class="mt-0.5 text-[10px] opacity-90"
                     >
-                      Dans {{ getDaysUntil(day.date) }} jour{{ getDaysUntil(day.date) > 1 ? 's' : '' }}
-                    </div>
-                    <div
-                      *ngIf="day.isPast"
-                      class="mt-2 text-xs opacity-90"
-                    >
-                      Il y a {{ getDaysSince(day.date) }} jour{{ getDaysSince(day.date) > 1 ? 's' : '' }}
+                      Semaine {{ day.weekNumber }}
                     </div>
                   </div>
 
                   <!-- Déco géométrique -->
-                  <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full"></div>
+                  <div class="absolute -right-3 -bottom-3 w-16 h-16 bg-white/10 rounded-full"></div>
                 </div>
 
                 <!-- Corps de la carte - Événements -->
@@ -163,10 +158,10 @@ interface DayCard {
                     <!-- Bouton ajouter en bas -->
                     <button
                       (click)="onAddEvent(day.dateStr)"
-                      class="w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-colors text-sm font-medium flex items-center justify-center space-x-2"
+                      class="w-full py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-colors text-sm font-medium flex items-center justify-center"
+                      title="Ajouter un événement"
                     >
-                      <span class="material-icons text-lg">add_circle_outline</span>
-                      <span>Ajouter un événement</span>
+                      <span class="material-icons text-lg">add</span>
                     </button>
                   </div>
                 </div>
@@ -485,8 +480,17 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
       isFuture: compareDate > today,
       isWeekend: date.getDay() === 0 || date.getDay() === 6,
       isHoliday: this.isHoliday(date),
+      weekNumber: this.getWeekNumber(date),
       events: this.getEventsForDay(dateStr)
     };
+  }
+
+  private getWeekNumber(date: Date): number {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
   }
 
   isHoliday(day: Date): boolean {
@@ -555,14 +559,6 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
       }
       return event.date === dateStr;
     });
-  }
-
-  getDaysUntil(date: Date): number {
-    return Math.abs(differenceInDays(date, new Date()));
-  }
-
-  getDaysSince(date: Date): number {
-    return Math.abs(differenceInDays(new Date(), date));
   }
 
   getCategoryLabel(categoryId: string): string {
