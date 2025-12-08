@@ -224,8 +224,8 @@ import { EventModalComponent } from '../modals/event-modal.component';
 })
 export class TimelineContainerComponent implements OnInit {
   views = [
-    { value: 'now' as TimelineView, label: 'Actualité', icon: 'schedule' },
-    { value: 'quarter' as TimelineView, label: 'Trimestre', icon: 'calendar_view_month' }
+    { value: 'now' as TimelineView, label: 'Timeline', icon: 'timeline' },
+    { value: 'quarter' as TimelineView, label: 'Calendrier', icon: 'calendar_view_month' }
   ];
 
   currentView$!: Observable<TimelineView>;

@@ -291,6 +291,8 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
   private startDate: Date = new Date(); // Date de début de la fenêtre
   private endDate: Date = new Date(); // Date de fin de la fenêtre
   private isLoadingMore = false;
+  private isFirstLoad = true; // Flag pour le premier chargement
+  private shouldPreserveScroll = false; // Flag pour préserver le scroll
 
   constructor(
     private settingsService: SettingsService,
@@ -308,20 +310,36 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
     this.timelineService.scrollToToday$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
-        setTimeout(() => {
-          this.scrollToTodayStart();
-        }, 100);
+        this.scrollToTodayStart();
       });
 
     this.initializeDays();
   }
 
   ngOnChanges(): void {
-    this.initializeDays();
+    // Si ce n'est pas le premier chargement, préserver le scroll
+    if (!this.isFirstLoad) {
+      this.shouldPreserveScroll = true;
+      const savedScrollLeft = this.scrollContainer?.nativeElement?.scrollLeft || 0;
+
+      this.reloadDaysOnly();
+
+      // Restaurer la position de scroll après le rechargement
+      setTimeout(() => {
+        if (this.scrollContainer && savedScrollLeft > 0) {
+          this.scrollContainer.nativeElement.scrollLeft = savedScrollLeft;
+        }
+        this.shouldPreserveScroll = false;
+      }, 0);
+    }
   }
 
   ngAfterViewInit(): void {
-    // Pas de scroll automatique : aujourd'hui est déjà à gauche
+    // Premier chargement : scroll à 0 (aujourd'hui est déjà le premier)
+    if (this.isFirstLoad && this.scrollContainer) {
+      this.scrollContainer.nativeElement.scrollLeft = 0;
+      this.isFirstLoad = false;
+    }
   }
 
   private initializeDays(): void {
@@ -345,6 +363,15 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
     }
 
     this.days = allDays;
+  }
+
+  private reloadDaysOnly(): void {
+    // Recharger uniquement les événements pour les jours existants
+    // sans changer les dates ni la structure
+    this.days = this.days.map(day => ({
+      ...day,
+      events: this.getEventsForDay(day.dateStr)
+    }));
   }
 
   onScroll(event: any): void {
@@ -589,14 +616,25 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
   }
 
   scrollToTodayStart(): void {
-    // Méthode pour scroll au début (aujourd'hui à gauche)
-    if (this.scrollContainer) {
-      const container = this.scrollContainer.nativeElement;
-      container.scrollTo({
-        left: 0,
-        behavior: 'smooth'
-      });
-    }
+    // Réinitialiser complètement la vue
+    this.isLoadingMore = true;
+    this.isFirstLoad = true;
+
+    // Réinitialiser les jours pour que aujourd'hui soit en premier
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    this.startDate = subDays(today, this.INITIAL_DAYS_BEFORE);
+    this.endDate = addDays(today, this.INITIAL_DAYS_AFTER);
+    this.loadDaysInRange(this.startDate, this.endDate);
+
+    // Attendre que le DOM soit mis à jour puis forcer le scroll à 0
+    setTimeout(() => {
+      if (this.scrollContainer) {
+        this.scrollContainer.nativeElement.scrollLeft = 0;
+      }
+      this.isLoadingMore = false;
+      this.isFirstLoad = false;
+    }, 0);
   }
 
   scrollToPast(): void {

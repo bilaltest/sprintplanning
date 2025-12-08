@@ -1,198 +1,187 @@
-import { Component, Input, Output, EventEmitter, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Event, EventCategory, CATEGORY_COLORS_DARK } from '@models/event.model';
-import { TimelineService } from '@services/timeline.service';
+import { Event, CATEGORY_COLORS_DARK } from '@models/event.model';
 import { SettingsService } from '@services/settings.service';
+import { TimelineService } from '@services/timeline.service';
 import { CategoryService } from '@services/category.service';
 import { ConfirmationService } from '@services/confirmation.service';
-import { format, getDaysInMonth, getDay, isToday, isSameDay } from 'date-fns';
+import { format, addMonths, subMonths, isToday, isPast, isFuture, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
+
+interface MonthCard {
+  month: Date;
+  monthName: string;
+  year: number;
+  days: DayCard[];
+}
+
+interface DayCard {
+  date: Date;
+  dateStr: string;
+  dayName: string;
+  dayNumber: number;
+  monthName: string;
+  isToday: boolean;
+  isPast: boolean;
+  isFuture: boolean;
+  isWeekend: boolean;
+  isHoliday: boolean;
+  weekNumber: number;
+  events: Event[];
+}
 
 @Component({
   selector: 'app-quarterly-view',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="quarterly-view">
-      <!-- 3 mois en colonne -->
-      <div class="space-y-6">
-        <div
-          *ngFor="let month of months; let i = index"
-          [attr.data-month-index]="i"
-          [id]="'month-' + i"
-          class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
-        >
-          <!-- En-tête mois -->
-          <div class="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-3">
-            <h3 class="text-lg font-semibold">
-              {{ getMonthName(month) }}
-            </h3>
-          </div>
-
-          <!-- Calendrier du mois -->
-          <div class="p-3">
-            <!-- Jours de la semaine -->
-            <div class="grid grid-cols-7 gap-1 mb-2">
-              <div
-                *ngFor="let day of daysOfWeek"
-                class="text-center text-xs font-semibold text-gray-600 dark:text-gray-400 py-1"
-              >
-                {{ day }}
-              </div>
-            </div>
-
-            <!-- Grille des jours -->
-            <div class="grid grid-cols-7 gap-1">
-              <!-- Empty cells for days before month starts -->
-              <div
-                *ngFor="let _ of getEmptyDays(month)"
-                class="h-[90px]"
-              ></div>
-
-              <!-- Days of month -->
-              <div
-                *ngFor="let day of getDaysInMonth(month)"
-                [attr.data-date]="formatDate(day)"
-                [class.bg-primary-50]="isToday(day)"
-                [class.dark:bg-primary-900/20]="isToday(day)"
-                [class.ring-2]="isToday(day)"
-                [class.ring-primary-500]="isToday(day)"
-                [class.bg-gray-100]="isWeekendOrHoliday(day) && !isToday(day)"
-                [class.dark:bg-gray-800/50]="isWeekendOrHoliday(day) && !isToday(day)"
-                class="h-[95px] border border-gray-200 dark:border-gray-600 rounded p-1.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer relative group"
-                (click)="handleDayClick(day)"
-              >
-                <div class="flex flex-col h-full">
-                  <!-- Day number -->
-                  <div
-                    [class.font-bold]="isToday(day)"
-                    [class.text-primary-600]="isToday(day) && !isDark"
-                    [class.dark:text-primary-400]="isToday(day)"
-                    class="text-xs text-gray-700 dark:text-gray-300 mb-1"
-                  >
-                    {{ day.getDate() }}
-                  </div>
-
-                  <!-- Events for this day -->
-                  <div class="flex-1 space-y-0.5 overflow-y-auto custom-scrollbar">
-                    <div
-                      *ngFor="let event of getEventsForDay(day)"
-                      [style.background-color]="getEventColor(event)"
-                      [class.rounded-l-none]="isPeriodEvent(event) && !isFirstDayOfPeriod(event, day)"
-                      [class.rounded-r-none]="isPeriodEvent(event) && !isLastDayOfPeriod(event, day)"
-                      class="text-[10px] text-white px-1.5 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition-opacity flex items-center space-x-1"
-                      [title]="getEventTitle(event, day)"
-                      (click)="onEventClick($event, event)"
-                    >
-                      <span class="material-icons" style="font-size: 10px;">{{ event.icon }}</span>
-                      <span class="truncate">{{ event.title }}</span>
-                    </div>
-
-                    <!-- More events indicator -->
-                    <div
-                      *ngIf="getEventsForDay(day).length > 3"
-                      class="text-[9px] text-gray-500 dark:text-gray-400 px-1"
-                    >
-                      +{{ getEventsForDay(day).length - 3 }} autres
-                    </div>
-                  </div>
-
-                  <!-- Add event button (shown on hover) -->
-                  <button
-                    class="absolute bottom-1 right-1 p-0.5 bg-primary-500 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                    (click)="onAddEvent($event, day)"
-                    title="Ajouter un événement"
-                  >
-                    <span class="material-icons" style="font-size: 12px;">add</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Panneau latéral détails du jour -->
+    <div class="quarterly-view-container">
+      <!-- Scroll container vertical -->
       <div
-        *ngIf="selectedDay"
-        class="fixed right-4 top-20 w-80 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-750 p-4 shadow-xl animate-slide-in-right z-50"
+        class="overflow-y-auto custom-scrollbar"
+        #scrollContainer
+        (scroll)="onScroll($event)"
+        style="max-height: calc(100vh - 300px);"
       >
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            {{ formatSelectedDay() }}
-          </h3>
-          <button
-            (click)="closeDetails()"
-            class="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-          >
-            <span class="material-icons text-gray-500 dark:text-gray-400 text-xl">close</span>
-          </button>
-        </div>
+        <div class="space-y-8 pb-6">
+          <div *ngFor="let monthCard of monthCards" class="month-section">
+            <!-- En-tête du mois -->
+            <div class="sticky top-0 z-10 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-t-xl shadow-md mb-4">
+              <h3 class="text-xl font-bold">
+                {{ monthCard.monthName }} {{ monthCard.year }}
+              </h3>
+            </div>
 
-        <div *ngIf="getEventsForDay(selectedDay).length === 0" class="text-center py-8">
-          <span class="material-icons text-gray-300 dark:text-gray-600 text-5xl mb-2">event_busy</span>
-          <p class="text-gray-500 dark:text-gray-400 text-sm">Aucun événement ce jour</p>
-
-          <!-- Add event button in detail panel -->
-          <button
-            (click)="onAddEventFromPanel(selectedDay)"
-            class="btn btn-primary mt-4"
-          >
-            <span class="material-icons text-sm">add</span>
-            Créer un événement
-          </button>
-        </div>
-
-        <div *ngIf="getEventsForDay(selectedDay).length > 0">
-          <!-- Add event button in detail panel when events exist -->
-          <button
-            (click)="onAddEventFromPanel(selectedDay)"
-            class="btn btn-primary w-full mb-3"
-          >
-            <span class="material-icons text-sm">add</span>
-            Créer un événement
-          </button>
-
-          <div class="space-y-3 max-h-[calc(100vh-280px)] overflow-y-auto custom-scrollbar">
-            <div
-              *ngFor="let event of getEventsForDay(selectedDay)"
-              [style.border-left-color]="getEventColor(event)"
-              class="border-l-4 pl-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-r hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
-            >
-              <div class="flex items-start space-x-2">
-                <span
-                  class="material-icons text-lg mt-0.5 cursor-pointer"
-                  [style.color]="getEventColor(event)"
-                  (click)="onEventClickFromPanel(event)"
-                >
-                  {{ event.icon }}
-                </span>
-                <div class="flex-1 min-w-0 cursor-pointer" (click)="onEventClickFromPanel(event)">
-                  <h4 class="font-medium text-gray-900 dark:text-white text-sm">
-                    {{ event.title }}
-                  </h4>
-                  <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
-                    <span class="inline-flex items-center space-x-1">
-                      <span class="material-icons" style="font-size: 14px;">label</span>
-                      <span>{{ getCategoryLabel(event.category) }}</span>
-                    </span>
-                  </p>
-                  <p *ngIf="event.endDate" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    <span class="material-icons" style="font-size: 14px;">date_range</span>
-                    {{ formatEventPeriod(event) }}
-                  </p>
-                  <p *ngIf="event.description" class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    {{ event.description }}
-                  </p>
+            <!-- Grille des semaines -->
+            <div class="space-y-3 px-2">
+              <div *ngFor="let week of getWeeks(monthCard.days)" class="week-row">
+                <!-- En-tête de semaine -->
+                <div class="flex items-center mb-2 px-2">
+                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    Semaine {{ week[0].weekNumber }}
+                  </span>
                 </div>
-                <button
-                  (click)="onDeleteEvent($event, event)"
-                  class="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors opacity-0 group-hover:opacity-100"
-                  title="Supprimer cet événement"
-                >
-                  <span class="material-icons text-red-600 dark:text-red-400 text-lg">delete</span>
-                </button>
+
+                <!-- Jours de la semaine -->
+                <div class="grid grid-cols-7 gap-2">
+                  <div
+                    *ngFor="let day of week"
+                    class="day-card-mini"
+                  >
+                    <!-- Carte du jour -->
+                    <div
+                      [class.card-today]="day.isToday"
+                      [class.card-past]="day.isPast && !day.isToday"
+                      [class.card-future]="day.isFuture && !day.isToday"
+                      [class.card-weekend]="day.isWeekend && !day.isToday"
+                      [class.card-holiday]="day.isHoliday && !day.isToday"
+                      class="day-card h-full rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 border"
+                      [class.border-amber-400]="day.isToday"
+                      [class.border-gray-300]="!day.isToday && !day.isWeekend && !day.isHoliday"
+                      [class.border-gray-400]="!day.isToday && (day.isWeekend || day.isHoliday)"
+                      [class.dark:border-amber-500]="day.isToday"
+                      [class.dark:border-gray-600]="!day.isToday && !day.isWeekend && !day.isHoliday"
+                      [class.dark:border-gray-500]="!day.isToday && (day.isWeekend || day.isHoliday)"
+                    >
+                      <!-- Header de la carte -->
+                      <div
+                        [class.bg-gradient-to-br]="true"
+                        [class.from-amber-400]="day.isToday"
+                        [class.to-amber-600]="day.isToday"
+                        [class.from-red-400]="day.isHoliday && !day.isToday"
+                        [class.to-red-500]="day.isHoliday && !day.isToday"
+                        [class.from-slate-400]="day.isWeekend && !day.isHoliday && !day.isToday"
+                        [class.to-slate-500]="day.isWeekend && !day.isHoliday && !day.isToday"
+                        [class.from-gray-300]="day.isPast && !day.isToday && !day.isWeekend && !day.isHoliday"
+                        [class.to-gray-400]="day.isPast && !day.isToday && !day.isWeekend && !day.isHoliday"
+                        [class.from-primary-400]="day.isFuture && !day.isToday && !day.isWeekend && !day.isHoliday"
+                        [class.to-primary-600]="day.isFuture && !day.isToday && !day.isWeekend && !day.isHoliday"
+                        class="px-2 py-1.5 text-white relative"
+                      >
+                        <div class="text-center">
+                          <div class="text-[10px] uppercase tracking-wide font-semibold opacity-90">
+                            {{ day.dayName }}
+                          </div>
+                          <div class="text-2xl font-bold">{{ day.dayNumber }}</div>
+                        </div>
+                      </div>
+
+                      <!-- Corps de la carte - Événements -->
+                      <div class="p-1.5 bg-white dark:bg-gray-800 min-h-[80px] max-h-[120px] overflow-y-auto custom-scrollbar-mini">
+                        <div *ngIf="day.events.length === 0" class="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
+                          <button
+                            (click)="onAddEvent(day.dateStr)"
+                            class="p-1 hover:bg-primary-100 dark:hover:bg-primary-900/20 rounded text-primary-500 transition-colors"
+                            title="Ajouter"
+                          >
+                            <span class="material-icons text-sm">add_circle_outline</span>
+                          </button>
+                        </div>
+
+                        <div *ngIf="day.events.length > 0" class="space-y-1">
+                          <div
+                            *ngFor="let event of day.events"
+                            class="group relative bg-gray-50 dark:bg-gray-700/50 rounded p-1 hover:shadow-md transition-all duration-200 cursor-pointer border-l-2"
+                            [style.border-left-color]="getEventColor(event)"
+                            (click)="onEventClick(event)"
+                          >
+                            <div class="flex items-start gap-0.5">
+                              <div
+                                class="flex-shrink-0 w-3 h-3 rounded flex items-center justify-center mt-0.5"
+                                [style.background-color]="getEventColor(event) + '20'"
+                              >
+                                <span
+                                  class="material-icons"
+                                  style="font-size: 10px;"
+                                  [style.color]="getEventColor(event)"
+                                >
+                                  {{ event.icon }}
+                                </span>
+                              </div>
+                              <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-[11px] leading-tight line-clamp-2">
+                                  {{ event.title }}
+                                </h4>
+                                <div *ngIf="event.startTime" class="text-[9px] text-gray-600 dark:text-gray-400">
+                                  {{ event.startTime }}
+                                </div>
+                              </div>
+                              <button
+                                (click)="onDeleteEvent($event, event)"
+                                class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 dark:hover:bg-red-900/30 rounded p-0.5"
+                                title="Supprimer"
+                              >
+                                <span class="material-icons text-red-600 dark:text-red-400" style="font-size: 12px;">delete</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          <!-- Bouton ajouter en bas -->
+                          <button
+                            (click)="onAddEvent(day.dateStr)"
+                            class="w-full py-1 border border-dashed border-gray-300 dark:border-gray-600 rounded text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-colors text-[10px] font-medium flex items-center justify-center"
+                          >
+                            <span class="material-icons" style="font-size: 12px;">add_circle_outline</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Footer -->
+                      <div class="px-2 py-1 bg-gray-100 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-600">
+                        <div class="flex items-center justify-between text-[9px] text-gray-600 dark:text-gray-400">
+                          <span>{{ day.events.length }} evt</span>
+                          <span *ngIf="day.isHoliday" class="text-red-500 dark:text-red-400">
+                            <span class="material-icons" style="font-size: 10px;">celebration</span>
+                          </span>
+                          <span *ngIf="day.isWeekend && !day.isHoliday" class="text-gray-500 dark:text-gray-400">
+                            <span class="material-icons" style="font-size: 10px;">weekend</span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -201,134 +190,416 @@ import { fr } from 'date-fns/locale';
     </div>
   `,
   styles: [`
-    .quarterly-view {
-      min-height: 500px;
+    .quarterly-view-container {
+      min-height: 600px;
+    }
+
+    .day-card-mini {
+      min-height: 180px;
+    }
+
+    .day-card {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-today {
+      animation: pulse-border 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% {
+        box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 25px rgba(251, 191, 36, 0.6);
+      }
+    }
+
+    .card-past {
+      opacity: 0.85;
+    }
+
+    .card-future {
+      opacity: 0.95;
+    }
+
+    .card-weekend {
+      background-color: rgba(156, 163, 175, 0.05);
+    }
+
+    :host-context(.dark) .card-weekend {
+      background-color: rgba(156, 163, 175, 0.1);
+    }
+
+    .card-holiday {
+      background-color: rgba(239, 68, 68, 0.05);
+    }
+
+    :host-context(.dark) .card-holiday {
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(16, 185, 129, 0.3);
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(16, 185, 129, 0.5);
+    }
+
+    .custom-scrollbar-mini::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .custom-scrollbar-mini::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar-mini::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.3);
+      border-radius: 2px;
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
   `]
 })
-export class QuarterlyViewComponent implements AfterViewInit {
+export class QuarterlyViewComponent implements OnChanges, AfterViewInit {
   @Input() events: Event[] | null = [];
   @Output() eventClick = new EventEmitter<Event>();
   @Output() addEventClick = new EventEmitter<string>();
   @Output() deleteEventClick = new EventEmitter<Event>();
+  @ViewChild('scrollContainer') scrollContainer?: ElementRef;
 
-  months: Date[] = [];
-  selectedDay: Date | null = null;
+  monthCards: MonthCard[] = [];
   isDark = false;
-  daysOfWeek: string[] = [];
+
+  // Gestion du scroll infini avec fenêtre glissante
+  private readonly INITIAL_MONTHS_BEFORE = 0; // Mois courant en premier
+  private readonly INITIAL_MONTHS_AFTER = 2; // 3 mois au total (trimestre)
+  private readonly LOAD_MORE_THRESHOLD = 50; // px avant le bord pour charger plus (très strict)
+  private readonly MAX_MONTHS_IN_MEMORY = 12; // Maximum de mois gardés en mémoire
+  private readonly MONTHS_TO_LOAD = 3; // Nombre de mois à charger à chaque fois
+  private startMonth: Date = new Date();
+  private endMonth: Date = new Date();
+  private isLoadingMore = false;
+  private isFirstLoad = true; // Flag pour le premier chargement
+  private shouldPreserveScroll = false; // Flag pour préserver le scroll
+  private scrollInfiniteEnabled = false; // Désactiver le scroll infini au démarrage
+  private lastScrollTop = 0; // Dernière position de scroll pour détecter la direction
 
   constructor(
-    private timelineService: TimelineService,
     private settingsService: SettingsService,
+    private timelineService: TimelineService,
     private categoryService: CategoryService,
-    private confirmationService: ConfirmationService,
-    private elementRef: ElementRef
+    private confirmationService: ConfirmationService
   ) {
-    // Subscriptions avec cleanup automatique
-    this.timelineService.state$
-      .pipe(takeUntilDestroyed())
-      .subscribe(state => {
-        // Afficher 3 mois du trimestre
-        const currentMonth = state.currentDate.getMonth();
-        const year = state.currentDate.getFullYear();
-        const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
-
-        this.months = Array.from({ length: 3 }, (_, i) =>
-          new Date(year, quarterStartMonth + i, 1)
-        );
-      });
-
-    // Détecter le mode sombre
     this.settingsService.preferences$
       .pipe(takeUntilDestroyed())
       .subscribe(prefs => {
         this.isDark = prefs.theme === 'dark';
-        this.updateDaysOfWeek(true); // Toujours commencer par lundi
       });
 
-    // Écouter le signal de scroll vers aujourd'hui
+    // Écouter le signal "Aujourd'hui" du service timeline
     this.timelineService.scrollToToday$
       .pipe(takeUntilDestroyed())
       .subscribe(() => {
-        setTimeout(() => {
-          this.scrollToCurrentMonth();
-        }, 100);
+        this.scrollToTodayMonth();
       });
+
+    this.initializeMonths();
+  }
+
+  ngOnChanges(): void {
+    // Si ce n'est pas le premier chargement, préserver le scroll
+    if (!this.isFirstLoad) {
+      this.shouldPreserveScroll = true;
+      const savedScrollTop = this.scrollContainer?.nativeElement?.scrollTop || 0;
+
+      this.reloadMonthsOnly();
+
+      // Restaurer la position de scroll après le rechargement
+      setTimeout(() => {
+        if (this.scrollContainer && savedScrollTop > 0) {
+          this.scrollContainer.nativeElement.scrollTop = savedScrollTop;
+        }
+        this.shouldPreserveScroll = false;
+      }, 0);
+    }
   }
 
   ngAfterViewInit(): void {
-    // Ne plus faire de scroll automatique au chargement
-  }
+    // Premier chargement : scroll à 0 (mois courant est déjà en haut)
+    if (this.isFirstLoad && this.scrollContainer) {
+      this.scrollContainer.nativeElement.scrollTop = 0;
+      this.lastScrollTop = 0;
+      this.isFirstLoad = false;
 
-  private updateDaysOfWeek(startMonday: boolean): void {
-    if (startMonday) {
-      this.daysOfWeek = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    } else {
-      this.daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+      // Activer le scroll infini après un délai pour éviter le déclenchement immédiat
+      setTimeout(() => {
+        this.scrollInfiniteEnabled = true;
+      }, 500);
     }
   }
 
-  private scrollToCurrentMonth(): void {
-    const currentMonth = new Date().getMonth();
-    const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
-    const monthIndexInQuarter = currentMonth - quarterStartMonth;
+  private initializeMonths(): void {
+    const state = this.timelineService.getCurrentState();
+    const currentDate = state.currentDate;
+    const currentMonth = startOfMonth(currentDate);
 
-    const monthElement = this.elementRef.nativeElement.querySelector(`#month-${monthIndexInQuarter}`);
-    if (monthElement) {
-      monthElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Définir la fenêtre initiale
+    this.startMonth = subMonths(currentMonth, this.INITIAL_MONTHS_BEFORE);
+    this.endMonth = addMonths(currentMonth, this.INITIAL_MONTHS_AFTER);
+
+    this.loadMonthsInRange(this.startMonth, this.endMonth);
+  }
+
+  private loadMonthsInRange(start: Date, end: Date): void {
+    const months: MonthCard[] = [];
+    let current = new Date(start);
+
+    while (current <= end) {
+      months.push(this.createMonthCard(new Date(current)));
+      current = addMonths(current, 1);
+    }
+
+    this.monthCards = months;
+  }
+
+  private reloadMonthsOnly(): void {
+    // Recharger uniquement les événements pour les mois existants
+    // sans changer les dates ni la structure
+    this.monthCards = this.monthCards.map(monthCard => ({
+      ...monthCard,
+      days: monthCard.days.map(day => ({
+        ...day,
+        events: this.getEventsForDay(day.dateStr)
+      }))
+    }));
+  }
+
+  onScroll(event: any): void {
+    // Ne pas charger plus si le scroll infini n'est pas activé
+    if (!this.scrollInfiniteEnabled || this.isLoadingMore || !this.scrollContainer) return;
+
+    const container = this.scrollContainer.nativeElement;
+    const scrollTop = container.scrollTop;
+    const scrollHeight = container.scrollHeight;
+    const clientHeight = container.clientHeight;
+
+    // Détecter la direction du scroll
+    const isScrollingUp = scrollTop < this.lastScrollTop;
+    const isScrollingDown = scrollTop > this.lastScrollTop;
+
+    // Charger plus en haut (mois passés) - SEULEMENT si on scrolle VERS LE HAUT
+    if (isScrollingUp && scrollTop < this.LOAD_MORE_THRESHOLD) {
+      this.loadMorePast();
+    }
+
+    // Charger plus en bas (mois futurs) - SEULEMENT si on scrolle VERS LE BAS
+    if (isScrollingDown && scrollTop + clientHeight > scrollHeight - this.LOAD_MORE_THRESHOLD) {
+      this.loadMoreFuture();
+    }
+
+    // Sauvegarder la position actuelle pour la prochaine fois
+    this.lastScrollTop = scrollTop;
+  }
+
+  private loadMorePast(): void {
+    this.isLoadingMore = true;
+
+    const newStartMonth = subMonths(this.startMonth, this.MONTHS_TO_LOAD);
+    const newMonths: MonthCard[] = [];
+
+    let current = new Date(newStartMonth);
+    while (current < this.startMonth) {
+      newMonths.push(this.createMonthCard(new Date(current)));
+      current = addMonths(current, 1);
+    }
+
+    // Ajouter au début
+    this.monthCards = [...newMonths, ...this.monthCards];
+    this.startMonth = newStartMonth;
+
+    // Nettoyer la mémoire
+    this.trimMemory();
+
+    // Ajuster le scroll
+    if (this.scrollContainer) {
+      const addedHeight = newMonths.length * 800; // Estimation hauteur par mois
+      this.scrollContainer.nativeElement.scrollTop += addedHeight;
+    }
+
+    setTimeout(() => {
+      this.isLoadingMore = false;
+    }, 100);
+  }
+
+  private loadMoreFuture(): void {
+    this.isLoadingMore = true;
+
+    const newEndMonth = addMonths(this.endMonth, this.MONTHS_TO_LOAD);
+    const newMonths: MonthCard[] = [];
+
+    let current = addMonths(this.endMonth, 1);
+    while (current <= newEndMonth) {
+      newMonths.push(this.createMonthCard(new Date(current)));
+      current = addMonths(current, 1);
+    }
+
+    // Ajouter à la fin
+    this.monthCards = [...this.monthCards, ...newMonths];
+    this.endMonth = newEndMonth;
+
+    // Nettoyer la mémoire
+    this.trimMemory();
+
+    setTimeout(() => {
+      this.isLoadingMore = false;
+    }, 100);
+  }
+
+  private trimMemory(): void {
+    if (this.monthCards.length > this.MAX_MONTHS_IN_MEMORY) {
+      const excess = this.monthCards.length - this.MAX_MONTHS_IN_MEMORY;
+      const halfExcess = Math.floor(excess / 2);
+
+      this.monthCards = this.monthCards.slice(halfExcess, this.monthCards.length - (excess - halfExcess));
+
+      if (this.monthCards.length > 0) {
+        this.startMonth = this.monthCards[0].month;
+        this.endMonth = this.monthCards[this.monthCards.length - 1].month;
+      }
     }
   }
 
-  getMonthName(month: Date): string {
-    const monthName = format(month, 'MMMM yyyy', { locale: fr });
-    return monthName.charAt(0).toUpperCase() + monthName.slice(1);
+  private createMonthCard(month: Date): MonthCard {
+    const start = startOfMonth(month);
+    const end = endOfMonth(month);
+    const allDays = eachDayOfInterval({ start, end });
+
+    const days: DayCard[] = allDays.map(day => this.createDayCard(day));
+
+    return {
+      month,
+      monthName: format(month, 'MMMM', { locale: fr }).charAt(0).toUpperCase() + format(month, 'MMMM', { locale: fr }).slice(1),
+      year: month.getFullYear(),
+      days
+    };
   }
 
-  getDaysInMonth(month: Date): Date[] {
-    const year = month.getFullYear();
-    const monthNum = month.getMonth();
-    const daysCount = getDaysInMonth(month);
-    return Array.from({ length: daysCount }, (_, i) => new Date(year, monthNum, i + 1));
+  private createDayCard(date: Date): DayCard {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const compareDate = new Date(date);
+    compareDate.setHours(0, 0, 0, 0);
+
+    return {
+      date,
+      dateStr,
+      dayName: format(date, 'EEE', { locale: fr }).toUpperCase(),
+      dayNumber: date.getDate(),
+      monthName: format(date, 'MMM', { locale: fr }).toUpperCase(),
+      isToday: isToday(date),
+      isPast: compareDate < today,
+      isFuture: compareDate > today,
+      isWeekend: date.getDay() === 0 || date.getDay() === 6,
+      isHoliday: this.isHoliday(date),
+      weekNumber: this.getWeekNumber(date),
+      events: this.getEventsForDay(dateStr)
+    };
   }
 
-  getEmptyDays(month: Date): number[] {
-    const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
-    const startDayOfWeek = firstDay.getDay();
-
-    // Ajuster pour commencer par lundi
-    const offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
-
-    return Array(offset).fill(0);
+  private getWeekNumber(date: Date): number {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
   }
 
-  isWeekendOrHoliday(day: Date): boolean {
-    const dayOfWeek = day.getDay();
-    return dayOfWeek === 0 || dayOfWeek === 6 || this.isHoliday(day);
+  getWeeks(days: DayCard[]): DayCard[][] {
+    const weeks: DayCard[][] = [];
+    let currentWeek: DayCard[] = [];
+
+    // Remplir les jours vides en début de mois
+    const firstDay = days[0];
+    const dayOfWeek = firstDay.date.getDay();
+    const emptyDays = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Lundi = 0
+
+    for (let i = 0; i < emptyDays; i++) {
+      // Créer un jour vide
+      const emptyDate = new Date(firstDay.date);
+      emptyDate.setDate(firstDay.date.getDate() - (emptyDays - i));
+      currentWeek.push({
+        ...this.createDayCard(emptyDate),
+        events: []
+      });
+    }
+
+    days.forEach(day => {
+      currentWeek.push(day);
+
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+    });
+
+    // Compléter la dernière semaine si nécessaire
+    if (currentWeek.length > 0) {
+      while (currentWeek.length < 7) {
+        const lastDay = currentWeek[currentWeek.length - 1];
+        const nextDate = new Date(lastDay.date);
+        nextDate.setDate(lastDay.date.getDate() + 1);
+        currentWeek.push({
+          ...this.createDayCard(nextDate),
+          events: []
+        });
+      }
+      weeks.push(currentWeek);
+    }
+
+    return weeks;
   }
 
   isHoliday(day: Date): boolean {
     const year = day.getFullYear();
-    const month = day.getMonth() + 1; // 0-indexed
+    const month = day.getMonth() + 1;
     const date = day.getDate();
 
-    // Fixed holidays
     const fixedHolidays = [
-      { month: 1, date: 1 },   // Jour de l'an
-      { month: 5, date: 1 },   // Fête du travail
-      { month: 5, date: 8 },   // Victoire 1945
-      { month: 7, date: 14 },  // Fête nationale
-      { month: 8, date: 15 },  // Assomption
-      { month: 11, date: 1 },  // Toussaint
-      { month: 11, date: 11 }, // Armistice 1918
-      { month: 12, date: 25 }  // Noël
+      { month: 1, date: 1 },
+      { month: 5, date: 1 },
+      { month: 5, date: 8 },
+      { month: 7, date: 14 },
+      { month: 8, date: 15 },
+      { month: 11, date: 1 },
+      { month: 11, date: 11 },
+      { month: 12, date: 25 }
     ];
 
-    // Check fixed holidays
     if (fixedHolidays.some(h => h.month === month && h.date === date)) {
       return true;
     }
 
-    // Easter-based holidays (Pâques, Lundi de Pâques, Ascension, Pentecôte)
     const easter = this.getEasterDate(year);
     const easterMonday = new Date(easter);
     easterMonday.setDate(easter.getDate() + 1);
@@ -345,7 +616,6 @@ export class QuarterlyViewComponent implements AfterViewInit {
     );
   }
 
-  // Calculate Easter date using Computus algorithm
   private getEasterDate(year: number): Date {
     const a = year % 19;
     const b = Math.floor(year / 100);
@@ -364,69 +634,28 @@ export class QuarterlyViewComponent implements AfterViewInit {
     return new Date(year, month - 1, day);
   }
 
-  getEventsForDay(day: Date): Event[] {
+  private getEventsForDay(dateStr: string): Event[] {
     if (!this.events) return [];
-    const dateStr = format(day, 'yyyy-MM-dd');
     return this.events.filter(event => {
-      // Si l'événement a une date de fin (période)
       if (event.endDate) {
         return dateStr >= event.date && dateStr <= event.endDate;
       }
-      // Sinon, événement d'un seul jour
       return event.date === dateStr;
-    }).slice(0, 4);
+    });
   }
 
-  isToday(day: Date): boolean {
-    return isToday(day);
-  }
-
-  formatDate(day: Date): string {
-    return format(day, 'yyyy-MM-dd');
-  }
-
-  handleDayClick(day: Date): void {
-    const dayEvents = this.getEventsForDay(day);
-    if (dayEvents.length > 0) {
-      // If there are events, show the detail panel
-      this.selectedDay = day;
-    } else {
-      // If no events, directly add an event
-      const dateStr = format(day, 'yyyy-MM-dd');
-      this.addEventClick.emit(dateStr);
+  getEventColor(event: Event): string {
+    if (this.isDark) {
+      return CATEGORY_COLORS_DARK[event.category] || event.color;
     }
+    return event.color;
   }
 
-  closeDetails(): void {
-    this.selectedDay = null;
-  }
-
-  formatSelectedDay(): string {
-    if (!this.selectedDay) return '';
-    return format(this.selectedDay, 'EEEE d MMMM yyyy', { locale: fr });
-  }
-
-  getCategoryLabel(categoryId: string): string {
-    return this.categoryService.getCategoryLabel(categoryId);
-  }
-
-  onEventClick(mouseEvent: MouseEvent, event: Event): void {
-    mouseEvent.stopPropagation();
+  onEventClick(event: Event): void {
     this.eventClick.emit(event);
   }
 
-  onEventClickFromPanel(event: Event): void {
-    this.eventClick.emit(event);
-  }
-
-  onAddEvent(mouseEvent: MouseEvent, day: Date): void {
-    mouseEvent.stopPropagation();
-    const dateStr = format(day, 'yyyy-MM-dd');
-    this.addEventClick.emit(dateStr);
-  }
-
-  onAddEventFromPanel(day: Date): void {
-    const dateStr = format(day, 'yyyy-MM-dd');
+  onAddEvent(dateStr: string): void {
     this.addEventClick.emit(dateStr);
   }
 
@@ -444,47 +673,31 @@ export class QuarterlyViewComponent implements AfterViewInit {
     }
   }
 
-  getEventColor(event: Event): string {
-    // En mode sombre, utiliser les couleurs adaptées
-    if (this.isDark) {
-      // Pour les catégories par défaut, utiliser la couleur dark mode
-      // Pour les catégories personnalisées, utiliser leur couleur directement
-      return CATEGORY_COLORS_DARK[event.category] || event.color;
-    }
-    return event.color;
-  }
+  scrollToTodayMonth(): void {
+    // Réinitialiser complètement la vue
+    this.isLoadingMore = true;
+    this.isFirstLoad = true;
+    this.scrollInfiniteEnabled = false; // Désactiver temporairement
 
-  isPeriodEvent(event: Event): boolean {
-    return !!event.endDate && event.endDate !== event.date;
-  }
+    // Réinitialiser les mois pour que le mois courant soit en premier
+    const today = new Date();
+    const currentMonth = startOfMonth(today);
+    this.startMonth = subMonths(currentMonth, this.INITIAL_MONTHS_BEFORE);
+    this.endMonth = addMonths(currentMonth, this.INITIAL_MONTHS_AFTER);
+    this.loadMonthsInRange(this.startMonth, this.endMonth);
 
-  isFirstDayOfPeriod(event: Event, day: Date): boolean {
-    if (!event.endDate) return true;
-    const dateStr = format(day, 'yyyy-MM-dd');
-    return dateStr === event.date;
-  }
+    // Attendre que le DOM soit mis à jour puis forcer le scroll à 0
+    setTimeout(() => {
+      if (this.scrollContainer) {
+        this.scrollContainer.nativeElement.scrollTop = 0;
+      }
+      this.isLoadingMore = false;
+      this.isFirstLoad = false;
 
-  isLastDayOfPeriod(event: Event, day: Date): boolean {
-    if (!event.endDate) return true;
-    const dateStr = format(day, 'yyyy-MM-dd');
-    return dateStr === event.endDate;
-  }
-
-  getEventTitle(event: Event, day: Date): string {
-    if (!event.endDate) return event.title;
-    const dateStr = format(day, 'yyyy-MM-dd');
-    if (dateStr === event.date) {
-      return `${event.title} (Début)`;
-    } else if (dateStr === event.endDate) {
-      return `${event.title} (Fin)`;
-    }
-    return `${event.title} (En cours)`;
-  }
-
-  formatEventPeriod(event: Event): string {
-    if (!event.endDate) return '';
-    const startDate = new Date(event.date);
-    const endDate = new Date(event.endDate);
-    return `${format(startDate, 'd MMM', { locale: fr })} - ${format(endDate, 'd MMM yyyy', { locale: fr })}`;
+      // Réactiver le scroll infini après un délai
+      setTimeout(() => {
+        this.scrollInfiniteEnabled = true;
+      }, 500);
+    }, 0);
   }
 }
