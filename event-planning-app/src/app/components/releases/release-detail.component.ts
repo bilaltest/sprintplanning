@@ -37,82 +37,124 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
   imports: [CommonModule, FormsModule, ProgressRingComponent],
   template: `
     <div class="max-w-7xl mx-auto space-y-6" *ngIf="release">
-      <!-- Header -->
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <button
-            (click)="goBack()"
-            class="btn btn-secondary flex items-center space-x-2"
-          >
-            <span class="material-icons">arrow_back</span>
-            <span>Retour</span>
-          </button>
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ release.name }}</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">
-              {{ formatDate(release.releaseDate) }}
-            </p>
-          </div>
+      <!-- Header avec gradient -->
+      <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-900 rounded-2xl shadow-xl p-8">
+        <!-- Decorative background pattern -->
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
         </div>
 
-      </div>
+        <div class="relative z-10">
+          <button
+            (click)="goBack()"
+            class="inline-flex items-center space-x-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/30 hover:shadow-lg mb-6"
+          >
+            <span class="material-icons">arrow_back</span>
+            <span class="font-medium">Retour</span>
+          </button>
 
-      <!-- Description -->
-      <div class="card p-6" *ngIf="release.description">
-        <p class="text-gray-700 dark:text-gray-300">{{ release.description }}</p>
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h1 class="text-4xl font-bold text-white mb-3 tracking-tight">{{ release.name }}</h1>
+              <div class="flex items-center space-x-4 text-white/90">
+                <div class="flex items-center space-x-2">
+                  <span class="material-icons text-xl">event</span>
+                  <span class="text-lg font-medium">{{ formatDate(release.releaseDate) }}</span>
+                </div>
+                <div class="w-px h-6 bg-white/30"></div>
+                <div class="flex items-center space-x-2">
+                  <span class="material-icons text-xl">groups</span>
+                  <span class="text-lg">{{ release.squads.length }} Squad{{ release.squads.length > 1 ? 's' : '' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Progress global -->
+            <div class="hidden lg:flex flex-col items-center bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+              <div class="text-white/80 text-sm font-medium mb-2">Progression globale</div>
+              <app-progress-ring
+                [percentage]="getGlobalProgress()"
+                [size]="80"
+                [strokeWidth]="6"
+                color="success"
+                [showPercentage]="true"
+              ></app-progress-ring>
+            </div>
+          </div>
+
+          <p class="text-white/90 mt-4 text-lg leading-relaxed max-w-3xl" *ngIf="release.description">
+            {{ release.description }}
+          </p>
+        </div>
       </div>
 
       <!-- New Layout: Sections -->
       <div class="space-y-6">
 
         <!-- 1. Tontons MEP Table -->
-        <div class="card">
-          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer rounded-t-lg" [class.rounded-b-lg]="!expandedSections.has('tontons')" (click)="toggleSection('tontons')">
+        <div class="card overflow-hidden">
+          <div class="p-4 border-b bg-gradient-to-r from-primary-50 to-transparent dark:from-primary-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-primary-100 dark:hover:from-primary-900/30 transition-all duration-200" (click)="toggleSection('tontons')">
             <div class="flex items-center space-x-3">
-              <span class="material-icons text-2xl text-primary-600 dark:text-primary-400">group</span>
+              <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/50 rounded-xl flex items-center justify-center">
+                <span class="material-icons text-xl text-primary-600 dark:text-primary-400">group</span>
+              </div>
               <h2 class="text-lg font-bold text-gray-900 dark:text-white">Tontons MEP</h2>
             </div>
             <span class="material-icons text-gray-500">
               {{ expandedSections.has('tontons') ? 'expand_less' : 'expand_more' }}
             </span>
           </div>
-          <div *ngIf="expandedSections.has('tontons')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50 rounded-b-lg">
+          <div *ngIf="expandedSections.has('tontons')" class="p-6 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900/30">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-sm flex flex-col space-y-3">
-                <div class="flex justify-between items-center">
-                  <span class="font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</span>
-                  <app-progress-ring
-                    [percentage]="getSquadProgress(squad)"
-                    [size]="48"
-                    [strokeWidth]="4"
-                    [color]="getSquadProgress(squad) === 100 ? 'success' : (getSquadProgress(squad) >= 70 ? 'primary' : 'warning')"
-                    [showPercentage]="true"
-                  ></app-progress-ring>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span class="material-icons text-sm text-gray-400">person</span>
-                  <div class="flex-1 flex items-center space-x-1">
-                    <input
-                      #tontonInput
-                      type="text"
-                      [value]="squad.tontonMep || ''"
-                      (input)="true"
-                      (keyup.enter)="updateTontonMep(squad.id!, tontonInput.value)"
-                      placeholder="Non assigné"
-                      class="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition-shadow"
-                    />
-                    <button
-                      (click)="updateTontonMep(squad.id!, tontonInput.value)"
-                      [disabled]="tontonInput.value.trim() === (squad.tontonMep || '')"
-                      [ngClass]="{
-                        'opacity-30 cursor-not-allowed text-gray-400': tontonInput.value.trim() === (squad.tontonMep || ''),
-                        'text-green-600 hover:text-green-800 hover:bg-green-50 dark:hover:bg-green-900/20': tontonInput.value.trim() !== (squad.tontonMep || '')
-                      }"
-                      class="p-1 rounded transition-colors"
-                      title="Valider"
-                    >
-                      <span class="material-icons text-sm">check</span>
-                    </button>
+              <div *ngFor="let squad of release.squads" class="group relative bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg transition-all duration-300">
+                <!-- Gradient top border -->
+                <div class="h-1 bg-gradient-to-r from-primary-400 to-primary-600"></div>
+
+                <div class="p-4 space-y-4">
+                  <!-- Header with squad number and progress -->
+                  <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                      <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
+                        <span class="text-white font-bold text-sm">{{ squad.squadNumber }}</span>
+                      </div>
+                      <span class="font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</span>
+                    </div>
+                    <app-progress-ring
+                      [percentage]="getSquadProgress(squad)"
+                      [size]="52"
+                      [strokeWidth]="5"
+                      [color]="getSquadProgress(squad) === 100 ? 'success' : (getSquadProgress(squad) >= 70 ? 'primary' : 'warning')"
+                      [showPercentage]="true"
+                    ></app-progress-ring>
+                  </div>
+
+                  <!-- Tonton MEP input -->
+                  <div class="space-y-2">
+                    <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Responsable MEP</label>
+                    <div class="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg p-2 border border-gray-200 dark:border-gray-700 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-200 dark:focus-within:ring-primary-800/50 transition-all">
+                      <span class="material-icons text-lg text-primary-500 dark:text-primary-400">person</span>
+                      <input
+                        #tontonInput
+                        type="text"
+                        [value]="squad.tontonMep || ''"
+                        (input)="true"
+                        (keyup.enter)="updateTontonMep(squad.id!, tontonInput.value)"
+                        placeholder="Non assigné"
+                        class="flex-1 bg-transparent px-1 py-1 text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
+                      />
+                      <button
+                        (click)="updateTontonMep(squad.id!, tontonInput.value)"
+                        [disabled]="tontonInput.value.trim() === (squad.tontonMep || '')"
+                        [ngClass]="{
+                          'opacity-40 cursor-not-allowed': tontonInput.value.trim() === (squad.tontonMep || ''),
+                          'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 shadow-sm': tontonInput.value.trim() !== (squad.tontonMep || '')
+                        }"
+                        class="p-1.5 rounded-lg transition-all duration-200"
+                        title="Valider"
+                      >
+                        <span class="material-icons text-base">check</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -122,20 +164,27 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
         <!-- 2. Fonctionnalités Majeures -->
         <div class="card overflow-hidden">
-          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('features')">
+          <div class="p-4 border-b bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-green-100 dark:hover:from-green-900/30 transition-all duration-200" (click)="toggleSection('features')">
             <div class="flex items-center space-x-3">
-              <span class="material-icons text-2xl text-purple-600 dark:text-purple-400">star</span>
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center">
+                <span class="material-icons text-xl text-green-600 dark:text-green-400">star</span>
+              </div>
               <h2 class="text-lg font-bold text-gray-900 dark:text-white">Fonctionnalités Majeures</h2>
             </div>
             <span class="material-icons text-gray-500">
               {{ expandedSections.has('features') ? 'expand_less' : 'expand_more' }}
             </span>
           </div>
-          <div *ngIf="expandedSections.has('features')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
+          <div *ngIf="expandedSections.has('features')" class="p-6 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900/30">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm h-full">
-              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-2">
-                <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
+              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-3 mb-3">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
+                    <span class="text-white font-bold text-sm">{{ squad.squadNumber }}</span>
+                  </div>
+                  <h3 class="text-base font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h3>
+                </div>
                 <button
                   (click)="startAddingFeature(squad)"
                   class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
@@ -172,37 +221,43 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
               <!-- Features List -->
               <div class="mt-3">
-                <div *ngIf="squad.features.length > 0" class="space-y-2 pl-4 border-l-2 border-purple-200 dark:border-purple-600 max-h-48 overflow-y-auto custom-scrollbar">
-                  <div *ngFor="let feature of squad.features" class="flex items-start justify-between group p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                    <div class="flex items-start space-x-2 flex-1">
-                      <span class="material-icons text-sm text-purple-500 mt-0.5">label_important</span>
-                      <div class="flex-1">
-                        <h4 class="font-medium text-gray-900 dark:text-white">{{ feature.title }}</h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5" *ngIf="feature.description">{{ feature.description }}</p>
+                <div *ngIf="squad.features.length > 0" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                  <div *ngFor="let feature of squad.features" class="group relative bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent border-l-4 border-green-500 p-3 rounded-r-lg hover:shadow-md transition-all duration-200">
+                    <div class="flex items-start justify-between">
+                      <div class="flex items-start space-x-3 flex-1">
+                        <div class="flex-shrink-0 w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
+                          <span class="material-icons text-sm text-green-600 dark:text-green-400">star</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <h4 class="font-semibold text-gray-900 dark:text-white leading-snug">{{ feature.title }}</h4>
+                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed" *ngIf="feature.description">{{ feature.description }}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-4">
-                      <button (click)="startEditingFeature(squad, feature)" class="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded">
-                        <span class="material-icons text-sm">edit</span>
-                      </button>
-                      <button (click)="deleteFeature(squad.id!, feature.id!)" class="p-1 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded">
-                        <span class="material-icons text-sm">delete</span>
-                      </button>
+                      <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-3">
+                        <button (click)="startEditingFeature(squad, feature)" class="p-1.5 text-primary-600 hover:text-primary-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+                          <span class="material-icons text-base">edit</span>
+                        </button>
+                        <button (click)="deleteFeature(squad.id!, feature.id!)" class="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                          <span class="material-icons text-base">delete</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div *ngIf="squad.features.length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
-                  <span class="material-icons text-gray-400 text-3xl mb-2">playlist_add_check</span>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune fonctionnalité majeure</p>
-                  <label class="relative inline-flex items-center cursor-pointer">
+                <div *ngIf="squad.features.length === 0" class="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 transition-all hover:border-gray-400 dark:hover:border-gray-500">
+                  <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
+                    <span class="material-icons text-3xl text-green-400 dark:text-green-500">playlist_add_check</span>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">Aucune fonctionnalité majeure</p>
+                  <label class="relative inline-flex items-center cursor-pointer group">
                     <input
                       type="checkbox"
                       [checked]="squad.featuresEmptyConfirmed"
                       (change)="toggleEmptyStatus(squad, 'features')"
                       class="sr-only peer"
                     >
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
-                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Rien à signaler (Néant)</span>
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary-600 shadow-inner"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Rien à signaler (Néant)</span>
                   </label>
                 </div>
               </div>
@@ -213,20 +268,27 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
         <!-- 3. Actions Pré-MEP -->
         <div class="card overflow-hidden">
-          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('pre_mep')">
+          <div class="p-4 border-b bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-green-100 dark:hover:from-green-900/30 transition-all duration-200" (click)="toggleSection('pre_mep')">
             <div class="flex items-center space-x-3">
-              <span class="material-icons text-2xl text-blue-600 dark:text-blue-400">schedule</span>
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center">
+                <span class="material-icons text-xl text-green-600 dark:text-green-400">start</span>
+              </div>
               <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Pré-MEP</h2>
             </div>
             <span class="material-icons text-gray-500">
               {{ expandedSections.has('pre_mep') ? 'expand_less' : 'expand_more' }}
             </span>
           </div>
-          <div *ngIf="expandedSections.has('pre_mep')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
+          <div *ngIf="expandedSections.has('pre_mep')" class="p-6 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900/30">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm h-full">
-              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-2">
-                <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
+              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-3 mb-3">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
+                    <span class="text-white font-bold text-sm">{{ squad.squadNumber }}</span>
+                  </div>
+                  <h3 class="text-base font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h3>
+                </div>
                 <button
                   (click)="startAddingAction(squad, 'pre_mep')"
                   class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
@@ -446,27 +508,29 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
                 <!-- Flipping actions grouped by type in tables -->
                 <div *ngFor="let entry of getFlippingActionsByType(squad, 'pre_mep') | keyvalue" class="overflow-x-auto">
-                  <div class="flex items-center space-x-2 mb-2">
-                    <span class="material-icons text-sm" [class.text-orange-500]="entry.key === 'feature_flipping'" [class.text-indigo-500]="entry.key === 'memory_flipping'">
-                      rule_settings
-                    </span>
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
+                  <div class="flex items-center space-x-3 mb-3 p-3 rounded-lg bg-gradient-to-r from-green-50 to-green-100/30 dark:from-green-900/20 dark:to-green-900/10">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-green-100 dark:bg-green-900/50">
+                      <span class="material-icons text-base text-green-600 dark:text-green-400">
+                        rule_settings
+                      </span>
+                    </div>
+                    <h4 class="text-sm font-bold uppercase tracking-wide text-green-700 dark:text-green-300">{{ getActionTypeLabel(entry.key) }}</h4>
                   </div>
-                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                  <div class="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
                     <table class="min-w-full text-xs">
-                        <thead class="bg-gray-50 dark:bg-gray-700/50">
+                        <thead class="bg-gradient-to-r from-green-100/50 to-green-50/30 dark:from-green-900/30 dark:to-green-900/10">
                         <tr>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Thème</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Action</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Clients</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Caisses</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">OS</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Versions</th>
-                            <th class="px-3 py-2"></th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Thème</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Action</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Clients</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Caisses</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">OS</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Versions</th>
+                            <th class="px-4 py-3"></th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">
                               {{ action.flipping?.ruleName }}
@@ -519,18 +583,20 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   </div>
                 </div>
 
-                <div *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
-                  <span class="material-icons text-gray-400 text-3xl mb-2">checklist</span>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune action pré-MEP</p>
-                  <label class="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      [checked]="squad.preMepEmptyConfirmed" 
-                      (change)="toggleEmptyStatus(squad, 'pre_mep')" 
+                <div *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0" class="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 transition-all hover:border-gray-400 dark:hover:border-gray-500">
+                  <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
+                    <span class="material-icons text-3xl text-green-400 dark:text-green-500">fact_check</span>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">Aucune action pré-MEP</p>
+                  <label class="relative inline-flex items-center cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      [checked]="squad.preMepEmptyConfirmed"
+                      (change)="toggleEmptyStatus(squad, 'pre_mep')"
                       class="sr-only peer"
                     >
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
-                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Rien à signaler (Néant)</span>
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary-600 shadow-inner"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Rien à signaler (Néant)</span>
                   </label>
                 </div>
               </div>
@@ -541,20 +607,27 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
         <!-- 4. Actions Post-MEP -->
         <div class="card overflow-hidden">
-          <div class="p-4 border-b bg-gray-50 dark:bg-gray-800 flex justify-between items-center cursor-pointer" (click)="toggleSection('post_mep')">
+          <div class="p-4 border-b bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-green-100 dark:hover:from-green-900/30 transition-all duration-200" (click)="toggleSection('post_mep')">
             <div class="flex items-center space-x-3">
-              <span class="material-icons text-2xl text-green-600 dark:text-green-400">check_circle</span>
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center">
+                <span class="material-icons text-xl text-green-600 dark:text-green-400">check_circle</span>
+              </div>
               <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Post-MEP</h2>
             </div>
             <span class="material-icons text-gray-500">
               {{ expandedSections.has('post_mep') ? 'expand_less' : 'expand_more' }}
             </span>
           </div>
-          <div *ngIf="expandedSections.has('post_mep')" class="p-4 bg-gray-50/50 dark:bg-gray-800/50">
+          <div *ngIf="expandedSections.has('post_mep')" class="p-6 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900/30">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm h-full">
-              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-2">
-                <h3 class="text-base font-bold text-primary-700 dark:text-primary-400">Squad {{ squad.squadNumber }}</h3>
+              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-3 mb-3">
+                <div class="flex items-center space-x-2">
+                  <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
+                    <span class="text-white font-bold text-sm">{{ squad.squadNumber }}</span>
+                  </div>
+                  <h3 class="text-base font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h3>
+                </div>
                 <button
                   (click)="startAddingAction(squad, 'post_mep')"
                   class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
@@ -774,27 +847,29 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
                 <!-- Flipping actions grouped by type in tables -->
                 <div *ngFor="let entry of getFlippingActionsByType(squad, 'post_mep') | keyvalue" class="overflow-x-auto">
-                  <div class="flex items-center space-x-2 mb-2">
-                    <span class="material-icons text-sm" [class.text-orange-500]="entry.key === 'feature_flipping'" [class.text-indigo-500]="entry.key === 'memory_flipping'">
-                      rule_settings
-                    </span>
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">{{ getActionTypeLabel(entry.key) }}</h4>
+                  <div class="flex items-center space-x-3 mb-3 p-3 rounded-lg bg-gradient-to-r from-green-50 to-green-100/30 dark:from-green-900/20 dark:to-green-900/10">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-green-100 dark:bg-green-900/50">
+                      <span class="material-icons text-base text-green-600 dark:text-green-400">
+                        rule_settings
+                      </span>
+                    </div>
+                    <h4 class="text-sm font-bold uppercase tracking-wide text-green-700 dark:text-green-300">{{ getActionTypeLabel(entry.key) }}</h4>
                   </div>
-                  <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+                  <div class="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
                     <table class="min-w-full text-xs">
-                        <thead class="bg-gray-50 dark:bg-gray-700/50">
+                        <thead class="bg-gradient-to-r from-green-100/50 to-green-50/30 dark:from-green-900/30 dark:to-green-900/10">
                         <tr>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Thème</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Action</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Clients</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Caisses</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">OS</th>
-                            <th class="px-3 py-2 text-left font-medium text-gray-500 uppercase">Versions</th>
-                            <th class="px-3 py-2"></th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Thème</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Action</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Clients</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Caisses</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">OS</th>
+                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Versions</th>
+                            <th class="px-4 py-3"></th>
                         </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                         <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">
                               {{ action.flipping?.ruleName }}
@@ -847,18 +922,20 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   </div>
                 </div>
 
-                <div *ngIf="getActionsByPhase(squad, 'post_mep').length === 0" class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 transition-colors hover:bg-gray-100/50 dark:hover:bg-gray-700/50">
-                  <span class="material-icons text-gray-400 text-3xl mb-2">task</span>
-                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 italic">Aucune action post-MEP</p>
-                  <label class="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      [checked]="squad.postMepEmptyConfirmed" 
-                      (change)="toggleEmptyStatus(squad, 'post_mep')" 
+                <div *ngIf="getActionsByPhase(squad, 'post_mep').length === 0" class="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 transition-all hover:border-gray-400 dark:hover:border-gray-500">
+                  <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
+                    <span class="material-icons text-3xl text-green-400 dark:text-green-500">task_alt</span>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">Aucune action post-MEP</p>
+                  <label class="relative inline-flex items-center cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      [checked]="squad.postMepEmptyConfirmed"
+                      (change)="toggleEmptyStatus(squad, 'post_mep')"
                       class="sr-only peer"
                     >
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
-                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Rien à signaler (Néant)</span>
+                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary-600 shadow-inner"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Rien à signaler (Néant)</span>
                   </label>
                 </div>
               </div>
@@ -1588,6 +1665,18 @@ export class ReleaseDetailComponent implements OnInit {
     }
 
     return Math.round((completedSections / totalSections) * 100);
+  }
+
+  getGlobalProgress(): number {
+    if (!this.release || this.release.squads.length === 0) {
+      return 0;
+    }
+
+    const totalProgress = this.release.squads.reduce((sum, squad) => {
+      return sum + this.getSquadProgress(squad);
+    }, 0);
+
+    return Math.round(totalProgress / this.release.squads.length);
   }
 
   getMissingSteps(squad: Squad): string {
