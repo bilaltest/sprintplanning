@@ -49,11 +49,14 @@ interface DayCard {
             <!-- En-tête du mois -->
             <div class="sticky top-0 z-10 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-t-xl shadow-md mb-4 relative overflow-hidden">
               <div class="absolute inset-0 bg-black/10"></div>
-              <!-- Déco géométrique - Bulles multiples -->
-              <div class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/15 rounded-full"></div>
-              <div class="absolute right-16 top-1/2 -translate-y-1/2 w-5 h-5 bg-white/20 rounded-full"></div>
-              <div class="absolute right-28 top-1/2 -translate-y-1/2 w-6 h-6 bg-white/12 rounded-full"></div>
-              <div class="absolute right-40 top-1/2 -translate-y-1/2 w-4 h-4 bg-white/18 rounded-full"></div>
+              <!-- Déco géométrique - Accent subtil -->
+              <div class="absolute right-2 top-1/2 -translate-y-1/2">
+                <div class="flex items-center space-x-1">
+                  <div class="w-1.5 h-1.5 bg-white/20 rounded-full"></div>
+                  <div class="w-1 h-1 bg-white/30 rounded-full"></div>
+                  <div class="w-1.5 h-1.5 bg-white/25 rounded-full"></div>
+                </div>
+              </div>
               <h3 class="text-base font-bold relative z-10">
                 {{ monthCard.monthName }} {{ monthCard.year }}
               </h3>
@@ -112,8 +115,6 @@ interface DayCard {
                           </div>
                           <div class="text-xl font-bold">{{ day.dayNumber }}</div>
                         </div>
-                        <!-- Déco géométrique -->
-                        <div class="absolute -right-2 -bottom-2 w-12 h-12 bg-white/10 rounded-full"></div>
                       </div>
 
                       <!-- Corps de la carte - Événements -->

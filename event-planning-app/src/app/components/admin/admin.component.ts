@@ -15,9 +15,7 @@ interface AdminUser {
   themePreference: string;
   createdAt: string;
   updatedAt: string;
-  _count: {
-    histories: number;
-  };
+  historiesCount: number;
 }
 
 interface Stats {
@@ -208,7 +206,7 @@ interface Stats {
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="text-sm text-gray-900 dark:text-white">
-                    {{ user._count.histories }}
+                    {{ user.historiesCount }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -297,7 +295,7 @@ export class AdminComponent implements OnInit {
   async deleteUser(user: AdminUser): Promise<void> {
     const confirmed = await this.confirmationService.confirm({
       title: 'Supprimer cet utilisateur ?',
-      message: `${user.firstName} ${user.lastName} (${user.email})\n\nCette action est irréversible. Les ${user._count.histories} actions de cet utilisateur dans l'historique seront marquées comme "Deleted User".`,
+      message: `${user.firstName} ${user.lastName} (${user.email})\n\nCette action est irréversible. Les ${user.historiesCount} actions de cet utilisateur dans l'historique seront marquées comme "Deleted User".`,
       confirmText: 'Supprimer',
       cancelText: 'Annuler',
       confirmButtonClass: 'danger'
