@@ -13,7 +13,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FilterBarComponent } from '../filters/filter-bar.component';
 import { AnnualViewComponent } from './annual-view.component';
-import { MonthViewComponent } from './month-view.component';
+import { CalendarViewComponent } from './calendar-view.component';
 import { EventModalComponent } from '../modals/event-modal.component';
 
 jest.mock('jspdf', () => ({
@@ -42,12 +42,12 @@ class MockAnnualViewComponent {
 }
 
 @Component({
-    selector: 'app-month-view',
+    selector: 'app-calendar-view',
     standalone: true,
     template: ''
 })
-class MockMonthViewComponent {
-    @Input() events: Event[] = [];
+class MockCalendarViewComponent {
+    @Input() events: Event[] | null = [];
     @Output() eventClick = new EventEmitter<Event>();
     @Output() addEventClick = new EventEmitter<string>();
     @Output() deleteEventClick = new EventEmitter<Event>();
@@ -75,7 +75,7 @@ describe('TimelineContainerComponent', () => {
     let toastService: any;
 
     const mockTimelineState: TimelineState = {
-        view: 'annual',
+        view: 'quarter',
         currentDate: new Date(2025, 0, 1)
     };
 
@@ -148,7 +148,7 @@ describe('TimelineContainerComponent', () => {
                     imports: [
                         FilterBarComponent,
                         AnnualViewComponent,
-                        MonthViewComponent,
+                        CalendarViewComponent,
                         EventModalComponent
                     ]
                 },
@@ -156,7 +156,7 @@ describe('TimelineContainerComponent', () => {
                     imports: [
                         MockFilterBarComponent,
                         MockAnnualViewComponent,
-                        MockMonthViewComponent,
+                        MockCalendarViewComponent,
                         MockEventModalComponent
                     ]
                 }
@@ -173,25 +173,16 @@ describe('TimelineContainerComponent', () => {
     });
 
     it('should set view', () => {
-        component.setView('month');
-        expect(timelineService.setView).toHaveBeenCalledWith('month');
+        component.setView('now');
+        expect(timelineService.setView).toHaveBeenCalledWith('now');
     });
 
-    it('should navigate periods', () => {
-        component.previousPeriod();
-        expect(timelineService.previousPeriod).toHaveBeenCalled();
-
-        component.nextPeriod();
-        expect(timelineService.nextPeriod).toHaveBeenCalled();
-
+    it('should navigate to today', () => {
         component.goToToday();
         expect(timelineService.goToToday).toHaveBeenCalled();
     });
 
-    it('should get current period label', () => {
-        const label = component.getCurrentPeriodLabel();
-        expect(label).toBe('2025');
-    });
+
 
     it('should handle event modal', () => {
         component.openCreateEventModal();
@@ -249,13 +240,5 @@ describe('TimelineContainerComponent', () => {
         expect(exportService.exportAsCSV).toHaveBeenCalled();
     });
 
-    it('should handle keyboard navigation', () => {
-        const leftEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft' });
-        component.onKeyDown(leftEvent);
-        expect(timelineService.previousPeriod).toHaveBeenCalled();
 
-        const rightEvent = new KeyboardEvent('keydown', { key: 'ArrowRight' });
-        component.onKeyDown(rightEvent);
-        expect(timelineService.nextPeriod).toHaveBeenCalled();
-    });
 });

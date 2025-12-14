@@ -95,7 +95,8 @@
       "Bash(__NEW_LINE__)",
       "Bash(/tmp/test-jean-permissions.sh)",
       "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" ./mvnw test:*)",
-      "Bash(timeout 120 ./mvnw test:*)"
+      "Bash(timeout 120 ./mvnw test:*)",
+      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" timeout 120 ./mvnw test:*)"
     ],
     "deny": [],
     "ask": []

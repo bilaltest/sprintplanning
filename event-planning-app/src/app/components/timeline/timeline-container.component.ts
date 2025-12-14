@@ -10,7 +10,7 @@ import { TimelineView } from '@models/timeline.model';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Event } from '@models/event.model';
-import { QuarterlyViewComponent } from './quarterly-view.component';
+import { CalendarViewComponent } from './calendar-view.component';
 import { NowViewComponent } from './now-view.component';
 import { FilterBarComponent } from '../filters/filter-bar.component';
 import { EventModalComponent } from '../modals/event-modal.component';
@@ -20,7 +20,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
   standalone: true,
   imports: [
     CommonModule,
-    QuarterlyViewComponent,
+    CalendarViewComponent,
     NowViewComponent,
     FilterBarComponent,
     EventModalComponent
@@ -143,13 +143,13 @@ import { EventModalComponent } from '../modals/event-modal.component';
           (deleteEventClick)="handleDeleteEvent($event)"
         ></app-now-view>
 
-        <app-quarterly-view
+        <app-calendar-view
           *ngIf="(currentView$ | async) === 'quarter'"
           [events]="filteredEvents$ | async"
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
           (deleteEventClick)="handleDeleteEvent($event)"
-        ></app-quarterly-view>
+        ></app-calendar-view>
       </div>
 
     </div>

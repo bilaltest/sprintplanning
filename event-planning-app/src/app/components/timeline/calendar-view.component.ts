@@ -30,10 +30,11 @@ interface DayCard {
   isHoliday: boolean;
   weekNumber: number;
   events: Event[];
+  isEmpty?: boolean;
 }
 
 @Component({
-  selector: 'app-quarterly-view',
+  selector: 'app-calendar-view',
   standalone: true,
   imports: [CommonModule, CanAccessDirective],
   template: `
@@ -81,6 +82,7 @@ interface DayCard {
                   >
                     <!-- Carte du jour -->
                     <div
+                      *ngIf="!day.isEmpty"
                       [class.card-today]="day.isToday"
                       [class.card-past]="day.isPast && !day.isToday"
                       [class.card-future]="day.isFuture && !day.isToday"
@@ -296,7 +298,7 @@ interface DayCard {
     }
   `]
 })
-export class QuarterlyViewComponent implements OnChanges, AfterViewInit {
+export class CalendarViewComponent implements OnChanges, AfterViewInit {
   @Input() events: Event[] | null = [];
   @Output() eventClick = new EventEmitter<Event>();
   @Output() addEventClick = new EventEmitter<string>();
@@ -562,12 +564,7 @@ export class QuarterlyViewComponent implements OnChanges, AfterViewInit {
 
     for (let i = 0; i < emptyDays; i++) {
       // Créer un jour vide
-      const emptyDate = new Date(firstDay.date);
-      emptyDate.setDate(firstDay.date.getDate() - (emptyDays - i));
-      currentWeek.push({
-        ...this.createDayCard(emptyDate),
-        events: []
-      });
+      currentWeek.push({ isEmpty: true } as DayCard);
     }
 
     days.forEach(day => {
@@ -579,17 +576,8 @@ export class QuarterlyViewComponent implements OnChanges, AfterViewInit {
       }
     });
 
-    // Compléter la dernière semaine si nécessaire
+    // Compléter la dernière semaine si nécessaire (sans padding du mois suivant)
     if (currentWeek.length > 0) {
-      while (currentWeek.length < 7) {
-        const lastDay = currentWeek[currentWeek.length - 1];
-        const nextDate = new Date(lastDay.date);
-        nextDate.setDate(lastDay.date.getDate() + 1);
-        currentWeek.push({
-          ...this.createDayCard(nextDate),
-          events: []
-        });
-      }
       weeks.push(currentWeek);
     }
 
