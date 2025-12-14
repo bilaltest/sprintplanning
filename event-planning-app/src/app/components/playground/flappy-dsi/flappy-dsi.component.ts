@@ -424,7 +424,7 @@ interface Bird {
 
     /* Collectibles */
     .collectible {
-      @apply absolute w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all duration-200;
+      @apply absolute w-10 h-10 rounded-full flex items-center justify-center z-10;
       animation: float 1s ease-in-out infinite alternate;
     }
 
@@ -582,15 +582,15 @@ export class FlappyDsiComponent implements OnInit, OnDestroy {
 
   // Bird
   bird: Bird = { y: 250, velocity: 0, rotation: 0 };
-  gravity = 0.2;
-  jumpStrength = -4.5;
-  birdSize = 48;
+  gravity = 0.09;
+  jumpStrength = -4.0;
+  birdSize = 38;
 
   // Pipes
   pipes: Pipe[] = [];
-  pipeWidth = 64;
+  pipeWidth = 54;
   gapSize = 180;
-  pipeSpeed = 2.5;
+  pipeSpeed = 1.7;
   pipeSpawnInterval = 1200;
 
   // Collectibles
@@ -738,7 +738,7 @@ export class FlappyDsiComponent implements OnInit, OnDestroy {
 
     // Position between pipes - simplified calculation
     const distanceBetweenPipes = (this.pipeSpawnInterval / 16.67) * this.pipeSpeed; // ~60fps
-    const x = this.canvasWidth + (distanceBetweenPipes / 2);
+    const x = this.canvasWidth - (distanceBetweenPipes / 2);
     const minY = 100;
     const maxY = this.canvasHeight - this.groundHeight - 100;
     const y = Math.random() * (maxY - minY) + minY;
