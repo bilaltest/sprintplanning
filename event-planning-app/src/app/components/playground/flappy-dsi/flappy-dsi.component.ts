@@ -582,16 +582,16 @@ export class FlappyDsiComponent implements OnInit, OnDestroy {
 
   // Bird
   bird: Bird = { y: 250, velocity: 0, rotation: 0 };
-  gravity = 0.5;
-  jumpStrength = -8;
+  gravity = 0.2;
+  jumpStrength = -4.5;
   birdSize = 48;
 
   // Pipes
   pipes: Pipe[] = [];
   pipeWidth = 64;
-  gapSize = 150;
-  pipeSpeed = 3;
-  pipeSpawnInterval = 1800;
+  gapSize = 180;
+  pipeSpeed = 2.5;
+  pipeSpawnInterval = 1200;
 
   // Collectibles
   collectibles: Collectible[] = [];
@@ -629,7 +629,7 @@ export class FlappyDsiComponent implements OnInit, OnDestroy {
     private router: Router,
     private playgroundService: PlaygroundService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadLeaderboard();
@@ -736,10 +736,11 @@ export class FlappyDsiComponent implements OnInit, OnDestroy {
     const types = isBonus ? this.bonusTypes : this.malusTypes;
     const type = types[Math.floor(Math.random() * types.length)];
 
-    // Position between current pipe spawn and next
-    const x = this.canvasWidth + this.pipeSpawnInterval * this.pipeSpeed / 1000 / 2;
-    const minY = 80;
-    const maxY = this.canvasHeight - this.groundHeight - 80;
+    // Position between pipes - simplified calculation
+    const distanceBetweenPipes = (this.pipeSpawnInterval / 16.67) * this.pipeSpeed; // ~60fps
+    const x = this.canvasWidth + (distanceBetweenPipes / 2);
+    const minY = 100;
+    const maxY = this.canvasHeight - this.groundHeight - 100;
     const y = Math.random() * (maxY - minY) + minY;
 
     this.collectibles.push({
@@ -810,7 +811,7 @@ export class FlappyDsiComponent implements OnInit, OnDestroy {
 
       // Remove off-screen or collected collectibles
       if (this.collectibles[i].x + this.collectibleSize < 0 ||
-          (this.collectibles[i].collected && this.collectibles[i].x < 100)) {
+        (this.collectibles[i].collected && this.collectibles[i].x < 100)) {
         this.collectibles.splice(i, 1);
       }
     }

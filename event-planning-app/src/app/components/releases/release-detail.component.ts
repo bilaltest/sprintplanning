@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ReleaseService } from '@services/release.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
+import { CanAccessDirective } from '@directives/can-access.directive';
 import {
   Release,
   Squad,
@@ -34,7 +35,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 @Component({
   selector: 'app-release-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProgressRingComponent],
+  imports: [CommonModule, FormsModule, ProgressRingComponent, CanAccessDirective],
   template: `
     <div class="max-w-7xl mx-auto space-y-6" *ngIf="release">
       <!-- Header avec gradient -->
@@ -143,6 +144,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                         class="flex-1 bg-transparent px-1 py-1 text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
                       />
                       <button
+                        appCanAccess="RELEASES"
+                        accessLevel="write"
                         (click)="updateTontonMep(squad.id!, tontonInput.value)"
                         [disabled]="tontonInput.value.trim() === (squad.tontonMep || '')"
                         [ngClass]="{
@@ -186,6 +189,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   <h3 class="text-base font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h3>
                 </div>
                 <button
+                  appCanAccess="RELEASES"
+                  accessLevel="write"
                   (click)="startAddingFeature(squad)"
                   class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
                 >
@@ -213,7 +218,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                     class="input text-sm w-full"
                   ></textarea>
                   <div class="flex space-x-2 pt-1">
-                    <button (click)="addFeature(squad.id!)" class="btn btn-primary btn-sm">Enregistrer</button>
+                    <button appCanAccess="RELEASES" accessLevel="write" (click)="addFeature(squad.id!)" class="btn btn-primary btn-sm">Enregistrer</button>
                     <button (click)="cancelAddFeature()" class="btn btn-secondary btn-sm">Annuler</button>
                   </div>
                 </div>
@@ -234,10 +239,10 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                         </div>
                       </div>
                       <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-3">
-                        <button (click)="startEditingFeature(squad, feature)" class="p-1.5 text-primary-600 hover:text-primary-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
+                        <button appCanAccess="RELEASES" accessLevel="write" (click)="startEditingFeature(squad, feature)" class="p-1.5 text-primary-600 hover:text-primary-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
                           <span class="material-icons text-base">edit</span>
                         </button>
-                        <button (click)="deleteFeature(squad.id!, feature.id!)" class="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                        <button appCanAccess="RELEASES" accessLevel="write" (click)="deleteFeature(squad.id!, feature.id!)" class="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
                           <span class="material-icons text-base">delete</span>
                         </button>
                       </div>
@@ -290,6 +295,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   <h3 class="text-base font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h3>
                 </div>
                 <button
+                  appCanAccess="RELEASES"
+                  accessLevel="write"
                   (click)="startAddingAction(squad, 'pre_mep')"
                   class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
                 >
@@ -470,7 +477,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   </div>
 
                   <div class="flex space-x-2 pt-2">
-                    <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
+                    <button appCanAccess="RELEASES" accessLevel="write" type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
                     <button type="button" (click)="cancelAddAction()" class="btn btn-secondary btn-sm">Annuler</button>
                   </div>
                 </form>
@@ -496,8 +503,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                                     </td>
                                     <td class="px-4 py-3 text-right w-24">
                                         <div class="flex items-center justify-end space-x-2">
-                                            <button (click)="startEditingAction(squad, 'pre_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
-                                            <button (click)="deleteAction(squad.id!, action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
+                                            <button appCanAccess="RELEASES" accessLevel="write" (click)="startEditingAction(squad, 'pre_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
+                                            <button appCanAccess="RELEASES" accessLevel="write" (click)="deleteAction(squad.id!, action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -629,6 +636,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   <h3 class="text-base font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h3>
                 </div>
                 <button
+                  appCanAccess="RELEASES"
+                  accessLevel="write"
                   (click)="startAddingAction(squad, 'post_mep')"
                   class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
                 >
@@ -809,7 +818,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                   </div>
 
                   <div class="flex space-x-2 pt-2">
-                    <button type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
+                    <button appCanAccess="RELEASES" accessLevel="write" type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
                     <button type="button" (click)="cancelAddAction()" class="btn btn-secondary btn-sm">Annuler</button>
                   </div>
                 </form>
@@ -835,8 +844,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                                     </td>
                                     <td class="px-4 py-3 text-right w-24">
                                         <div class="flex items-center justify-end space-x-2">
-                                            <button (click)="startEditingAction(squad, 'post_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
-                                            <button (click)="deleteAction(squad.id!, action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
+                                            <button appCanAccess="RELEASES" accessLevel="write" (click)="startEditingAction(squad, 'post_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
+                                            <button appCanAccess="RELEASES" accessLevel="write" (click)="deleteAction(squad.id!, action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
                                         </div>
                                     </td>
                                 </tr>

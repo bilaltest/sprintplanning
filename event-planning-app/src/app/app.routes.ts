@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
+import { calendarGuard } from './guards/calendar.guard';
+import { releasesGuard } from './guards/releases.guard';
 
 export const routes: Routes = [
   {
@@ -44,6 +46,7 @@ export const routes: Routes = [
           import('./components/timeline/timeline-container.component').then(
             m => m.TimelineContainerComponent
           ),
+        canActivate: [calendarGuard],
         data: { breadcrumb: 'Calendrier' }
       },
       {
@@ -52,6 +55,7 @@ export const routes: Routes = [
           import('./components/settings/settings.component').then(
             m => m.SettingsComponent
           ),
+        canActivate: [calendarGuard],
         data: { breadcrumb: 'Paramètres' }
       },
       {
@@ -60,6 +64,7 @@ export const routes: Routes = [
           import('./components/history/history.component').then(
             m => m.HistoryComponent
           ),
+        canActivate: [calendarGuard],
         data: { breadcrumb: 'Historique' }
       },
       {
@@ -68,6 +73,7 @@ export const routes: Routes = [
           import('./components/releases/releases-list.component').then(
             m => m.ReleasesListComponent
           ),
+        canActivate: [releasesGuard],
         data: { breadcrumb: 'Préparation des MEP' }
       },
       {
@@ -76,6 +82,7 @@ export const routes: Routes = [
           import('./components/releases/release-detail.component').then(
             m => m.ReleaseDetailComponent
           ),
+        canActivate: [releasesGuard],
         data: { breadcrumb: 'Détail MEP' }
       },
       {
@@ -84,6 +91,7 @@ export const routes: Routes = [
           import('./components/releases/release-history.component').then(
             m => m.ReleaseHistoryComponent
           ),
+        canActivate: [releasesGuard],
         data: { breadcrumb: 'Historique MEP' }
       },
       {

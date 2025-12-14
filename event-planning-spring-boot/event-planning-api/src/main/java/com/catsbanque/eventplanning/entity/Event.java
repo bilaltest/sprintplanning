@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Entity
 @Table(name = "event", indexes = {
@@ -61,7 +63,20 @@ public class Event {
     @PrePersist
     public void prePersist() {
         if (this.id == null) {
-            this.id = java.util.UUID.randomUUID().toString().replace("-", "");
+            this.id = generateCuid();
         }
+    }
+
+    private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
+    private static final Random random = new SecureRandom();
+
+    private String generateCuid() {
+        long timestamp = System.currentTimeMillis();
+        StringBuilder cuid = new StringBuilder("c");
+        cuid.append(Long.toString(timestamp, 36));
+        for (int i = 0; i < 8; i++) {
+            cuid.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
+        }
+        return cuid.toString();
     }
 }

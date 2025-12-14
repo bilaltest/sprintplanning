@@ -64,6 +64,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GameScore> gameScores = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserPermission> permissions = new ArrayList<>();
+
     @PrePersist
     public void prePersist() {
         if (this.id == null) {

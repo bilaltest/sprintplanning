@@ -48,12 +48,6 @@ public interface ReleaseRepository extends JpaRepository<Release, String> {
     List<Release> findPastReleases(@Param("today") LocalDateTime today);
 
     /**
-     * Find by version
-     */
-    @Query("SELECT r FROM Release r LEFT JOIN FETCH r.squads WHERE r.version = :version")
-    Optional<Release> findByVersion(@Param("version") String version);
-
-    /**
      * Find by ID with relations
      */
     @Query("SELECT r FROM Release r LEFT JOIN FETCH r.squads WHERE r.id = :id")

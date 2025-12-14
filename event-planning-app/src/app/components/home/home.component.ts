@@ -543,8 +543,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   navigateToRelease(release: Release): void {
-    // Utiliser la version pour l'URL si disponible, sinon utiliser l'ID
-    const routeParam = release.version || release.id;
+    // Utiliser l'ID pour l'URL
+    const routeParam = release.id;
     this.router.navigate(['/releases', routeParam]);
   }
 

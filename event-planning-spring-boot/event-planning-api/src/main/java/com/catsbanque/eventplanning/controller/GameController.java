@@ -3,7 +3,7 @@ package com.catsbanque.eventplanning.controller;
 import com.catsbanque.eventplanning.dto.*;
 import com.catsbanque.eventplanning.entity.Game;
 import com.catsbanque.eventplanning.service.GameService;
-import com.catsbanque.eventplanning.util.TokenUtil;
+import com.catsbanque.eventplanning.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +24,7 @@ import java.util.List;
 public class GameController {
 
     private final GameService gameService;
+    private final JwtUtil jwtUtil;
 
     /**
      * GET /api/games
@@ -74,8 +75,8 @@ public class GameController {
     ) {
         log.info("POST /api/games/{}/scores", slug);
 
-        // Extract userId from token
-        String userId = TokenUtil.extractUserIdFromRequest(httpRequest).orElse(null);
+        // Extract userId from JWT token
+        String userId = extractUserIdFromJwt(httpRequest);
 
         SubmitScoreResponse response = gameService.submitScore(slug, request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -93,8 +94,8 @@ public class GameController {
     ) {
         log.info("GET /api/games/{}/my-scores", slug);
 
-        // Extract userId from token
-        String userId = TokenUtil.extractUserIdFromRequest(httpRequest).orElse(null);
+        // Extract userId from JWT token
+        String userId = extractUserIdFromJwt(httpRequest);
 
         MyScoresResponse response = gameService.getMyScores(slug, userId);
         return ResponseEntity.ok(response);
@@ -110,5 +111,17 @@ public class GameController {
         log.info("POST /api/games/init");
         List<Game> games = gameService.initGames();
         return ResponseEntity.ok(games);
+    }
+
+    /**
+     * Helper method to extract userId from JWT token in Authorization header
+     */
+    private String extractUserIdFromJwt(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7); // Remove "Bearer " prefix
+            return jwtUtil.extractUserId(token);
+        }
+        return null;
     }
 }

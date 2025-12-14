@@ -17,8 +17,7 @@ import java.util.stream.Collectors;
 public class ReleaseDto {
 
     private String id;
-    private String name;
-    private String version;
+    private String name; // Contient déjà la version
     private LocalDateTime releaseDate;
     private String status;
     private String type;
@@ -31,7 +30,6 @@ public class ReleaseDto {
         return ReleaseDto.builder()
                 .id(release.getId())
                 .name(release.getName())
-                .version(release.getVersion())
                 .releaseDate(release.getReleaseDate())
                 .status(release.getStatus())
                 .type(release.getType())

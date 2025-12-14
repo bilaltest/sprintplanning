@@ -34,7 +34,6 @@ class ReleaseRepositoryTest {
         release1 = new Release();
         release1.setId("release-1");
         release1.setName("Release v40.5 - Sprint 2025.01");
-        release1.setVersion("40.5");
         release1.setReleaseDate(now.plusDays(7));
         release1.setStatus("draft");
         release1.setType("release");
@@ -42,8 +41,7 @@ class ReleaseRepositoryTest {
 
         release2 = new Release();
         release2.setId("release-2");
-        release2.setName("Hotfix 40.4.1");
-        release2.setVersion("40.4.1");
+        release2.setName("Hotfix v40.4.1");
         release2.setReleaseDate(now.minusDays(2));
         release2.setStatus("completed");
         release2.setType("hotfix");
@@ -51,7 +49,6 @@ class ReleaseRepositoryTest {
         release3 = new Release();
         release3.setId("release-3");
         release3.setName("Release v41.0");
-        release3.setVersion("41.0");
         release3.setReleaseDate(now.plusDays(30));
         release3.setStatus("in_progress");
         release3.setType("release");
@@ -90,7 +87,7 @@ class ReleaseRepositoryTest {
         // Then
         assertThat(releases).hasSize(2);
         assertThat(hotfixes).hasSize(1);
-        assertThat(hotfixes.get(0).getVersion()).isEqualTo("40.4.1");
+        assertThat(hotfixes.get(0).getName()).contains("v40.4.1");
     }
 
     @Test
@@ -122,7 +119,7 @@ class ReleaseRepositoryTest {
 
         // Then
         assertThat(past).hasSize(1);
-        assertThat(past.get(0).getVersion()).isEqualTo("40.4.1");
+        assertThat(past.get(0).getName()).contains("v40.4.1");
     }
 
     @Test
@@ -156,7 +153,7 @@ class ReleaseRepositoryTest {
 
         // Then
         assertThat(all).hasSize(3);
-        assertThat(all.get(0).getVersion()).isEqualTo("41.0");
-        assertThat(all.get(2).getVersion()).isEqualTo("40.4.1");
+        assertThat(all.get(0).getName()).contains("v41.0");
+        assertThat(all.get(2).getName()).contains("v40.4.1");
     }
 }

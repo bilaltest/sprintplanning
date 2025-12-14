@@ -4,9 +4,12 @@ import com.catsbanque.eventplanning.dto.AuthResponse;
 import com.catsbanque.eventplanning.dto.LoginRequest;
 import com.catsbanque.eventplanning.dto.RegisterRequest;
 import com.catsbanque.eventplanning.dto.UserDto;
+import com.catsbanque.eventplanning.entity.PermissionLevel;
+import com.catsbanque.eventplanning.entity.PermissionModule;
 import com.catsbanque.eventplanning.entity.User;
 import com.catsbanque.eventplanning.exception.BadRequestException;
 import com.catsbanque.eventplanning.repository.UserRepository;
+import com.catsbanque.eventplanning.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -27,6 +31,8 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final PermissionService permissionService;
 
     // Pattern email: prenom.nom@ca-ts.fr ou prenom.nom-ext@ca-ts.fr
     private static final Pattern EMAIL_PATTERN =
@@ -86,9 +92,19 @@ public class AuthService {
         User saved = userRepository.save(user);
         log.info("Utilisateur créé avec succès: {}", saved.getId());
 
+        // Créer les permissions par défaut
+        permissionService.createDefaultPermissions(saved);
+
+        // Charger les permissions pour la réponse
+        Map<PermissionModule, PermissionLevel> permissions = permissionService.getUserPermissions(saved.getId());
+
+        // Générer le token JWT
+        String jwtToken = jwtUtil.generateToken(saved.getId(), saved.getEmail(), saved.getFirstName(), saved.getLastName());
+
         return AuthResponse.builder()
                 .message("Compte créé avec succès")
-                .user(UserDto.fromEntity(saved))
+                .token(jwtToken)
+                .user(UserDto.fromEntityWithPermissions(saved, permissions))
                 .build();
     }
 
@@ -117,20 +133,23 @@ public class AuthService {
             throw new BadRequestException("Email ou mot de passe incorrect");
         }
 
-        // Générer token simple (auth.controller.js:177)
-        String token = String.format("token_%s_%d", user.getId(), System.currentTimeMillis());
+        // Charger les permissions de l'utilisateur
+        Map<PermissionModule, PermissionLevel> permissions = permissionService.getUserPermissions(user.getId());
+
+        // Générer token JWT
+        String jwtToken = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName());
 
         log.info("Connexion réussie pour: {}", email);
 
         return AuthResponse.builder()
                 .message("Connexion réussie")
-                .token(token)
-                .user(UserDto.fromEntity(user))
+                .token(jwtToken)
+                .user(UserDto.fromEntityWithPermissions(user, permissions))
                 .build();
     }
 
     /**
-     * Récupère l'utilisateur courant
+     * Récupère l'utilisateur courant avec ses permissions
      * Référence: auth.controller.js:185-213
      */
     @Transactional(readOnly = true)
@@ -143,8 +162,75 @@ public class AuthService {
                         "Utilisateur non trouvé"
                 ));
 
+        // Charger les permissions
+        Map<PermissionModule, PermissionLevel> permissions = permissionService.getUserPermissions(userId);
+
         // Retourner sans le mot de passe (auth.controller.js:202-203)
-        return UserDto.fromEntity(user);
+        return UserDto.fromEntityWithPermissions(user, permissions);
+    }
+
+    /**
+     * Met à jour les préférences utilisateur (thème)
+     */
+    @Transactional
+    public UserDto updatePreferences(String userId, String themePreference) {
+        log.info("Mise à jour des préférences pour l'utilisateur {}: theme={}", userId, themePreference);
+
+        // Trouver utilisateur
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.catsbanque.eventplanning.exception.ResourceNotFoundException(
+                        "Utilisateur non trouvé"
+                ));
+
+        // Mettre à jour le thème
+        user.setThemePreference(themePreference);
+        User updated = userRepository.save(user);
+
+        // Charger les permissions
+        Map<PermissionModule, PermissionLevel> permissions = permissionService.getUserPermissions(userId);
+
+        // Retourner l'utilisateur mis à jour avec ses permissions
+        return UserDto.fromEntityWithPermissions(updated, permissions);
+    }
+
+    /**
+     * Met à jour l'ordre des widgets sur la home pour l'utilisateur
+     * Référence: auth.controller.js:288-329
+     */
+    @Transactional
+    public UserDto updateWidgetOrder(String userId, java.util.List<String> widgetOrder) {
+        log.info("Mise à jour de l'ordre des widgets pour l'utilisateur {}: {}", userId, widgetOrder);
+
+        // Trouver utilisateur
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.catsbanque.eventplanning.exception.ResourceNotFoundException(
+                        "Utilisateur non trouvé"
+                ));
+
+        // Validation: vérifier que tous les IDs sont des strings (auth.controller.js:304-307)
+        if (widgetOrder.stream().anyMatch(id -> !(id instanceof String))) {
+            throw new BadRequestException("Les IDs des widgets doivent être des strings");
+        }
+
+        // Convertir la liste en JSON string (auth.controller.js:310-315)
+        String widgetOrderJson;
+        try {
+            widgetOrderJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(widgetOrder);
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw new BadRequestException("Erreur lors de la sérialisation de widgetOrder");
+        }
+
+        // Mettre à jour l'ordre des widgets
+        user.setWidgetOrder(widgetOrderJson);
+        User updated = userRepository.save(user);
+
+        // Charger les permissions
+        Map<PermissionModule, PermissionLevel> permissions = permissionService.getUserPermissions(userId);
+
+        log.info("Ordre des widgets mis à jour avec succès pour l'utilisateur {}", userId);
+
+        // Retourner l'utilisateur mis à jour avec ses permissions (auth.controller.js:318-323)
+        return UserDto.fromEntityWithPermissions(updated, permissions);
     }
 
     /**

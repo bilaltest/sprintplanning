@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -14,8 +15,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 /**
- * Contrôleur REST pour l'administration
+ * Contrôleur REST pour l'administration (ADMIN module)
  * Endpoints identiques à Node.js (admin.routes.js)
+ * Tous les endpoints nécessitent WRITE sur ADMIN
  */
 @Slf4j
 @RestController
@@ -31,7 +33,8 @@ public class AdminController {
      * Référence: admin.controller.js:9-36
      */
     @GetMapping("/users")
-    public ResponseEntity<AdminUsersResponse> getAllUsers() {
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.eventplanning.entity.PermissionModule).ADMIN)")
+    public ResponseEntity<AdminUsersResponse> getAllUsers(org.springframework.security.core.Authentication authentication) {
         log.info("GET /api/admin/users");
         AdminUsersResponse response = adminService.getAllUsers();
         return ResponseEntity.ok(response);
@@ -43,7 +46,8 @@ public class AdminController {
      * Référence: admin.controller.js:44-83
      */
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<DeletedUserResponse> deleteUser(@PathVariable String id) {
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.eventplanning.entity.PermissionModule).ADMIN)")
+    public ResponseEntity<DeletedUserResponse> deleteUser(@PathVariable String id, org.springframework.security.core.Authentication authentication) {
         log.info("DELETE /api/admin/users/{}", id);
         DeletedUserResponse response = adminService.deleteUser(id);
         return ResponseEntity.ok(response);
@@ -55,7 +59,8 @@ public class AdminController {
      * Référence: admin.controller.js:89-115
      */
     @GetMapping("/stats")
-    public ResponseEntity<AdminStatsResponse> getStats() {
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.eventplanning.entity.PermissionModule).ADMIN)")
+    public ResponseEntity<AdminStatsResponse> getStats(org.springframework.security.core.Authentication authentication) {
         log.info("GET /api/admin/stats");
         AdminStatsResponse response = adminService.getStats();
         return ResponseEntity.ok(response);
@@ -67,7 +72,8 @@ public class AdminController {
      * Référence: admin.controller.js:121-191
      */
     @GetMapping("/export")
-    public ResponseEntity<DatabaseExportDto> exportDatabase() {
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.eventplanning.entity.PermissionModule).ADMIN)")
+    public ResponseEntity<DatabaseExportDto> exportDatabase(org.springframework.security.core.Authentication authentication) {
         log.info("GET /api/admin/export");
         DatabaseExportDto export = adminService.exportDatabase();
 
@@ -90,8 +96,10 @@ public class AdminController {
      * Référence: admin.controller.js:198-318
      */
     @PostMapping("/import")
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.eventplanning.entity.PermissionModule).ADMIN)")
     public ResponseEntity<ImportDatabaseResponse> importDatabase(
-            @RequestBody DatabaseImportRequest request
+            @RequestBody DatabaseImportRequest request,
+            org.springframework.security.core.Authentication authentication
     ) {
         log.info("POST /api/admin/import");
         ImportDatabaseResponse response = adminService.importDatabase(request);
@@ -104,7 +112,8 @@ public class AdminController {
      * Endpoint utile pour l'initialisation du système
      */
     @PostMapping("/create-admin-user")
-    public ResponseEntity<Void> createAdminUser() {
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.eventplanning.entity.PermissionModule).ADMIN)")
+    public ResponseEntity<Void> createAdminUser(org.springframework.security.core.Authentication authentication) {
         log.info("POST /api/admin/create-admin-user");
         adminService.createAdminUser();
         return ResponseEntity.noContent().build();

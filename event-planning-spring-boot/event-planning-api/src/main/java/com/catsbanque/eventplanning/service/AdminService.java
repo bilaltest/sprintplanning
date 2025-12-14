@@ -38,6 +38,7 @@ public class AdminService {
     private final FeatureFlippingRepository featureFlippingRepository;
     private final ObjectMapper objectMapper;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final PermissionService permissionService;
 
     /**
      * Récupérer tous les utilisateurs
@@ -49,20 +50,23 @@ public class AdminService {
 
         List<AdminUserDto> userDtos = users.stream()
                 .map(user -> {
-                    AdminUserDto dto = new AdminUserDto();
-                    dto.setId(user.getId());
-                    dto.setEmail(user.getEmail());
-                    dto.setFirstName(user.getFirstName());
-                    dto.setLastName(user.getLastName());
-                    dto.setThemePreference(user.getThemePreference());
-                    dto.setCreatedAt(user.getCreatedAt());
-                    dto.setUpdatedAt(user.getUpdatedAt());
-
                     // Count histories
                     long historyCount = historyRepository.findByUserIdOrderByTimestampDesc(user.getId()).size();
-                    dto.setHistoriesCount(historyCount);
 
-                    return dto;
+                    // Get permissions
+                    Map<PermissionModule, PermissionLevel> permissions = permissionService.getUserPermissions(user.getId());
+
+                    return AdminUserDto.builder()
+                            .id(user.getId())
+                            .email(user.getEmail())
+                            .firstName(user.getFirstName())
+                            .lastName(user.getLastName())
+                            .themePreference(user.getThemePreference())
+                            .createdAt(user.getCreatedAt())
+                            .updatedAt(user.getUpdatedAt())
+                            .historiesCount(historyCount)
+                            .permissions(permissions)
+                            .build();
                 })
                 .collect(Collectors.toList());
 

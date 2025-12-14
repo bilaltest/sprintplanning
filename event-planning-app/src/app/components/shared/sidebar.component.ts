@@ -4,12 +4,14 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { SidebarService } from '@services/sidebar.service';
 import { AuthService, User } from '@services/auth.service';
+import { PermissionService, PermissionModule } from '@services/permission.service';
 
 interface NavItem {
   label: string;
   icon: string;
   route: string;
   isActive?: boolean;
+  requiredModule?: PermissionModule;
 }
 
 @Component({
@@ -182,16 +184,17 @@ export class SidebarComponent implements OnInit {
 
   navItems: NavItem[] = [
     { label: 'Accueil', icon: 'home', route: '/home' },
-    { label: 'Calendrier', icon: 'calendar_month', route: '/calendar' },
-    { label: 'Prépa MEP', icon: 'rocket_launch', route: '/releases' },
+    { label: 'Calendrier', icon: 'calendar_month', route: '/calendar', requiredModule: 'CALENDAR' },
+    { label: 'Prépa MEP', icon: 'rocket_launch', route: '/releases', requiredModule: 'RELEASES' },
     { label: 'Playground', icon: 'sports_esports', route: '/playground' },
-    { label: 'Admin', icon: 'admin_panel_settings', route: '/admin' }
+    { label: 'Admin', icon: 'admin_panel_settings', route: '/admin', requiredModule: 'ADMIN' }
   ];
 
   constructor(
     private router: Router,
     private sidebarService: SidebarService,
-    private authService: AuthService
+    private authService: AuthService,
+    private permissionService: PermissionService
   ) {}
 
   ngOnInit(): void {
@@ -251,17 +254,19 @@ export class SidebarComponent implements OnInit {
   }
 
   getVisibleNavItems(): NavItem[] {
-    // Filtrer les items de navigation en fonction de l'utilisateur
+    // Filtrer les items de navigation en fonction des permissions
     return this.navItems.filter(item => {
-      // L'item Admin n'est visible que pour l'utilisateur "admin"
-      if (item.route === '/admin') {
-        return this.currentUser?.email === 'admin';
+      // Si l'item n'a pas de module requis, il est toujours visible (Accueil, Playground)
+      if (!item.requiredModule) {
+        return true;
       }
-      return true;
+
+      // Vérifier si l'utilisateur a au moins READ sur le module requis
+      return this.permissionService.hasReadAccess(item.requiredModule);
     });
   }
 
   isAdmin(): boolean {
-    return this.currentUser?.email === 'admin';
+    return this.permissionService.hasReadAccess('ADMIN');
   }
 }

@@ -1,15 +1,17 @@
 import { inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthService } from '@services/auth.service';
+import { Router, CanActivateFn } from '@angular/router';
+import { PermissionService } from '@services/permission.service';
 
-export const adminGuard = () => {
-  const authService = inject(AuthService);
+/**
+ * Guard pour protéger les routes du module ADMIN
+ * Nécessite au moins READ sur ADMIN
+ */
+export const adminGuard: CanActivateFn = (route, state) => {
+  const permissionService = inject(PermissionService);
   const router = inject(Router);
 
-  const currentUser = authService.getCurrentUser();
-
-  // Vérifier si l'utilisateur est connecté et si c'est l'admin
-  if (currentUser && currentUser.email === 'admin') {
+  // Vérifier si l'utilisateur a au moins READ sur ADMIN
+  if (permissionService.hasReadAccess('ADMIN')) {
     return true;
   }
 

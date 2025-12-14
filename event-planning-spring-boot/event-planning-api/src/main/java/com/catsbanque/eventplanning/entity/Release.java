@@ -7,9 +7,11 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Entity
 @Table(name = "app_release", indexes = {
@@ -27,10 +29,7 @@ public class Release {
     private String id;
 
     @Column(nullable = false, length = 255)
-    private String name; // Ex: "Release v40.5 - Sprint 2024.12"
-
-    @Column(nullable = false, length = 20)
-    private String version; // Ex: "40.5"
+    private String name; // Ex: "Release v40.5 - Sprint 2024.12" (contient déjà la version)
 
     @Column(name = "release_date", nullable = false)
     private LocalDateTime releaseDate; // Planned MEP date
@@ -59,7 +58,20 @@ public class Release {
     @PrePersist
     public void prePersist() {
         if (this.id == null) {
-            this.id = java.util.UUID.randomUUID().toString().replace("-", "");
+            this.id = generateCuid();
         }
+    }
+
+    private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
+    private static final Random random = new SecureRandom();
+
+    private String generateCuid() {
+        long timestamp = System.currentTimeMillis();
+        StringBuilder cuid = new StringBuilder("c");
+        cuid.append(Long.toString(timestamp, 36));
+        for (int i = 0; i < 8; i++) {
+            cuid.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
+        }
+        return cuid.toString();
     }
 }

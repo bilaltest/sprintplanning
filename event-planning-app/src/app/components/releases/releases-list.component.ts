@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ReleaseService } from '@services/release.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
+import { CanAccessDirective } from '@directives/can-access.directive';
 import {
   Release,
   STATUS_LABELS,
@@ -26,12 +27,14 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 @Component({
   selector: 'app-releases-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProgressRingComponent],
+  imports: [CommonModule, FormsModule, ProgressRingComponent, CanAccessDirective],
   template: `
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- Header -->
       <div class="flex items-center justify-end mb-2">
         <button
+          appCanAccess="RELEASES"
+          accessLevel="write"
           (click)="showCreateModal = true"
           class="btn btn-primary flex items-center space-x-2 px-6 py-3"
         >
@@ -52,10 +55,10 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div
             *ngFor="let release of upcomingReleases"
-            class="card-releases p-6 cursor-pointer relative group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02]"
+            class="card-releases p-6 cursor-pointer relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02]"
           [class.hover:border-emerald-500]="release.type === 'release'"
           [class.hover:border-red-500]="release.type === 'hotfix'"
-          (click)="viewRelease(release.id!, release.version)"
+          (click)="viewRelease(release.id!)"
         >
           <!-- Type Badge -->
           <div class="absolute top-0 right-0 z-10">
@@ -71,6 +74,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           <!-- Action Buttons -->
           <div class="absolute top-12 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
             <button
+              appCanAccess="RELEASES"
+              accessLevel="write"
               (click)="startEditingDate(release, $event)"
               class="p-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all duration-200 hover:scale-110"
               title="Modifier la release"
@@ -78,6 +83,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               <span class="material-icons text-lg">edit</span>
             </button>
             <button
+              appCanAccess="RELEASES"
+              accessLevel="write"
               (click)="deleteRelease($event, release)"
               class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110"
               title="Supprimer la release"
@@ -152,6 +159,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             <!-- Export Button -->
             <div class="relative" (click)="$event.stopPropagation()">
               <button
+                appCanAccess="RELEASES"
+                accessLevel="read"
                 (click)="toggleExportMenu(release.id!)"
                 class="flex items-center space-x-1 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 title="Exporter la release"
@@ -163,7 +172,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               <!-- Export Dropdown -->
               <div
                 *ngIf="exportMenuOpen === release.id"
-                class="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-10"
+                class="absolute left-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-10"
               >
                 <button
                   (click)="exportRelease(release, 'markdown')"
@@ -204,10 +213,10 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
             *ngFor="let release of pastReleases"
-            class="card-releases p-6 cursor-pointer relative group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] opacity-60 hover:opacity-90"
+            class="card-releases p-6 cursor-pointer relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] opacity-60 hover:opacity-90"
             [class.hover:border-emerald-500]="release.type === 'release'"
             [class.hover:border-red-500]="release.type === 'hotfix'"
-            (click)="viewRelease(release.id!, release.version)"
+            (click)="viewRelease(release.id!)"
           >
             <!-- Type Badge -->
             <div class="absolute top-0 right-0 z-10">
@@ -223,6 +232,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             <!-- Action Buttons -->
             <div class="absolute top-12 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
               <button
+                appCanAccess="RELEASES"
+                accessLevel="write"
                 (click)="startEditingDate(release, $event)"
                 class="p-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all duration-200 hover:scale-110"
                 title="Modifier la release"
@@ -230,6 +241,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 <span class="material-icons text-lg">edit</span>
               </button>
               <button
+                appCanAccess="RELEASES"
+                accessLevel="write"
                 (click)="deleteRelease($event, release)"
                 class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110"
                 title="Supprimer la release"
@@ -291,6 +304,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               <!-- Export Button -->
               <div class="relative" (click)="$event.stopPropagation()">
                 <button
+                  appCanAccess="RELEASES"
+                  accessLevel="read"
                   (click)="toggleExportMenu(release.id!)"
                   class="flex items-center space-x-1 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                   title="Exporter la release"
@@ -302,7 +317,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 <!-- Export Dropdown -->
                 <div
                   *ngIf="exportMenuOpen === release.id"
-                  class="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-10"
+                  class="absolute left-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-10"
                 >
                   <button
                     (click)="exportRelease(release, 'markdown')"
@@ -338,6 +353,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           Commencez par créer votre première release pour organiser votre MEP
         </p>
         <button
+          appCanAccess="RELEASES"
+          accessLevel="write"
           (click)="showCreateModal = true"
           class="btn btn-primary"
         >
@@ -479,6 +496,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               </button>
               <button
                 type="submit"
+                appCanAccess="RELEASES"
+                accessLevel="write"
                 class="btn btn-primary"
                 [disabled]="isCreating"
               >
@@ -554,6 +573,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               </button>
               <button
                 type="submit"
+                appCanAccess="RELEASES"
+                accessLevel="write"
                 class="btn btn-primary"
                 [disabled]="isUpdatingDate"
               >
@@ -682,10 +703,8 @@ export class ReleasesListComponent implements OnInit {
     return this.RELEASE_TYPE_COLORS[type || 'release'];
   }
 
-  viewRelease(id: string, version?: string): void {
-    // Utiliser la version pour l'URL si disponible, sinon utiliser l'ID
-    const routeParam = version || id;
-    this.router.navigate(['/releases', routeParam]);
+  viewRelease(id: string): void {
+    this.router.navigate(['/releases', id]);
   }
 
   navigateToHistory(): void {
@@ -764,6 +783,11 @@ export class ReleasesListComponent implements OnInit {
 
     if (this.isCreating) return;
 
+    if (!this.newRelease.name || !this.newRelease.releaseDate) {
+      this.toastService.error('Erreur', 'Le nom et la date sont obligatoires');
+      return;
+    }
+
     try {
       this.isCreating = true;
       const release = await this.releaseService.createRelease(this.newRelease);
@@ -782,7 +806,7 @@ export class ReleasesListComponent implements OnInit {
       // Show success toast
       this.toastService.success(
         'Release créée',
-        `${release.name} v${release.version} a été créée avec succès`
+        `${release.name} a été créée avec succès`
       );
 
       // Navigate to the new release
@@ -835,7 +859,7 @@ export class ReleasesListComponent implements OnInit {
     this.exportMenuOpen = null;
 
     let content = '';
-    const fileName = `${release.name.replace(/\s+/g, '_')}_v${release.version}`;
+    const fileName = `${release.name.replace(/\s+/g, '_')}`;
 
     if (format === 'markdown') {
       content = this.generateMarkdown(release);

@@ -1,5 +1,6 @@
 package com.catsbanque.eventplanning.controller;
 
+import com.catsbanque.eventplanning.config.WithMockCalendarUser;
 import com.catsbanque.eventplanning.dto.CreateReleaseRequest;
 import com.catsbanque.eventplanning.repository.ReleaseRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockCalendarUser
 @DisplayName("ReleaseController - Tests d'intégration E2E")
 class ReleaseControllerIntegrationTest {
 
@@ -56,9 +58,8 @@ class ReleaseControllerIntegrationTest {
     @DisplayName("POST /api/releases - Créer release avec 6 squads")
     void testCreateRelease_Success() throws Exception {
         CreateReleaseRequest request = new CreateReleaseRequest(
-                "Release 1.0.0",
-                "1.0.0",
-                LocalDateTime.of(2025, 12, 25, 10, 0),
+                "Release v1.0.0",
+                "2025-12-25T10:00:00",
                 "release",
                 "Test release description"
         );
@@ -68,8 +69,7 @@ class ReleaseControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.name").value("Release 1.0.0"))
-                .andExpect(jsonPath("$.version").value("1.0.0"))
+                .andExpect(jsonPath("$.name").value("Release v1.0.0"))
                 .andExpect(jsonPath("$.status").value("draft"))
                 .andExpect(jsonPath("$.squads").isArray())
                 .andExpect(jsonPath("$.squads", hasSize(6)))
@@ -82,8 +82,7 @@ class ReleaseControllerIntegrationTest {
     void testCreateRelease_MissingName() throws Exception {
         CreateReleaseRequest request = new CreateReleaseRequest(
                 "",
-                "1.0.0",
-                LocalDateTime.of(2025, 12, 25, 10, 0),
+                "2025-12-25T10:00:00",
                 "release",
                 null
         );
@@ -99,9 +98,8 @@ class ReleaseControllerIntegrationTest {
     void testGetReleaseById_Success() throws Exception {
         // Créer une release
         CreateReleaseRequest request = new CreateReleaseRequest(
-                "Release 1.0.0",
-                "1.0.0",
-                LocalDateTime.of(2025, 12, 25, 10, 0),
+                "Release v1.0.0",
+                "2025-12-25T10:00:00",
                 "release",
                 "Description"
         );
@@ -118,32 +116,33 @@ class ReleaseControllerIntegrationTest {
         mockMvc.perform(get("/releases/{id}", releaseId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(releaseId))
-                .andExpect(jsonPath("$.name").value("Release 1.0.0"))
+                .andExpect(jsonPath("$.name").value("Release v1.0.0"))
                 .andExpect(jsonPath("$.squads", hasSize(6)));
     }
 
     @Test
-    @DisplayName("GET /api/releases/:version - Récupérer release par version")
-    void testGetReleaseByVersion_Success() throws Exception {
+    @DisplayName("GET /api/releases/:id - Récupérer release par nom")
+    void testGetReleaseByName_Success() throws Exception {
         // Créer une release
         CreateReleaseRequest request = new CreateReleaseRequest(
-                "Release 1.0.0",
-                "1.0.0",
-                LocalDateTime.of(2025, 12, 25, 10, 0),
+                "Release v1.0.0",
+                "2025-12-25T10:00:00",
                 "release",
                 "Description"
         );
 
-        mockMvc.perform(post("/releases")
+        String createResponse = mockMvc.perform(post("/releases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
 
-        // Récupérer par version
-        mockMvc.perform(get("/releases/{id}", "1.0.0"))
+        String releaseId = objectMapper.readTree(createResponse).get("id").asText();
+
+        // Récupérer par ID
+        mockMvc.perform(get("/releases/{id}", releaseId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.version").value("1.0.0"))
-                .andExpect(jsonPath("$.name").value("Release 1.0.0"));
+                .andExpect(jsonPath("$.name").value("Release v1.0.0"));
     }
 
     @Test
@@ -151,9 +150,8 @@ class ReleaseControllerIntegrationTest {
     void testUpdateRelease_Success() throws Exception {
         // Créer une release
         CreateReleaseRequest createRequest = new CreateReleaseRequest(
-                "Release 1.0.0",
-                "1.0.0",
-                LocalDateTime.of(2025, 12, 25, 10, 0),
+                "Release v1.0.0",
+                "2025-12-25T10:00:00",
                 "release",
                 "Original description"
         );
@@ -168,9 +166,8 @@ class ReleaseControllerIntegrationTest {
 
         // Modifier la release
         CreateReleaseRequest updateRequest = new CreateReleaseRequest(
-                "Release 1.1.0",
-                "1.1.0",
-                LocalDateTime.of(2025, 12, 26, 10, 0),
+                "Release v1.1.0",
+                "2025-12-26T10:00:00",
                 "hotfix",
                 "Updated description"
         );
@@ -180,8 +177,7 @@ class ReleaseControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(releaseId))
-                .andExpect(jsonPath("$.name").value("Release 1.1.0"))
-                .andExpect(jsonPath("$.version").value("1.1.0"))
+                .andExpect(jsonPath("$.name").value("Release v1.1.0"))
                 .andExpect(jsonPath("$.type").value("hotfix"));
     }
 
@@ -190,9 +186,8 @@ class ReleaseControllerIntegrationTest {
     void testUpdateReleaseStatus_Success() throws Exception {
         // Créer une release
         CreateReleaseRequest request = new CreateReleaseRequest(
-                "Release 1.0.0",
-                "1.0.0",
-                LocalDateTime.of(2025, 12, 25, 10, 0),
+                "Release v1.0.0",
+                "2025-12-25T10:00:00",
                 "release",
                 "Description"
         );
@@ -206,14 +201,14 @@ class ReleaseControllerIntegrationTest {
         String releaseId = objectMapper.readTree(createResponse).get("id").asText();
 
         // Changer le statut
-        Map<String, String> statusUpdate = Map.of("status", "active");
+        Map<String, String> statusUpdate = Map.of("status", "in_progress");
 
         mockMvc.perform(patch("/releases/{id}/status", releaseId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(statusUpdate)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(releaseId))
-                .andExpect(jsonPath("$.status").value("active"));
+                .andExpect(jsonPath("$.status").value("in_progress"));
     }
 
     @Test
@@ -222,8 +217,7 @@ class ReleaseControllerIntegrationTest {
         // Créer une release
         CreateReleaseRequest request = new CreateReleaseRequest(
                 "Release to Delete",
-                "1.0.0",
-                LocalDateTime.of(2025, 12, 25, 10, 0),
+                "2025-12-25T10:00:00",
                 "release",
                 "Description"
         );

@@ -1,5 +1,6 @@
 package com.catsbanque.eventplanning.service;
 
+import com.catsbanque.eventplanning.dto.UpdateReleaseRequest;
 import com.catsbanque.eventplanning.dto.CreateReleaseRequest;
 import com.catsbanque.eventplanning.dto.ReleaseDto;
 import com.catsbanque.eventplanning.entity.Release;
@@ -8,10 +9,15 @@ import com.catsbanque.eventplanning.exception.ResourceNotFoundException;
 import com.catsbanque.eventplanning.repository.ReleaseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,8 +37,10 @@ public class ReleaseService {
      * Récupérer toutes les releases (futures + 20 dernières passées)
      * Référence: release.controller.js:75-152
      *
-     * Note: L'archivage automatique a été déplacé vers ArchiveScheduler (tâche planifiée à 3h)
-     * pour éviter de bloquer les requêtes GET avec des DELETE synchrones (cascade sur Squads/Features/Actions)
+     * Note: L'archivage automatique a été déplacé vers ArchiveScheduler (tâche
+     * planifiée à 3h)
+     * pour éviter de bloquer les requêtes GET avec des DELETE synchrones (cascade
+     * sur Squads/Features/Actions)
      */
     @Transactional(readOnly = true)
     public List<ReleaseDto> getAllReleases() {
@@ -58,20 +66,14 @@ public class ReleaseService {
     }
 
     /**
-     * Récupérer une release par ID ou version
+     * Récupérer une release par ID
      * Référence: release.controller.js:155-217
      */
     @Transactional(readOnly = true)
-    public ReleaseDto getReleaseByIdOrVersion(String idOrVersion) {
-        // Essayer d'abord par version
-        Release release = releaseRepository.findByVersion(idOrVersion)
-                .orElse(null);
-
-        // Si pas trouvé par version, essayer par ID
-        if (release == null) {
-            release = releaseRepository.findById(idOrVersion)
-                    .orElseThrow(() -> new ResourceNotFoundException("Release not found"));
-        }
+    public ReleaseDto getReleaseById(String id) {
+        // Rechercher uniquement par ID (version n'existe plus)
+        Release release = releaseRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Release not found"));
 
         // Force le chargement des squads (eager loading)
         release.getSquads().size();
@@ -87,8 +89,7 @@ public class ReleaseService {
     public ReleaseDto createRelease(CreateReleaseRequest request) {
         Release release = new Release();
         release.setName(request.getName());
-        release.setVersion(request.getVersion());
-        release.setReleaseDate(request.getReleaseDate());
+        release.setReleaseDate(parseReleaseDate(request.getReleaseDate()));
         release.setType(request.getType() != null ? request.getType() : "release");
         release.setDescription(request.getDescription());
         release.setStatus("draft");
@@ -117,15 +118,29 @@ public class ReleaseService {
      * Référence: release.controller.js:270-306
      */
     @Transactional
-    public ReleaseDto updateRelease(String id, CreateReleaseRequest request) {
+    public ReleaseDto updateRelease(String id, UpdateReleaseRequest request) {
         Release release = releaseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Release not found"));
 
-        release.setName(request.getName());
-        release.setVersion(request.getVersion());
-        release.setReleaseDate(request.getReleaseDate());
-        release.setType(request.getType() != null ? request.getType() : release.getType());
-        release.setDescription(request.getDescription());
+        if (request.getName() != null && !request.getName().isBlank()) {
+            release.setName(request.getName());
+        }
+
+        if (request.getReleaseDate() != null && !request.getReleaseDate().isBlank()) {
+            release.setReleaseDate(parseReleaseDate(request.getReleaseDate()));
+        }
+
+        if (request.getType() != null) {
+            release.setType(request.getType());
+        }
+
+        if (request.getDescription() != null) {
+            release.setDescription(request.getDescription());
+        }
+
+        if (request.getStatus() != null) {
+            release.setStatus(request.getStatus());
+        }
 
         Release updated = releaseRepository.save(release);
         log.info("Release updated: {}", updated.getId());
@@ -158,5 +173,39 @@ public class ReleaseService {
 
         releaseRepository.delete(release);
         log.info("Release deleted: {}", id);
+    }
+
+    /**
+     * Parse une date string en LocalDateTime.
+     * Supporte les formats:
+     * - ISO 8601 avec timezone: "2025-01-15T10:00:00.000Z"
+     * - ISO sans timezone: "2025-01-15T10:00:00"
+     * - Date seule: "2025-01-15" (heure mise à 00:00)
+     */
+    private LocalDateTime parseReleaseDate(String dateString) {
+        if (dateString == null || dateString.isEmpty()) {
+            throw new IllegalArgumentException("Release date cannot be null or empty");
+        }
+
+        try {
+            // Essayer de parser comme ISO 8601 avec timezone (ex: 2025-01-15T10:00:00.000Z)
+            if (dateString.contains("Z") || dateString.contains("+")) {
+                return ZonedDateTime.parse(dateString).toLocalDateTime();
+            }
+
+            // Essayer de parser comme LocalDateTime (ex: 2025-01-15T10:00:00)
+            if (dateString.contains("T")) {
+                return LocalDateTime.parse(dateString);
+            }
+
+            // Parser comme LocalDate et convertir en LocalDateTime à minuit (ex:
+            // 2025-01-15)
+            return java.time.LocalDate.parse(dateString).atStartOfDay();
+
+        } catch (DateTimeParseException e) {
+            log.error("Erreur de parsing de la date: {}", dateString, e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Format de date invalide: " + dateString
+                    + ". Formats acceptés: yyyy-MM-dd ou yyyy-MM-dd'T'HH:mm:ss", e);
+        }
     }
 }

@@ -107,9 +107,6 @@ public class ReleaseHistoryService {
                     if (previousData.has("name")) {
                         existingRelease.setName(previousData.get("name").asText());
                     }
-                    if (previousData.has("version")) {
-                        existingRelease.setVersion(previousData.get("version").asText());
-                    }
                     if (previousData.has("releaseDate")) {
                         existingRelease.setReleaseDate(
                             LocalDateTime.parse(previousData.get("releaseDate").asText())
@@ -142,9 +139,6 @@ public class ReleaseHistoryService {
                     }
                     if (previousData.has("name")) {
                         newRelease.setName(previousData.get("name").asText());
-                    }
-                    if (previousData.has("version")) {
-                        newRelease.setVersion(previousData.get("version").asText());
                     }
                     if (previousData.has("releaseDate")) {
                         newRelease.setReleaseDate(

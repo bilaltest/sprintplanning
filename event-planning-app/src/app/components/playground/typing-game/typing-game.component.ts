@@ -766,10 +766,12 @@ export class TypingGameComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Get language from route
-    const slug = this.route.snapshot.paramMap.get('slug');
-    if (slug === 'typing-en') {
+    // Get language from route URL
+    const url = this.router.url;
+    if (url.includes('typing-en')) {
       this.language = 'en';
+    } else {
+      this.language = 'fr';
     }
 
     // Load words based on language

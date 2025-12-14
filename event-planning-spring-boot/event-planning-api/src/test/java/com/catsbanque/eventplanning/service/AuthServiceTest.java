@@ -31,6 +31,12 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private PermissionService permissionService;
+
+    @Mock
+    private com.catsbanque.eventplanning.util.JwtUtil jwtUtil;
+
     @InjectMocks
     private AuthService authService;
 
@@ -53,6 +59,7 @@ class AuthServiceTest {
             user.setId("test-user-id");
             return user;
         });
+        when(jwtUtil.generateToken(anyString(), anyString(), anyString(), anyString())).thenReturn("eyJtest.token.jwt");
 
         // When
         AuthResponse response = authService.register(request);
@@ -85,6 +92,7 @@ class AuthServiceTest {
             user.setId("test-user-id");
             return user;
         });
+        when(jwtUtil.generateToken(anyString(), anyString(), anyString(), anyString())).thenReturn("eyJtest.token.jwt");
 
         // When
         AuthResponse response = authService.register(request);
@@ -200,6 +208,7 @@ class AuthServiceTest {
             user.setId("admin-id");
             return user;
         });
+        when(jwtUtil.generateToken(anyString(), anyString(), anyString(), anyString())).thenReturn("eyJtest.token.jwt");
 
         // When
         AuthResponse response = authService.register(request);
@@ -225,6 +234,8 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        when(permissionService.getUserPermissions(anyString())).thenReturn(java.util.Map.of());
+        when(jwtUtil.generateToken(anyString(), anyString(), anyString(), anyString())).thenReturn("eyJtest.token.jwt");
 
         // When
         AuthResponse response = authService.login(request);
@@ -233,7 +244,7 @@ class AuthServiceTest {
         assertNotNull(response);
         assertEquals("Connexion réussie", response.getMessage());
         assertNotNull(response.getToken());
-        assertTrue(response.getToken().startsWith("token_user-123_"));
+        assertTrue(response.getToken().startsWith("eyJ")); // JWT starts with eyJ
         assertEquals("jean.dupont@ca-ts.fr", response.getUser().getEmail());
     }
 

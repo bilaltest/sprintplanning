@@ -64,7 +64,7 @@ public class GameService {
         Game game = gameRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Game not found"));
 
-        // Query SQL native pour récupérer le meilleur score de chaque utilisateur
+        // Query SQL native pour récupérer le meilleur score de chaque utilisateur (une seule entrée par utilisateur)
         String sql = """
             SELECT
                 gs.id as id,
@@ -81,16 +81,18 @@ public class GameService {
             FROM game_score gs
             LEFT JOIN app_user u ON gs.user_id = u.id
             WHERE gs.game_id = :gameId
-            AND gs.score = (
-                SELECT MAX(gs2.score)
+            AND gs.id = (
+                SELECT gs2.id
                 FROM game_score gs2
                 WHERE gs2.game_id = gs.game_id
                 AND (
                     (gs2.user_id IS NOT NULL AND gs2.user_id = gs.user_id)
                     OR (gs2.user_id IS NULL AND gs2.visitor_name = gs.visitor_name)
                 )
+                ORDER BY gs2.score DESC, gs2.created_at ASC
+                LIMIT 1
             )
-            ORDER BY gs.score DESC
+            ORDER BY gs.score DESC, gs.created_at ASC
             LIMIT 10
             """;
 
@@ -110,7 +112,12 @@ public class GameService {
             entry.setScore((Integer) row[4]);
             entry.setWpm((Integer) row[5]);
             entry.setAccuracy((Double) row[6]);
-            entry.setCreatedAt((LocalDateTime) row[7]);
+
+            // Convertir Timestamp en LocalDateTime
+            if (row[7] != null) {
+                entry.setCreatedAt(((java.sql.Timestamp) row[7]).toLocalDateTime());
+            }
+
             entry.setUserId((String) row[2]);
             entry.setVisitorName((String) row[3]);
 

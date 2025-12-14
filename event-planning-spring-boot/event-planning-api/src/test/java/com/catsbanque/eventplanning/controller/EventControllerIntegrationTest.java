@@ -1,5 +1,6 @@
 package com.catsbanque.eventplanning.controller;
 
+import com.catsbanque.eventplanning.config.WithMockCalendarUser;
 import com.catsbanque.eventplanning.dto.CreateEventRequest;
 import com.catsbanque.eventplanning.repository.EventRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockCalendarUser
 @DisplayName("EventController - Tests d'intégration E2E")
 class EventControllerIntegrationTest {
 

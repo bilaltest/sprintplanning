@@ -1,12 +1,17 @@
 package com.catsbanque.eventplanning.dto;
 
+import com.catsbanque.eventplanning.entity.PermissionLevel;
+import com.catsbanque.eventplanning.entity.PermissionModule;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminUserDto {
@@ -18,4 +23,5 @@ public class AdminUserDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private long historiesCount;
+    private Map<PermissionModule, PermissionLevel> permissions;
 }

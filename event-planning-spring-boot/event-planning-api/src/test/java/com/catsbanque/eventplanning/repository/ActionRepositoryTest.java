@@ -34,8 +34,7 @@ class ActionRepositoryTest {
     void setUp() {
         Release release = new Release();
         release.setId("release-1");
-        release.setName("Release v40.5");
-        release.setVersion("40.5");
+        release.setName("Release v40.5 - Sprint 2025.01");
         release.setReleaseDate(LocalDateTime.now().plusDays(7));
         release.setStatus("draft");
         release.setType("release");

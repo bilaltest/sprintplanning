@@ -124,7 +124,7 @@ class AuthControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Connexion réussie"))
                 .andExpect(jsonPath("$.token").exists())
-                .andExpect(jsonPath("$.token").value(startsWith("token_")))
+                .andExpect(jsonPath("$.token").value(startsWith("eyJ"))) // JWT token
                 .andExpect(jsonPath("$.user.email").value("marie.martin@ca-ts.fr"))
                 .andExpect(jsonPath("$.user.firstName").value("Marie"))
                 .andExpect(jsonPath("$.user.lastName").value("MARTIN"));

@@ -97,8 +97,7 @@ export interface Squad {
 // Release
 export interface Release {
   id?: string;
-  name: string;
-  version: string;
+  name: string; // Contient déjà la version (ex: "Release v40.5")
   releaseDate: string; // ISO format
   status: ReleaseStatus;
   type: ReleaseType; // release ou hotfix
@@ -110,8 +109,7 @@ export interface Release {
 
 // DTO pour créer une release
 export interface CreateReleaseDto {
-  name: string;
-  version: string;
+  name: string; // Contient déjà la version
   releaseDate: string;
   type: ReleaseType; // release ou hotfix
   description?: string;
@@ -120,7 +118,6 @@ export interface CreateReleaseDto {
 // DTO pour mettre à jour une release
 export interface UpdateReleaseDto {
   name?: string;
-  version?: string;
   releaseDate?: string;
   description?: string;
   status?: ReleaseStatus;

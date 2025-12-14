@@ -6,6 +6,7 @@ import { SettingsService } from '@services/settings.service';
 import { TimelineService } from '@services/timeline.service';
 import { CategoryService } from '@services/category.service';
 import { ConfirmationService } from '@services/confirmation.service';
+import { CanAccessDirective } from '@directives/can-access.directive';
 import { format, addMonths, subMonths, isToday, isPast, isFuture, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -34,7 +35,7 @@ interface DayCard {
 @Component({
   selector: 'app-quarterly-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CanAccessDirective],
   template: `
     <div class="quarterly-view-container">
       <!-- Scroll container vertical -->
@@ -158,6 +159,8 @@ interface DayCard {
                                 </div>
                               </div>
                               <button
+                                appCanAccess="CALENDAR"
+                                accessLevel="write"
                                 (click)="onDeleteEvent($event, event)"
                                 class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 dark:hover:bg-red-900/30 rounded p-0.5"
                                 title="Supprimer"
@@ -169,6 +172,8 @@ interface DayCard {
 
                           <!-- Bouton ajouter en bas -->
                           <button
+                            appCanAccess="CALENDAR"
+                            accessLevel="write"
                             (click)="onAddEvent(day.dateStr)"
                             class="w-full py-1 border border-dashed border-gray-300 dark:border-gray-600 rounded text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-colors text-[10px] font-medium flex items-center justify-center"
                             title="Ajouter un événement"

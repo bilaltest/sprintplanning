@@ -6,11 +6,12 @@ import { EventService } from '@services/event.service';
 import { CategoryService, CategoryInfo } from '@services/category.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
+import { CanAccessDirective } from '@directives/can-access.directive';
 
 @Component({
   selector: 'app-event-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CanAccessDirective],
   template: `
     <div class="modal-overlay" (click)="onOverlayClick($event)">
       <div class="modal-content-planning fade-in-scale" (click)="$event.stopPropagation()">
@@ -133,6 +134,8 @@ import { ConfirmationService } from '@services/confirmation.service';
               <button
                 *ngIf="isEditMode"
                 type="button"
+                appCanAccess="CALENDAR"
+                accessLevel="write"
                 (click)="onDelete()"
                 class="btn btn-danger"
               >
@@ -150,6 +153,8 @@ import { ConfirmationService } from '@services/confirmation.service';
               </button>
               <button
                 type="submit"
+                appCanAccess="CALENDAR"
+                accessLevel="write"
                 [disabled]="!isFormValid()"
                 class="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >

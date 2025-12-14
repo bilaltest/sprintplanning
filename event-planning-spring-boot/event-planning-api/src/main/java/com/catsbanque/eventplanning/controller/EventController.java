@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class EventController {
      * Récupérer tous les événements avec filtres optionnels
      */
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('PERMISSION_CALENDAR_READ', 'PERMISSION_CALENDAR_WRITE')")
     public ResponseEntity<List<EventDto>> getAllEvents(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String dateFrom,
@@ -49,6 +51,7 @@ public class EventController {
      * Récupérer un événement par ID
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('PERMISSION_CALENDAR_READ', 'PERMISSION_CALENDAR_WRITE')")
     public ResponseEntity<EventDto> getEventById(@PathVariable String id) {
         log.info("GET /api/events/{}", id);
         EventDto event = eventService.getEventById(id);
@@ -60,6 +63,7 @@ public class EventController {
      * Créer un nouvel événement
      */
     @PostMapping
+    @PreAuthorize("hasAuthority('PERMISSION_CALENDAR_WRITE')")
     public ResponseEntity<EventDto> createEvent(
             @Valid @RequestBody CreateEventRequest request,
             HttpServletRequest httpRequest
@@ -75,6 +79,7 @@ public class EventController {
      * Mettre à jour un événement
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('PERMISSION_CALENDAR_WRITE')")
     public ResponseEntity<EventDto> updateEvent(
             @PathVariable String id,
             @Valid @RequestBody CreateEventRequest request,
@@ -91,6 +96,7 @@ public class EventController {
      * Supprimer un événement
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('PERMISSION_CALENDAR_WRITE')")
     public ResponseEntity<Void> deleteEvent(
             @PathVariable String id,
             HttpServletRequest httpRequest
@@ -106,6 +112,7 @@ public class EventController {
      * Supprimer tous les événements
      */
     @DeleteMapping
+    @PreAuthorize("hasAuthority('PERMISSION_CALENDAR_WRITE')")
     public ResponseEntity<Void> deleteAllEvents() {
         log.info("DELETE /api/events (all)");
         eventService.deleteAllEvents();
@@ -117,6 +124,7 @@ public class EventController {
      * Créer plusieurs événements (pour import)
      */
     @PostMapping("/bulk")
+    @PreAuthorize("hasAuthority('PERMISSION_CALENDAR_WRITE')")
     public ResponseEntity<Map<String, Integer>> bulkCreateEvents(
             @RequestBody Map<String, List<CreateEventRequest>> body
     ) {

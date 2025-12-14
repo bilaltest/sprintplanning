@@ -3,6 +3,15 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
+export type PermissionModule = 'CALENDAR' | 'RELEASES' | 'ADMIN';
+export type PermissionLevel = 'NONE' | 'READ' | 'WRITE';
+
+export interface UserPermissions {
+  CALENDAR: PermissionLevel;
+  RELEASES: PermissionLevel;
+  ADMIN: PermissionLevel;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -10,6 +19,7 @@ export interface User {
   lastName: string;
   themePreference: 'light' | 'dark';
   widgetOrder: string; // JSON string containing widget order array
+  permissions?: UserPermissions;
   createdAt: string;
   updatedAt: string;
 }
