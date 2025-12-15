@@ -18,6 +18,7 @@ public class ReleaseDto {
 
     private String id;
     private String name; // Contient déjà la version
+    private String slug; // URL-friendly identifier
     private LocalDateTime releaseDate;
     private String status;
     private String type;
@@ -30,6 +31,7 @@ public class ReleaseDto {
         return ReleaseDto.builder()
                 .id(release.getId())
                 .name(release.getName())
+                .slug(release.getSlug())
                 .releaseDate(release.getReleaseDate())
                 .status(release.getStatus())
                 .type(release.getType())

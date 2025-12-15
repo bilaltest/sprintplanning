@@ -54,6 +54,12 @@ public interface ReleaseRepository extends JpaRepository<Release, String> {
     Optional<Release> findById(@Param("id") String id);
 
     /**
+     * Find by slug (URL-friendly identifier)
+     */
+    @Query("SELECT r FROM Release r LEFT JOIN FETCH r.squads WHERE r.slug = :slug")
+    Optional<Release> findBySlug(@Param("slug") String slug);
+
+    /**
      * Find releases after date
      */
     List<Release> findByReleaseDateAfter(LocalDateTime date);

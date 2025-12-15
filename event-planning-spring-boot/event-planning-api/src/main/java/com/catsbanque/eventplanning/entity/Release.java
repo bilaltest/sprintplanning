@@ -31,6 +31,9 @@ public class Release {
     @Column(nullable = false, length = 255)
     private String name; // Ex: "Release v40.5 - Sprint 2024.12" (contient déjà la version)
 
+    @Column(unique = true, length = 255)
+    private String slug; // Ex: "release-v40-5-sprint-2024-12" (URL-friendly, unique) - nullable temporairement pour migration
+
     @Column(name = "release_date", nullable = false)
     private LocalDateTime releaseDate; // Planned MEP date
 
@@ -51,14 +54,28 @@ public class Release {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // Relationship
+    // Relationships
     @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Squad> squads = new ArrayList<>();
+
+    @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReleaseNoteEntry> releaseNoteEntries = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
         if (this.id == null) {
             this.id = generateCuid();
+        }
+        if (this.slug == null) {
+            this.slug = generateSlug(this.name);
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        // Regénérer le slug si le nom a changé
+        if (this.name != null) {
+            this.slug = generateSlug(this.name);
         }
     }
 
@@ -73,5 +90,26 @@ public class Release {
             cuid.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
         }
         return cuid.toString();
+    }
+
+    /**
+     * Génère un slug URL-friendly à partir d'un nom
+     * Ex: "Release v40.5 - Sprint 2024.12" -> "release-v40-5-sprint-2024-12"
+     */
+    private String generateSlug(String name) {
+        if (name == null || name.isEmpty()) {
+            return "release-" + System.currentTimeMillis();
+        }
+
+        return name.toLowerCase()
+                .replaceAll("[àáâãäå]", "a")
+                .replaceAll("[èéêë]", "e")
+                .replaceAll("[ìíîï]", "i")
+                .replaceAll("[òóôõö]", "o")
+                .replaceAll("[ùúûü]", "u")
+                .replaceAll("[ç]", "c")
+                .replaceAll("[^a-z0-9]+", "-")  // Remplacer tout ce qui n'est pas alphanum par -
+                .replaceAll("^-+|-+$", "")      // Supprimer les - en début/fin
+                .replaceAll("-+", "-");          // Remplacer multiple - par un seul
     }
 }

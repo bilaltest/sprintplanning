@@ -16,13 +16,13 @@ describe('TimelineService', () => {
 
     it('should have default state', () => {
         const state = service.getCurrentState();
-        expect(state.view).toBe('annual');
+        expect(state.view).toBe('quarter');
         expect(state.currentDate).toBeInstanceOf(Date);
     });
 
     it('should set view', () => {
-        service.setView('month');
-        expect(service.getCurrentState().view).toBe('month');
+        service.setView('quarter');
+        expect(service.getCurrentState().view).toBe('quarter');
     });
 
     it('should set current date', () => {
@@ -37,53 +37,8 @@ describe('TimelineService', () => {
         expect(service.getCurrentState().selectedDate).toEqual(date);
     });
 
-    describe('nextPeriod', () => {
-        it('should go to next year in annual view', () => {
-            service.setView('annual');
-            service.setCurrentDate(new Date(2025, 5, 15));
-
-            service.nextPeriod();
-
-            const newState = service.getCurrentState();
-            expect(newState.currentDate.getFullYear()).toBe(2026);
-            expect(newState.currentDate.getMonth()).toBe(0); // Should reset to January
-        });
-
-        it('should go to next month in month view', () => {
-            service.setView('month');
-            service.setCurrentDate(new Date(2025, 0, 15)); // Jan 2025
-
-            service.nextPeriod();
-
-            const newState = service.getCurrentState();
-            expect(newState.currentDate.getMonth()).toBe(1); // Feb 2025
-            expect(newState.currentDate.getFullYear()).toBe(2025);
-        });
-    });
-
-    describe('previousPeriod', () => {
-        it('should go to previous year in annual view', () => {
-            service.setView('annual');
-            service.setCurrentDate(new Date(2025, 5, 15));
-
-            service.previousPeriod();
-
-            const newState = service.getCurrentState();
-            expect(newState.currentDate.getFullYear()).toBe(2024);
-            expect(newState.currentDate.getMonth()).toBe(0); // Should reset to January
-        });
-
-        it('should go to previous month in month view', () => {
-            service.setView('month');
-            service.setCurrentDate(new Date(2025, 1, 15)); // Feb 2025
-
-            service.previousPeriod();
-
-            const newState = service.getCurrentState();
-            expect(newState.currentDate.getMonth()).toBe(0); // Jan 2025
-            expect(newState.currentDate.getFullYear()).toBe(2025);
-        });
-    });
+    // Note: nextPeriod() and previousPeriod() have been removed
+    // Navigation is now handled directly by the quarterly-view component
 
     it('should go to today', (done) => {
         service.setCurrentDate(new Date(2020, 0, 1));

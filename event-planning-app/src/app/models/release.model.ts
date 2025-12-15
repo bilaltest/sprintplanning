@@ -98,6 +98,7 @@ export interface Squad {
 export interface Release {
   id?: string;
   name: string; // Contient déjà la version (ex: "Release v40.5")
+  slug: string; // URL-friendly identifier (ex: "release-v40-5")
   releaseDate: string; // ISO format
   status: ReleaseStatus;
   type: ReleaseType; // release ou hotfix

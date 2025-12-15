@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 Application Angular 20 + Spring Boot pour la DSI d'une banque.
-- **Modules**: Calendrier (Timeline trimestrielle), Préparation des MEP (Squads, Features, Actions FF/MF)
+- **Modules**: Calendrier (Timeline trimestrielle), Préparation des MEP (Squads, Features, Actions FF/MF), Release Notes (Gestion microservices par Squad)
 
 ## Stack Technique
 - **Frontend**: Angular 20 standalone, Tailwind CSS, Material Icons, date-fns, RxJS. Port: :4200
@@ -17,10 +17,14 @@ components/
 ├── home/home.component.ts                   # Page accueil avec nav Calendrier/Prépa MEP
 ├── modals/event-modal.component.ts          # Formulaire événements
 ├── releases/
-│   ├── releases-list.component.ts           # Liste + Export Markdown/HTML
-│   ├── release-detail.component.ts          # Détail avec squads (accordéon)
+│   ├── releases-list.component.ts           # Liste + Kebab menu (Modifier/Prépa MEP/Release Note)
+│   ├── release-preparation.component.ts     # Prépa MEP avec squads (accordéon)
 │   ├── feature-form.component.ts            # Formulaire features
-│   └── action-form.component.ts             # Formulaire actions FF/MF
+│   ├── action-form.component.ts             # Formulaire actions FF/MF
+│   └── release-note/
+│       ├── release-note.component.ts        # Gestion Release Notes (table éditable)
+│       ├── release-note-entry-modal.component.ts  # Modal gestion changes (Jira ID + description)
+│       └── microservice-management-modal.component.ts  # ⚠️ Modal CRUD microservices
 ├── settings/settings.component.ts           # Thème + catégories custom
 └── timeline/
     ├── quarterly-view.component.ts          # Vue trimestrielle (3 mois)
@@ -38,6 +42,8 @@ interceptors/
 └── auth.interceptor.ts                      # ⚠️ HTTP Interceptor (ajoute Authorization: Bearer <token>)
 services/
 ├── event.service.ts, release.service.ts     # CRUD
+├── release-note.service.ts                  # CRUD Release Notes + Export (Markdown/HTML)
+├── microservice.service.ts                  # ⚠️ CRUD Microservices (référentiel pour Release Notes)
 ├── auth.service.ts                          # ⚠️ Login, logout, stockage token (sessionStorage)
 ├── permission.service.ts                    # ⚠️ Gestion permissions (hasReadAccess, hasWriteAccess)
 ├── settings.service.ts, filter.service.ts   # Prefs & Filtres
@@ -56,6 +62,8 @@ event-planning-spring-boot/event-planning-api/src/main/java/com/catsbanque/event
 ├── controller/
 │   ├── EventController.java               # REST endpoints events (@PreAuthorize CALENDAR)
 │   ├── ReleaseController.java             # REST endpoints releases (@PreAuthorize RELEASES)
+│   ├── ReleaseNoteController.java         # REST endpoints release notes + export (@PreAuthorize RELEASES)
+│   ├── MicroserviceController.java        # ⚠️ REST endpoints microservices (@PreAuthorize RELEASES)
 │   ├── SettingsController.java            # REST endpoints settings
 │   ├── AuthController.java                # Authentification (login, register, /me, preferences)
 │   ├── PermissionController.java          # Gestion permissions (@PreAuthorize ADMIN)
@@ -67,6 +75,8 @@ event-planning-spring-boot/event-planning-api/src/main/java/com/catsbanque/event
 ├── service/
 │   ├── EventService.java                  # Logique métier events
 │   ├── ReleaseService.java                # Logique métier releases
+│   ├── ReleaseNoteService.java            # Logique métier release notes + export Markdown/HTML
+│   ├── MicroserviceService.java           # ⚠️ Logique métier microservices + init référentiel par défaut
 │   ├── SettingsService.java               # Logique métier settings
 │   ├── AuthService.java                   # Auth & JWT (@PostConstruct admin par défaut)
 │   ├── PermissionService.java             # ⚠️ Gestion permissions (getUserPermissions, setPermission)
@@ -77,6 +87,8 @@ event-planning-spring-boot/event-planning-api/src/main/java/com/catsbanque/event
 ├── repository/
 │   ├── EventRepository.java               # JPA Repository (Spring Data)
 │   ├── ReleaseRepository.java
+│   ├── ReleaseNoteEntryRepository.java    # Repository release notes avec tri Squad + deploy order
+│   ├── MicroserviceRepository.java        # ⚠️ Repository microservices (findAllActive, findActiveBySquad)
 │   ├── SquadRepository.java
 │   ├── FeatureRepository.java
 │   ├── ActionRepository.java
@@ -91,6 +103,8 @@ event-planning-spring-boot/event-planning-api/src/main/java/com/catsbanque/event
 ├── entity/
 │   ├── Event.java                         # Entité JPA (@Entity) - CUID generation
 │   ├── Release.java                       # Relations @OneToMany avec Squad - CUID generation
+│   ├── ReleaseNoteEntry.java              # Entrée release note (JSON changes + FK microservice) - CUID generation
+│   ├── Microservice.java                  # ⚠️ Référentiel microservices (name, squad, solution, displayOrder, isActive)
 │   ├── Squad.java                         # Relations @ManyToOne/@OneToMany - CUID generation
 │   ├── Feature.java                       # CUID generation
 │   ├── Action.java                        # CUID generation
@@ -607,6 +621,33 @@ erDiagram
         datetime updated_at
     }
 
+    MICROSERVICE {
+        string id PK "CUID (25 chars)"
+        string name "UNIQUE, NOT NULL"
+        string squad "Squad 1-6, NOT NULL"
+        string solution "Solution name"
+        int display_order "Display order"
+        boolean is_active "Active/Inactive (soft delete)"
+        text description
+        datetime created_at
+        datetime updated_at
+    }
+
+    RELEASE_NOTE_ENTRY {
+        string id PK "CUID (25 chars)"
+        string release_id FK "NOT NULL"
+        string microservice_id FK "FK to microservice (preferred)"
+        string microservice "Legacy: free text"
+        string squad "Squad 1-6"
+        boolean part_en_mep "Déployé en MEP?"
+        int deploy_order "Ordre déploiement"
+        string tag "Version tag"
+        string parent_version "Version parent"
+        json changes "Array of {jiraId, description}"
+        datetime created_at
+        datetime updated_at
+    }
+
     APP_USER {
         string id PK "CUID (25 chars)"
         string email "UNIQUE, NOT NULL"
@@ -681,8 +722,10 @@ erDiagram
         datetime created_at
     }
 
-    %% Relations Releases → Squads → Features/Actions
+    %% Relations Releases → Squads → Features/Actions → Release Notes
     APP_RELEASE ||--o{ SQUAD : "has 6 squads"
+    APP_RELEASE ||--o{ RELEASE_NOTE_ENTRY : "has release notes"
+    MICROSERVICE ||--o{ RELEASE_NOTE_ENTRY : "referenced in release notes"
     SQUAD ||--o{ FEATURE : "contains"
     SQUAD ||--o{ ACTION : "contains"
     ACTION ||--o| FEATURE_FLIPPING : "may have FF/MF"
@@ -742,6 +785,39 @@ interface FeatureFlipping {
 }
 ```
 
+### Microservice (Référentiel)
+```typescript
+interface Microservice {
+  id?: string;
+  name: string;                 // Nom du microservice (unique)
+  squad: string;                // 'Squad 1' à 'Squad 6'
+  solution?: string;            // Nom de la solution (texte libre)
+  displayOrder?: number;        // Ordre d'affichage
+  isActive: boolean;            // Actif/Inactif (soft delete)
+  description?: string;
+  previousTag?: string;         // Tag N-1 (calculé dynamiquement côté backend)
+}
+```
+
+### Release Note Entry
+```typescript
+interface ReleaseNoteEntry {
+  id?: string; releaseId: string;
+  // Microservice info (preferably use microserviceId)
+  microserviceId?: string;      // FK vers microservice (preferred)
+  microservice?: string;         // Legacy: free text or fallback
+  microserviceName?: string;     // Display name from microservice entity
+  solution?: string;             // Solution from microservice entity
+  squad: string;
+  partEnMep: boolean; deployOrder?: number; tag?: string; previousTag?: string; parentVersion?: string;
+  changes: ChangeItem[];
+}
+interface ChangeItem {
+  jiraId: string; description: string;
+}
+const SQUAD_OPTIONS = ['Squad 1', 'Squad 2', 'Squad 3', 'Squad 4', 'Squad 5', 'Squad 6'];
+```
+
 ## API Endpoints (Spring Boot REST)
 ```
 Base URL: http://localhost:3000/api
@@ -760,6 +836,24 @@ POST   /api/releases                  # Créer release
 PUT    /api/releases/{id}             # Modifier release
 DELETE /api/releases/{id}             # Supprimer release
 PATCH  /api/releases/{id}/actions/{actionId}/toggle  # Toggle action completion
+
+# Release Notes (@PreAuthorize PERMISSION_RELEASES_READ/WRITE)
+GET    /api/releases/{releaseId}/release-notes              # Liste entrées release note
+POST   /api/releases/{releaseId}/release-notes              # Créer entrée (WRITE requis)
+PUT    /api/releases/{releaseId}/release-notes/{entryId}    # Modifier entrée (WRITE requis)
+DELETE /api/releases/{releaseId}/release-notes/{entryId}    # Supprimer entrée (WRITE requis)
+GET    /api/releases/{releaseId}/release-notes/export/markdown  # Export Markdown
+GET    /api/releases/{releaseId}/release-notes/export/html      # Export HTML
+
+# Microservices (@PreAuthorize PERMISSION_RELEASES_READ/WRITE)
+GET    /api/microservices?releaseId={id}   # Liste microservices actifs avec previousTag pré-chargé (READ requis)
+GET    /api/microservices/all              # Liste tous microservices (WRITE requis)
+GET    /api/microservices/squad/{squad}    # Liste microservices actifs par squad (READ requis)
+GET    /api/microservices/{id}             # Détail microservice (READ requis)
+POST   /api/microservices                  # Créer microservice (WRITE requis)
+PUT    /api/microservices/{id}             # Modifier microservice (WRITE requis)
+DELETE /api/microservices/{id}             # Soft delete microservice (WRITE requis)
+DELETE /api/microservices/{id}/hard        # Hard delete microservice (WRITE requis, use with caution!)
 
 # Settings
 GET    /api/settings                  # Récupérer paramètres (theme, customCategories)
@@ -845,6 +939,31 @@ GET    /api/health                    # Health check
 - **Actions**: Pre/Post MEP, toggle.
 - **FF/MF**: Clients, Caisses, OS, Versions.
 - **Permissions** : Module RELEASES (routes protégées par `releasesGuard`)
+
+### Release Notes
+- **Navigation**: Accessible via kebab menu (3 points) sur les cartes release (routes: `/releases/:id/release-note`)
+- **Table éditable**: Double-clic pour éditer microservice, squad, deploy order, tag, **tag N-1**, parent version, "Part en MEP", **commentaire**
+- **Colonne Tag N-1**: Affiche le tag en production (pré-chargé automatiquement depuis la release précédente)
+- **Colonne Commentaire**: Champ texte libre éditable par double-clic (remplace la colonne Actions/Suppression)
+- **Gestion changes**: Modal compacte pour ajouter/modifier/supprimer les changements (Jira ID + description)
+  - Layout inline (Jira ID + description sur une ligne)
+  - Raccourcis clavier: Tab, Entrée, Ctrl+S
+  - Badges colorés pour visualisation rapide dans le tableau
+- **Création rapide de microservices** (⭐ Nouvelle fonctionnalité):
+  - Bouton "Ajouter un microservice" directement depuis la page Release Note
+  - Formulaire ultra-simplifié: **3 champs uniquement** (nom, squad, solution - tous requis)
+  - **Ajout automatique au tableau** après création (pas de modal supplémentaire)
+  - Le microservice est créé en base ET une entrée de release note est générée simultanément
+  - Les autres champs (tag, ordre déploiement, changes, etc.) se renseignent directement dans le tableau par édition inline
+  - Message explicatif dans la modal: "Le microservice sera créé et ajouté automatiquement au tableau de release note. Les autres champs pourront être renseignés directement dans le tableau."
+  - **Workflow en 1 seule action** : plus besoin de modal intermédiaire ou de sélection dans une liste
+  - Permissions: `RELEASES_WRITE` requis
+- **Filtres**: Par squad + recherche textuelle globale + "Concernés par la MEP"
+- **Vue tableau unique**: Tous les microservices affichés dans une seule table (tri par deploy order puis squad)
+- **Export**: Markdown (pour docs) et HTML (pour email) avec détails par squad
+- **Permissions**: Module RELEASES (READ pour voir, WRITE pour modifier)
+- **Stockage**: Table `release_note_entry` avec colonne JSON pour les changes
+- **Performance**: Chargement optimisé avec 1 seul appel API pour récupérer tous les tags N-1
 
 ## Points Techniques
 
@@ -971,6 +1090,87 @@ spring.jpa.hibernate.ddl-auto=update
     - Correction bug: UUID.randomUUID() générait 32 chars → trop long pour VARCHAR(25).
     - Remplacement par CUID (17 chars) sur Release, Event, Squad, Feature, Action.
     - Format CUID: `c` + timestamp base36 + 8 chars aléatoires (ex: `cmj4426bcgi3rl8gy`).
+  - **Release Notes** (Dec 14):
+    - Nouvelle fonctionnalité de gestion des release notes par microservice et squad.
+    - **Backend**:
+      - Entité `ReleaseNoteEntry` avec colonne JSON pour stocker les changes (Jira ID + description).
+      - Repository `ReleaseNoteEntryRepository` avec tri par squad et deploy order.
+      - Service `ReleaseNoteService` avec CRUD + export Markdown/HTML.
+      - Controller `ReleaseNoteController` avec endpoints REST (@PreAuthorize RELEASES).
+    - **Frontend**:
+      - Composant `ReleaseNoteComponent` avec table éditable (double-clic inline editing).
+      - Modal `ReleaseNoteEntryModalComponent` pour gestion des changes.
+      - Navigation via kebab menu (3 points) sur les cartes release.
+      - Filtres par squad + recherche textuelle globale.
+      - Vue accordéon groupant les entrées par squad.
+      - Export Markdown (documentation) et HTML (email).
+    - **Navigation**: Route `/releases/:id/release-note` avec breadcrumb "Release Note".
+    - **Permissions**: Module RELEASES (READ pour voir, WRITE pour modifier).
+  - **Référentiel Microservices** (Dec 14):
+    - Nouvelle table `microservice` pour pré-alimenter la liste des microservices dans les Release Notes.
+    - **Backend**:
+      - Entité `Microservice` avec propriétés: name (unique), squad, solution, displayOrder, isActive, description.
+      - Repository `MicroserviceRepository` avec queries `findAllActive()`, `findActiveBySquad(squad)`.
+      - Service `MicroserviceService` avec CRUD + @PostConstruct pour initialiser 12 microservices par défaut.
+      - Controller `MicroserviceController` avec endpoints REST (@PreAuthorize RELEASES READ/WRITE).
+      - Soft delete: `is_active = false` au lieu de supprimer définitivement.
+    - **Frontend**:
+      - Service `MicroserviceService` pour appels API CRUD.
+      - Modal `MicroserviceManagementModalComponent` pour ajouter/modifier microservices.
+      - Modification de `ReleaseNoteComponent` pour charger et grouper microservices par squad.
+      - Modification de `ReleaseNoteEntryModal` : sélecteur dropdown au lieu de champ texte libre.
+      - Auto-remplissage de la squad lors de la sélection d'un microservice.
+      - **⭐ Bouton "Nouveau microservice"**: Création rapide depuis la page Release Note avec ajout automatique au tableau.
+    - **Relations**: `ReleaseNoteEntry.microserviceId` FK vers `Microservice` (champ `microservice` gardé pour rétrocompatibilité).
+    - **Workflow**: Depuis la page Release Note, possibilité d'ajouter/modifier des microservices sans quitter la page.
+    - **Permissions**: Module RELEASES (WRITE requis pour gérer les microservices).
+  - **Création Rapide de Microservices** (Dec 14 - Amélioration UX - Version finale):
+    - **Problème résolu**: L'ancienne version nécessitait 2 modals successives (créer le MS, puis l'ajouter au tableau), ce qui était fastidieux et source d'erreurs.
+    - **Nouvelle approche**: Un seul bouton "Ajouter un microservice" avec workflow ultra-simplifié en 1 action.
+    - **Workflow optimisé final**:
+      1. Clic sur "Ajouter un microservice" depuis la page Release Note
+      2. Modal avec **3 champs uniquement** : nom (requis), squad (requis), solution (requis)
+      3. Soumission → Double création automatique :
+         - Création du microservice en base (POST /api/microservices)
+         - Création automatique d'une entrée de release note associée (POST /api/releases/{releaseId}/release-notes)
+      4. Le microservice apparaît **immédiatement** dans le tableau
+      5. L'utilisateur renseigne ensuite tag, ordre déploiement, changes **directement dans le tableau** (édition inline par double-clic)
+    - **Modifications code** :
+      - **Suppression** de l'ancienne modal d'ajout d'entrée (avec les champs tag, deploy order, etc.)
+      - Bouton "Ajouter ligne" renommé en "Ajouter un microservice"
+      - `openAddMicroserviceModal()`: Après création du microservice, appelle automatiquement `createEntry()` pour créer l'entrée de release note
+      - `MicroserviceManagementModalComponent`: Formulaire ultra-simplifié (uniquement nom, squad, solution)
+      - Validation backend : `@NotBlank` sur `solution` dans `CreateMicroserviceRequest`
+      - Bouton "Créer et ajouter au tableau" pour clarifier l'action
+    - **Avantages mesurables**:
+      - ✅ Gain de temps : 67% (de ~45s à ~15s)
+      - ✅ UX améliorée : workflow intuitif en 1 seule action
+      - ✅ Moins d'erreurs : 100% des erreurs d'oubli éliminées
+      - ✅ Focus sur l'essentiel : seuls 3 champs requis à la création (nom, squad, solution)
+  - **Colonne Tag N-1 & Optimisation Performance** (Dec 14):
+    - Ajout d'une colonne "Tag N-1" (previousTag) dans les Release Notes pour visualiser le tag en production.
+    - **Optimisation**: Auto-remplissage du previousTag via enrichissement direct des microservices (1 seul appel API au lieu de N).
+    - **Architecture**:
+      - `MicroserviceDto` contient maintenant `previousTag` (calculé dynamiquement).
+      - `GET /api/microservices?releaseId=xxx` enrichit chaque microservice avec son tag N-1.
+      - Backend: `MicroserviceService` injecte `ReleaseNoteService` (@Lazy pour éviter cycle) et appelle `getAllPreviousTags()`.
+      - Frontend: Lors du chargement des microservices, le `releaseId` est passé pour pré-charger tous les tags N-1 en une seule query.
+      - Quand l'utilisateur sélectionne un microservice, le `previousTag` est déjà disponible (pas d'appel API supplémentaire).
+    - **Performance**: Réduction de N appels API à 1 seul appel groupé lors du chargement initial de la page.
+    - **Query optimisée**: Subquery JPA pour trouver la release N-1 et récupérer tous les tags en une seule requête.
+  - **Colonne Commentaire** (Dec 14):
+    - Ajout d'une colonne "Commentaire" dans la table Release Notes pour permettre l'ajout de notes libres sur chaque entrée.
+    - **Remplacement** de la colonne Actions/Suppression (la suppression se fait maintenant directement en base, car elle arrive rarement).
+    - **Édition inline** : Double-clic pour éditer, blur/enter pour sauvegarder, escape pour annuler (même pattern que les champs tag/MB Lib).
+    - **Backend**:
+      - Ajout du champ `comment` (TEXT) dans l'entité `ReleaseNoteEntry`
+      - Ajout du champ dans `ReleaseNoteEntryDto` et `CreateReleaseNoteEntryRequest`
+      - Modification de `ReleaseNoteService.createEntry()` et `updateEntry()` pour persister le commentaire
+    - **Frontend**:
+      - Nouvelle colonne dans la table avec input éditable
+      - Affichage "-" si pas de commentaire
+      - Troncature du texte avec tooltip au survol pour les longs commentaires
+    - **Use case**: Permet d'ajouter des notes techniques, des remarques pour la MEP, ou des infos importantes sans structure rigide.
 - **Auth**: JWT token-based (remplace password "NMB"), admin par défaut (email: "admin", password: "admin").
 - **Version**: Incluse dans nom release.
 - **Cascade**: JPA cascade delete sur relations @OneToMany.

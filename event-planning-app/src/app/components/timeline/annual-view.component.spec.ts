@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AnnualViewComponent } from './annual-view.component';
+// AnnualViewComponent has been removed - quarterly view is now the only view
+// import { AnnualViewComponent } from './annual-view.component';
 import { TimelineService } from '@services/timeline.service';
 import { SettingsService } from '@services/settings.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -8,14 +9,14 @@ import { TimelineState } from '@models/timeline.model';
 import { UserPreferences, DEFAULT_PREFERENCES } from '@models/settings.model';
 import { Event } from '@models/event.model';
 
-describe('AnnualViewComponent', () => {
-  let component: AnnualViewComponent;
-  let fixture: ComponentFixture<AnnualViewComponent>;
+describe.skip('AnnualViewComponent (DEPRECATED - component removed)', () => {
+  let component: any;
+  let fixture: any;
   let timelineService: any;
   let settingsService: any;
 
   const mockTimelineState: TimelineState = {
-    view: 'annual',
+    view: 'quarter',
     currentDate: new Date(2025, 0, 1) // January 1, 2025
   };
 
@@ -51,21 +52,22 @@ describe('AnnualViewComponent', () => {
       getCurrentPreferences: jest.fn().mockReturnValue(mockPreferences)
     };
 
-    await TestBed.configureTestingModule({
-      imports: [AnnualViewComponent, HttpClientTestingModule],
-      providers: [
-        { provide: TimelineService, useValue: timelineServiceSpy },
-        { provide: SettingsService, useValue: settingsServiceSpy }
-      ]
-    }).compileComponents();
+    // Component no longer exists - tests disabled
+    // await TestBed.configureTestingModule({
+    //   imports: [AnnualViewComponent, HttpClientTestingModule],
+    //   providers: [
+    //     { provide: TimelineService, useValue: timelineServiceSpy },
+    //     { provide: SettingsService, useValue: settingsServiceSpy }
+    //   ]
+    // }).compileComponents();
 
-    timelineService = TestBed.inject(TimelineService);
-    settingsService = TestBed.inject(SettingsService);
+    // timelineService = TestBed.inject(TimelineService);
+    // settingsService = TestBed.inject(SettingsService);
 
-    fixture = TestBed.createComponent(AnnualViewComponent);
-    component = fixture.componentInstance;
-    component.events = mockEvents;
-    fixture.detectChanges();
+    // fixture = TestBed.createComponent(AnnualViewComponent);
+    // component = fixture.componentInstance;
+    // component.events = mockEvents;
+    // fixture.detectChanges();
   });
 
   it('should create', () => {

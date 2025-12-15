@@ -77,13 +77,22 @@ export const routes: Routes = [
         data: { breadcrumb: 'Préparation des MEP' }
       },
       {
-        path: 'releases/:id',
+        path: 'releases/:id/preparation',
         loadComponent: () =>
-          import('./components/releases/release-detail.component').then(
-            m => m.ReleaseDetailComponent
+          import('./components/releases/release-preparation.component').then(
+            m => m.ReleasePreparationComponent
           ),
         canActivate: [releasesGuard],
-        data: { breadcrumb: 'Détail MEP' }
+        data: { breadcrumb: 'Prépa MEP' }
+      },
+      {
+        path: 'releases/:id/release-note',
+        loadComponent: () =>
+          import('./components/releases/release-note/release-note.component').then(
+            m => m.ReleaseNoteComponent
+          ),
+        canActivate: [releasesGuard],
+        data: { breadcrumb: 'Release Note' }
       },
       {
         path: 'release-history',

@@ -1,0 +1,1111 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ReleaseService } from '@services/release.service';
+import { ReleaseNoteService } from '@services/release-note.service';
+import { MicroserviceService } from '@services/microservice.service';
+import { ToastService } from '@services/toast.service';
+import { PermissionService } from '@services/permission.service';
+import { ConfirmationService } from '@services/confirmation.service';
+import { Release } from '@models/release.model';
+import { ReleaseNoteEntry, ChangeItem, CreateReleaseNoteEntryRequest, SQUAD_OPTIONS } from '@models/release-note.model';
+import { Microservice } from '@models/microservice.model';
+import { ReleaseNoteEntryModalComponent } from './release-note-entry-modal.component';
+import { MicroserviceManagementModalComponent } from './microservice-management-modal.component';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+interface GroupedEntry {
+  squad: string;
+  entries: ReleaseNoteEntry[];
+  isExpanded: boolean;
+}
+
+@Component({
+  selector: 'app-release-note',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink, MatDialogModule, ReleaseNoteEntryModalComponent],
+  template: `
+    <div class="max-w-7xl mx-auto space-y-6" *ngIf="release">
+
+      <!-- Header avec gradient -->
+      <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-900 rounded-2xl shadow-xl p-8">
+        <div class="absolute inset-0 opacity-10">
+          <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
+        </div>
+
+        <div class="relative z-10">
+          <button
+            (click)="goBack()"
+            class="inline-flex items-center space-x-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/30 hover:shadow-lg mb-6"
+          >
+            <span class="material-icons">arrow_back</span>
+            <span class="font-medium">Retour</span>
+          </button>
+
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <div class="flex items-center space-x-3 mb-3">
+                <span class="material-icons text-4xl text-white">description</span>
+                <h1 class="text-4xl font-bold text-white tracking-tight">Release Note</h1>
+              </div>
+              <h2 class="text-2xl font-semibold text-white/90 mb-3">{{ release.name }}</h2>
+              <div class="flex items-center space-x-4 text-white/90">
+                <div class="flex items-center space-x-2">
+                  <span class="material-icons text-xl">event</span>
+                  <span class="text-lg font-medium">{{ formatDate(release.releaseDate) }}</span>
+                </div>
+                <div class="w-px h-6 bg-white/30"></div>
+                <div class="flex items-center space-x-2">
+                  <span class="material-icons text-xl">apps</span>
+                  <span class="text-lg">{{ getTotalEntriesCount() }} microservice{{ getTotalEntriesCount() > 1 ? 's' : '' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Link to Prépa MEP -->
+            <a
+              [routerLink]="['/releases', release.id, 'preparation']"
+              class="hidden lg:flex items-center space-x-2 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all duration-200 backdrop-blur-sm border border-white/20 hover:shadow-lg"
+            >
+              <span class="material-icons">assignment</span>
+              <span class="font-medium">Voir Prépa MEP</span>
+            </a>
+          </div>
+
+          <p class="text-white/90 mt-4 text-lg leading-relaxed max-w-3xl" *ngIf="release.description">
+            {{ release.description }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <!-- Filter by squad -->
+          <div class="flex items-center space-x-2">
+            <span class="material-icons text-gray-500 dark:text-gray-400">filter_list</span>
+            <select
+              [(ngModel)]="selectedSquad"
+              (ngModelChange)="onFilterChange()"
+              class="px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+            >
+              <option value="">Toutes les squads</option>
+              <option *ngFor="let squad of squadOptions" [value]="squad">{{ squad }}</option>
+            </select>
+          </div>
+
+          <!-- Search -->
+          <div class="relative">
+            <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+            <input
+              type="text"
+              [(ngModel)]="searchQuery"
+              (ngModelChange)="onFilterChange()"
+              placeholder="Rechercher un microservice..."
+              class="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all w-80"
+            />
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <!-- Add entry button -->
+          <button
+            *ngIf="hasWriteAccess()"
+            (click)="openAddModal()"
+            class="flex items-center space-x-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+          >
+            <span class="material-icons">add</span>
+            <span class="font-medium">Ajouter ligne</span>
+          </button>
+
+          <!-- Export dropdown -->
+          <div class="relative">
+            <button
+              (click)="toggleExportDropdown()"
+              class="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-all duration-200 border border-gray-300 dark:border-gray-600"
+            >
+              <span class="material-icons">download</span>
+              <span class="font-medium">Exporter</span>
+              <span class="material-icons text-lg">{{ isExportDropdownOpen ? 'expand_less' : 'expand_more' }}</span>
+            </button>
+
+            <!-- Dropdown menu -->
+            <div
+              *ngIf="isExportDropdownOpen"
+              class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden"
+            >
+              <button
+                (click)="exportMarkdown()"
+                class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+              >
+                <span class="material-icons text-gray-600 dark:text-gray-400">article</span>
+                <div>
+                  <div class="font-medium text-gray-900 dark:text-white">Markdown</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">Format .md</div>
+                </div>
+              </button>
+
+              <button
+                (click)="exportHtml()"
+                class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+              >
+                <span class="material-icons text-gray-600 dark:text-gray-400">code</span>
+                <div>
+                  <div class="font-medium text-gray-900 dark:text-white">HTML</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">Email & web</div>
+                </div>
+              </button>
+
+              <button
+                (click)="exportPng()"
+                class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+              >
+                <span class="material-icons text-gray-600 dark:text-gray-400">image</span>
+                <div>
+                  <div class="font-medium text-gray-900 dark:text-white">PNG</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">Image</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table by squad -->
+      <div class="space-y-4" *ngIf="groupedEntries.length > 0">
+        <div *ngFor="let group of groupedEntries" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+
+          <!-- Squad header (collapsible) -->
+          <div
+            (click)="toggleSquad(group.squad)"
+            class="p-4 bg-gradient-to-r from-primary-50 to-transparent dark:from-primary-900/20 dark:to-transparent border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:from-primary-100 dark:hover:from-primary-900/30 transition-all duration-200"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/50 rounded-xl flex items-center justify-center">
+                  <span class="material-icons text-xl text-primary-600 dark:text-primary-400">group</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ group.squad }}</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ group.entries.length }} microservice{{ group.entries.length > 1 ? 's' : '' }}</p>
+                </div>
+              </div>
+              <span class="material-icons text-gray-500 dark:text-gray-400">
+                {{ group.isExpanded ? 'expand_less' : 'expand_more' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Table content -->
+          <div *ngIf="group.isExpanded" class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 dark:bg-gray-900/50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Microservice</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-32">Solution</th>
+                  <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-32">Part MEP?</th>
+                  <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-24">Ordre</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-32">Tag</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-32">Parent</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Changes</th>
+                  <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-24" *ngIf="hasWriteAccess()">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tr
+                  *ngFor="let entry of group.entries"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  [class.opacity-50]="!entry.partEnMep"
+                >
+                  <!-- Microservice (editable) -->
+                  <td class="px-4 py-3">
+                    <input
+                      *ngIf="editingEntryId === entry.id && hasWriteAccess()"
+                      type="text"
+                      [(ngModel)]="editingEntry.microservice"
+                      (blur)="saveEntry()"
+                      (keydown.enter)="saveEntry()"
+                      (keydown.escape)="cancelEdit()"
+                      class="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-primary-500 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      autofocus
+                    />
+                    <div
+                      *ngIf="editingEntryId !== entry.id"
+                      (dblclick)="startEdit(entry, 'microservice')"
+                      class="font-medium text-gray-900 dark:text-white cursor-text"
+                      [class.cursor-pointer]="hasWriteAccess()"
+                    >
+                      {{ entry.microservice }}
+                    </div>
+                  </td>
+
+                  <!-- Solution (Read-only) -->
+                  <td class="px-4 py-3">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
+                      {{ entry.solution || '-' }}
+                    </span>
+                  </td>
+
+                  <!-- Part en MEP (checkbox) -->
+                  <td class="px-4 py-3 text-center">
+                    <input
+                      type="checkbox"
+                      [(ngModel)]="entry.partEnMep"
+                      (change)="togglePartEnMep(entry)"
+                      [disabled]="!hasWriteAccess()"
+                      class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </td>
+
+                  <!-- Deploy Order (editable) -->
+                  <td class="px-4 py-3 text-center">
+                    <input
+                      *ngIf="editingEntryId === entry.id && hasWriteAccess()"
+                      type="number"
+                      [(ngModel)]="editingEntry.deployOrder"
+                      (blur)="saveEntry()"
+                      (keydown.enter)="saveEntry()"
+                      (keydown.escape)="cancelEdit()"
+                      [disabled]="!editingEntry.partEnMep"
+                      class="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-primary-500 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent text-center disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed"
+                    />
+                    <div
+                      *ngIf="editingEntryId !== entry.id"
+                      (dblclick)="startEdit(entry, 'deployOrder')"
+                      class="text-gray-700 dark:text-gray-300 cursor-text"
+                      [class.cursor-pointer]="hasWriteAccess()"
+                    >
+                      {{ entry.partEnMep && entry.deployOrder ? entry.deployOrder : '-' }}
+                    </div>
+                  </td>
+
+                  <!-- Tag (editable) -->
+                  <td class="px-4 py-3">
+                    <input
+                      *ngIf="editingEntryId === entry.id && hasWriteAccess()"
+                      type="text"
+                      [(ngModel)]="editingEntry.tag"
+                      (blur)="saveEntry()"
+                      (keydown.enter)="saveEntry()"
+                      (keydown.escape)="cancelEdit()"
+                      [disabled]="!editingEntry.partEnMep"
+                      class="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-primary-500 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed"
+                    />
+                    <div
+                      *ngIf="editingEntryId !== entry.id"
+                      (dblclick)="startEdit(entry, 'tag')"
+                      class="text-gray-700 dark:text-gray-300 cursor-text font-mono text-sm"
+                      [class.cursor-pointer]="hasWriteAccess()"
+                    >
+                      {{ entry.tag || '-' }}
+                    </div>
+                  </td>
+
+                  <!-- Parent Version (editable) -->
+                  <td class="px-4 py-3">
+                    <input
+                      *ngIf="editingEntryId === entry.id && hasWriteAccess()"
+                      type="text"
+                      [(ngModel)]="editingEntry.parentVersion"
+                      (blur)="saveEntry()"
+                      (keydown.enter)="saveEntry()"
+                      (keydown.escape)="cancelEdit()"
+                      class="w-full px-2 py-1 bg-white dark:bg-gray-800 border border-primary-500 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                    <div
+                      *ngIf="editingEntryId !== entry.id"
+                      (dblclick)="startEdit(entry, 'parentVersion')"
+                      class="text-gray-700 dark:text-gray-300 cursor-text font-mono text-sm"
+                      [class.cursor-pointer]="hasWriteAccess()"
+                    >
+                      {{ entry.parentVersion || '-' }}
+                    </div>
+                  </td>
+
+                  <!-- Changes (modal) -->
+                  <td class="px-4 py-3">
+                    <button
+                      (click)="openChangesModal(entry)"
+                      [disabled]="!hasWriteAccess()"
+                      class="flex items-center space-x-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span class="material-icons text-sm">{{ entry.changes && entry.changes.length > 0 ? 'edit_note' : 'add_circle' }}</span>
+                      <span class="text-sm font-medium">{{ entry.changes && entry.changes.length > 0 ? entry.changes.length + ' change' + (entry.changes.length > 1 ? 's' : '') : 'Ajouter' }}</span>
+                    </button>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="px-4 py-3 text-center" *ngIf="hasWriteAccess()">
+                    <button
+                      (click)="deleteEntry(entry)"
+                      class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="Supprimer cette ligne"
+                    >
+                      <span class="material-icons text-lg">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="groupedEntries.length === 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-12 text-center">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+          <span class="material-icons text-4xl text-gray-400 dark:text-gray-500">description</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Aucun microservice</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6">
+          {{ searchQuery || selectedSquad ? 'Aucun résultat ne correspond aux filtres' : 'Commencez par ajouter des microservices à cette release note' }}
+        </p>
+        <button
+          *ngIf="hasWriteAccess() && !searchQuery && !selectedSquad"
+          (click)="openAddModal()"
+          class="inline-flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+        >
+          <span class="material-icons">add</span>
+          <span class="font-medium">Ajouter un microservice</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Modal for adding/editing entry -->
+    <app-release-note-entry-modal
+      [isOpen]="isChangesModalOpen"
+      [microservice]="currentEditingMicroservice"
+      [initialChanges]="currentEditingChanges"
+      (save)="onChangesSave($event)"
+      (cancel)="onChangesCancel()"
+    ></app-release-note-entry-modal>
+
+    <!-- Modal for adding new entry -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" *ngIf="isAddModalOpen" (click)="onAddModalBackdropClick($event)">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full" (click)="$event.stopPropagation()">
+        <div class="bg-gradient-to-r from-primary-500 to-primary-600 dark:from-primary-600 dark:to-primary-700 p-6 rounded-t-2xl">
+          <h2 class="text-2xl font-bold text-white">Ajouter un microservice</h2>
+        </div>
+
+        <div class="p-6 space-y-4">
+          <!-- Squad -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Squad</label>
+            <select
+              [(ngModel)]="newEntry.squad"
+              class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value="">Sélectionner une squad</option>
+              <option *ngFor="let squad of squadOptions" [value]="squad">{{ squad }}</option>
+            </select>
+          </div>
+
+          <!-- Microservice -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center justify-between">
+              <span>Nom du microservice</span>
+              <button
+                type="button"
+                (click)="openAddMicroserviceModal()"
+                class="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 flex items-center space-x-1"
+              >
+                <span class="material-icons text-sm">add_circle</span>
+                <span>Nouveau microservice</span>
+              </button>
+            </label>
+            <select
+              [(ngModel)]="newEntry.microserviceId"
+              (ngModelChange)="onMicroserviceChange()"
+              class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            >
+              <option value="">Sélectionner un microservice</option>
+              <optgroup *ngFor="let squad of squadOptions" [label]="squad">
+                <option
+                  *ngFor="let ms of microservicesBySquad.get(squad)"
+                  [value]="ms.id"
+                >
+                  {{ ms.name }} <span *ngIf="ms.solution">({{ ms.solution }})</span>
+                </option>
+              </optgroup>
+            </select>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" *ngIf="getSelectedMicroservice()">
+              Squad: {{ getSelectedMicroservice()?.squad }}
+              <span *ngIf="getSelectedMicroservice()?.solution"> | Solution: {{ getSelectedMicroservice()?.solution }}</span>
+            </p>
+          </div>
+
+          <!-- Part en MEP -->
+          <div class="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              [(ngModel)]="newEntry.partEnMep"
+              class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500"
+            />
+            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Part en MEP</label>
+          </div>
+
+          <!-- Deploy Order (if partEnMep) -->
+          <div *ngIf="newEntry.partEnMep">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ordre de déploiement</label>
+            <input
+              type="number"
+              [(ngModel)]="newEntry.deployOrder"
+              placeholder="Ex: 1"
+              class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+
+          <!-- Tag (if partEnMep) -->
+          <div *ngIf="newEntry.partEnMep">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tag</label>
+            <input
+              type="text"
+              [(ngModel)]="newEntry.tag"
+              placeholder="Ex: v2.1.0"
+              class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+
+          <!-- Parent Version -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Version parent</label>
+            <input
+              type="text"
+              [(ngModel)]="newEntry.parentVersion"
+              placeholder="Ex: 4.0.3"
+              class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div class="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 flex justify-end space-x-3 border-t border-gray-200 dark:border-gray-700 rounded-b-2xl">
+          <button
+            (click)="closeAddModal()"
+            class="px-6 py-2.5 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 font-medium"
+          >
+            Annuler
+          </button>
+          <button
+            (click)="saveNewEntry()"
+            [disabled]="!newEntry.microservice || !newEntry.squad"
+            class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all duration-200 font-medium flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span class="material-icons text-lg">add</span>
+            <span>Créer</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  `,
+  styles: [`
+    :host {
+      display: block;
+    }
+  `]
+})
+export class ReleaseNoteComponent implements OnInit {
+  release: Release | null = null;
+  entries: ReleaseNoteEntry[] = [];
+  groupedEntries: GroupedEntry[] = []; // Deprecated - kept for backwards compatibility
+  filteredEntries: ReleaseNoteEntry[] = []; // New: flat list sorted by deployOrder
+  squadOptions = SQUAD_OPTIONS;
+
+  // Microservices
+  microservices: Microservice[] = [];
+  microservicesBySquad: Map<string, Microservice[]> = new Map();
+
+  // Filters
+  selectedSquad = '';
+  searchQuery = '';
+
+  // Export dropdown
+  isExportDropdownOpen = false;
+
+  // Inline editing
+  editingEntryId: string | null = null;
+  editingEntry: any = {};
+  editingField = '';
+
+  // Changes modal
+  isChangesModalOpen = false;
+  currentEditingMicroservice = '';
+  currentEditingChanges: ChangeItem[] = [];
+  currentEditingEntry: ReleaseNoteEntry | null = null;
+
+  // Add modal
+  isAddModalOpen = false;
+  newEntry: CreateReleaseNoteEntryRequest = {
+    microserviceId: undefined,
+    microservice: '',
+    squad: '',
+    partEnMep: true,
+    deployOrder: undefined,
+    tag: '',
+    parentVersion: '',
+    changes: []
+  };
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private dialog: MatDialog,
+    private releaseService: ReleaseService,
+    private releaseNoteService: ReleaseNoteService,
+    private microserviceService: MicroserviceService,
+    private toastService: ToastService,
+    private permissionService: PermissionService,
+    private confirmationService: ConfirmationService
+  ) { }
+
+  ngOnInit(): void {
+    const releaseId = this.route.snapshot.paramMap.get('id');
+    if (releaseId) {
+      this.loadRelease(releaseId);
+      this.loadEntries(releaseId);
+      this.loadMicroservices(releaseId);
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        this.isExportDropdownOpen = false;
+      }
+    });
+  }
+
+  loadMicroservices(releaseId?: string): void {
+    this.microserviceService.getAllActive(releaseId).subscribe({
+      next: (microservices) => {
+        this.microservices = microservices;
+        this.groupMicroservicesBySquad();
+        this.applyFilters();
+      },
+      error: (error) => {
+        console.error('Error loading microservices:', error);
+        this.toastService.error('Erreur lors du chargement des microservices');
+      }
+    });
+  }
+
+  groupMicroservicesBySquad(): void {
+    this.microservicesBySquad.clear();
+    SQUAD_OPTIONS.forEach(squad => {
+      this.microservicesBySquad.set(squad,
+        this.microservices.filter(ms => ms.squad === squad)
+      );
+    });
+  }
+
+  openAddMicroserviceModal(): void {
+    const dialogRef = this.dialog.open(MicroserviceManagementModalComponent, {
+      width: '600px',
+      data: { mode: 'create' }
+    });
+
+    dialogRef.afterClosed().subscribe((result: Microservice | undefined) => {
+      if (result) {
+        this.loadMicroservices();
+        this.toastService.success('Microservice ajouté avec succès');
+      }
+    });
+  }
+
+  openEditMicroserviceModal(microservice: Microservice): void {
+    const dialogRef = this.dialog.open(MicroserviceManagementModalComponent, {
+      width: '600px',
+      data: { mode: 'edit', microservice }
+    });
+
+    dialogRef.afterClosed().subscribe((result: Microservice | undefined) => {
+      if (result) {
+        this.loadMicroservices();
+        this.toastService.success('Microservice modifié avec succès');
+      }
+    });
+  }
+
+  async deleteMicroservice(microservice: Microservice): Promise<void> {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer le microservice',
+      message: `Êtes-vous sûr de vouloir désactiver "${microservice.name}" ? Il ne sera plus visible dans la liste.`,
+      confirmButtonClass: 'danger'
+    });
+
+    if (confirmed) {
+      this.microserviceService.delete(microservice.id!).subscribe({
+        next: () => {
+          this.loadMicroservices();
+          this.toastService.success('Microservice désactivé avec succès');
+        },
+        error: (error) => {
+          console.error('Error deleting microservice:', error);
+          this.toastService.error('Erreur lors de la suppression du microservice');
+        }
+      });
+    }
+  }
+
+  async loadRelease(releaseId: string): Promise<void> {
+    try {
+      this.release = await this.releaseService.getRelease(releaseId);
+      this.applyFilters();
+    } catch (error) {
+      console.error('Error loading release:', error);
+      this.toastService.error('Erreur lors du chargement de la release');
+      this.router.navigate(['/releases']);
+    }
+  }
+
+  loadEntries(releaseId: string): void {
+    this.releaseNoteService.getAllEntries(releaseId).subscribe({
+      next: (entries) => {
+        this.entries = entries;
+        this.applyFilters();
+      },
+      error: (error) => {
+        console.error('Error loading entries:', error);
+        this.toastService.error('Erreur lors du chargement des entrées');
+      }
+    });
+  }
+
+  applyFilters(): void {
+    if (!this.release) return;
+
+    // Start with all active microservices
+    const allEntries: ReleaseNoteEntry[] = this.microservices.map(ms => {
+      // Find existing entry for this microservice
+      // We check both microserviceId match AND name match (legacy support)
+      const existing = this.entries.find(e =>
+        e.microserviceId === ms.id ||
+        (e.microservice && e.microservice === ms.name)
+      );
+
+      if (existing) {
+        // Enforce solution and previousTag from microservice entity
+        return {
+          ...existing,
+          solution: ms.solution,
+          previousTag: existing.previousTag || ms.previousTag
+        };
+      }
+
+      // Create placeholder entry
+      return {
+        releaseId: this.release!.id!,
+        microserviceId: ms.id,
+        microservice: ms.name,
+        solution: ms.solution,
+        squad: ms.squad,
+        partEnMep: false,
+        previousTag: ms.previousTag,
+        changes: []
+      } as ReleaseNoteEntry;
+    });
+
+    // Also include entries that might not match any active microservice (e.g. deleted microservices or legacy text-only entries)
+    const mappedIds = new Set(allEntries.map(e => e.id).filter(id => !!id));
+    const orphans = this.entries.filter(e => e.id && !mappedIds.has(e.id));
+
+    // For orphans, we might not have the solution if the microservice is deleted, but we keep them as is.
+
+    let filtered = [...allEntries, ...orphans];
+
+    // Filter by squad
+    if (this.selectedSquad) {
+      filtered = filtered.filter(e => e.squad === this.selectedSquad);
+    }
+
+    // Filter by search query
+    if (this.searchQuery) {
+      const query = this.searchQuery.toLowerCase();
+      filtered = filtered.filter(e =>
+        (e.microservice || '').toLowerCase().includes(query) ||
+        (e.solution || '').toLowerCase().includes(query)
+      );
+    }
+
+    // Group by squad
+    const grouped = new Map<string, ReleaseNoteEntry[]>();
+    filtered.forEach(entry => {
+      if (!grouped.has(entry.squad)) {
+        grouped.set(entry.squad, []);
+      }
+      grouped.get(entry.squad)!.push(entry);
+    });
+
+    // Convert to array and sort
+    this.groupedEntries = Array.from(grouped.entries()).map(([squad, entries]) => ({
+      squad,
+      entries: entries.sort((a, b) => {
+        // Sort by deployOrder (nulls last), then by microservice name
+        if (a.deployOrder != null && b.deployOrder != null) {
+          return a.deployOrder - b.deployOrder;
+        }
+        if (a.deployOrder != null) return -1;
+        if (b.deployOrder != null) return 1;
+        return (a.microservice || '').localeCompare(b.microservice || '');
+      }),
+      isExpanded: true // All expanded by default
+    }));
+
+    // Sort squads
+    this.groupedEntries.sort((a, b) => a.squad.localeCompare(b.squad));
+
+    // New: Create flat filtered list sorted by deployOrder
+    this.filteredEntries = [...filtered].sort((a, b) => {
+      // Prioritize entries with deployOrder
+      if (a.deployOrder != null && b.deployOrder != null) {
+        return a.deployOrder - b.deployOrder;
+      }
+      if (a.deployOrder != null) return -1;
+      if (b.deployOrder != null) return 1;
+      // Then by squad
+      const squadCompare = (a.squad || '').localeCompare(b.squad || '');
+      if (squadCompare !== 0) return squadCompare;
+      // Finally by microservice name
+      return (a.microservice || '').localeCompare(b.microservice || '');
+    });
+  }
+
+  onFilterChange(): void {
+    this.applyFilters();
+  }
+
+  toggleSquad(squad: string): void {
+    const group = this.groupedEntries.find(g => g.squad === squad);
+    if (group) {
+      group.isExpanded = !group.isExpanded;
+    }
+  }
+
+  getTotalEntriesCount(): number {
+    return this.entries.length;
+  }
+
+  formatDate(date: string | Date): string {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return format(d, 'd MMMM yyyy', { locale: fr });
+  }
+
+  hasWriteAccess(): boolean {
+    return this.permissionService.hasWriteAccess('RELEASES');
+  }
+
+  goBack(): void {
+    this.router.navigate(['/releases']);
+  }
+
+  // Inline editing
+  startEdit(entry: ReleaseNoteEntry, field: string): void {
+    if (!this.hasWriteAccess()) return;
+    this.editingEntryId = entry.id || 'NEW_' + entry.microserviceId;
+    this.editingEntry = { ...entry };
+    this.editingField = field;
+  }
+
+  saveEntry(): void {
+    if (!this.release) return;
+
+    const request: CreateReleaseNoteEntryRequest = {
+      microserviceId: this.editingEntry.microserviceId,
+      microservice: this.editingEntry.microservice, // Fallback name
+      squad: this.editingEntry.squad,
+      partEnMep: this.editingEntry.partEnMep,
+      deployOrder: this.editingEntry.deployOrder,
+      tag: this.editingEntry.tag,
+      parentVersion: this.editingEntry.parentVersion,
+      changes: this.editingEntry.changes || []
+    };
+
+    if (this.editingEntryId && !this.editingEntryId.startsWith('NEW_')) {
+      // Update existing
+      this.releaseNoteService.updateEntry(this.release.id!, this.editingEntryId, request).subscribe({
+        next: (updated) => {
+          this.updateLocalEntry(updated);
+          this.toastService.success('Mise à jour effectuée');
+          this.cancelEdit();
+        },
+        error: (error) => {
+          console.error('Error updating entry:', error);
+          this.toastService.error('Erreur lors de la mise à jour');
+        }
+      });
+    } else {
+      // Create new
+      this.releaseNoteService.createEntry(this.release.id!, request).subscribe({
+        next: (created) => {
+          this.updateLocalEntry(created);
+          this.toastService.success('Entrée créée');
+          this.cancelEdit();
+        },
+        error: (error) => {
+          console.error('Error creating entry:', error);
+          this.toastService.error('Erreur lors de la création');
+        }
+      });
+    }
+  }
+
+  cancelEdit(): void {
+    this.editingEntryId = null;
+    this.editingEntry = {};
+    this.editingField = '';
+  }
+
+  togglePartEnMep(entry: ReleaseNoteEntry): void {
+    if (!this.hasWriteAccess() || !this.release) return;
+
+    // If unchecked, clear deployOrder and tag
+    if (!entry.partEnMep) {
+      entry.deployOrder = undefined;
+      entry.tag = undefined;
+    }
+
+    const request: CreateReleaseNoteEntryRequest = {
+      microserviceId: entry.microserviceId,
+      microservice: entry.microservice, // Fallback name
+      squad: entry.squad,
+      partEnMep: entry.partEnMep,
+      deployOrder: entry.deployOrder,
+      tag: entry.tag,
+      parentVersion: entry.parentVersion,
+      changes: entry.changes || []
+    };
+
+    if (entry.id) {
+      this.releaseNoteService.updateEntry(this.release.id!, entry.id, request).subscribe({
+        next: (updated) => {
+          this.updateLocalEntry(updated);
+        },
+        error: (error) => {
+          console.error('Error updating entry:', error);
+          this.toastService.error('Erreur lors de la mise à jour');
+          // Revert change locally if failed
+          entry.partEnMep = !entry.partEnMep;
+        }
+      });
+    } else {
+      // Create new entry
+      this.releaseNoteService.createEntry(this.release.id!, request).subscribe({
+        next: (created) => {
+          this.updateLocalEntry(created);
+        },
+        error: (error) => {
+          console.error('Error creating entry:', error);
+          this.toastService.error('Erreur lors de la création');
+          // Revert
+          entry.partEnMep = !entry.partEnMep;
+        }
+      });
+    }
+  }
+
+  private updateLocalEntry(updated: ReleaseNoteEntry): void {
+    const index = this.entries.findIndex(e => e.id === updated.id);
+    if (index !== -1) {
+      this.entries[index] = updated;
+    } else {
+      this.entries.push(updated);
+    }
+    this.applyFilters();
+  }
+
+  async deleteEntry(entry: ReleaseNoteEntry): Promise<void> {
+    if (!this.hasWriteAccess() || !this.release) return;
+
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer ce microservice ?',
+      message: `Voulez-vous vraiment supprimer ${entry.microservice} ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler'
+    });
+
+    if (confirmed && this.release) {
+      this.releaseNoteService.deleteEntry(this.release.id!, entry.id!).subscribe({
+        next: () => {
+          this.entries = this.entries.filter(e => e.id !== entry.id);
+          this.applyFilters();
+          this.toastService.success('Microservice supprimé');
+        },
+        error: (error) => {
+          console.error('Error deleting entry:', error);
+          this.toastService.error('Erreur lors de la suppression');
+        }
+      });
+    }
+  }
+
+  // Changes modal
+  openChangesModal(entry: ReleaseNoteEntry): void {
+    if (!this.hasWriteAccess()) return;
+
+    this.currentEditingEntry = entry;
+    this.currentEditingMicroservice = entry.microservice || '';
+    this.currentEditingChanges = entry.changes || [];
+    this.isChangesModalOpen = true;
+  }
+
+  onChangesSave(changes: ChangeItem[]): void {
+    if (!this.currentEditingEntry || !this.release) return;
+
+    const request: CreateReleaseNoteEntryRequest = {
+      microserviceId: this.currentEditingEntry.microserviceId,
+      microservice: this.currentEditingEntry.microservice,
+      squad: this.currentEditingEntry.squad,
+      partEnMep: this.currentEditingEntry.partEnMep,
+      deployOrder: this.currentEditingEntry.deployOrder,
+      tag: this.currentEditingEntry.tag,
+      previousTag: this.currentEditingEntry.previousTag,
+      parentVersion: this.currentEditingEntry.parentVersion,
+      changes
+    };
+
+    // Si l'entrée n'a pas d'ID, c'est une nouvelle entrée (placeholder) → CREATE
+    if (!this.currentEditingEntry.id) {
+      this.releaseNoteService.createEntry(this.release.id!, request).subscribe({
+        next: (created) => {
+          this.entries.push(created);
+          this.applyFilters();
+          this.toastService.success('Entrée créée avec succès');
+          this.onChangesCancel();
+        },
+        error: (error) => {
+          console.error('Error creating entry:', error);
+          this.toastService.error('Erreur lors de la création');
+        }
+      });
+    } else {
+      // Sinon, UPDATE
+      this.releaseNoteService.updateEntry(this.release.id!, this.currentEditingEntry.id, request).subscribe({
+        next: (updated) => {
+          const index = this.entries.findIndex(e => e.id === updated.id);
+          if (index !== -1) {
+            this.entries[index] = updated;
+          }
+          this.applyFilters();
+          this.toastService.success('Changes mis à jour');
+          this.onChangesCancel();
+        },
+        error: (error) => {
+          console.error('Error updating changes:', error);
+          this.toastService.error('Erreur lors de la mise à jour des changes');
+        }
+      });
+    }
+  }
+
+  onChangesCancel(): void {
+    this.isChangesModalOpen = false;
+    this.currentEditingEntry = null;
+    this.currentEditingMicroservice = '';
+    this.currentEditingChanges = [];
+  }
+
+  openAddModal(): void {
+    this.newEntry = {
+      microserviceId: undefined,
+      microservice: '',
+      squad: '',
+      partEnMep: true,
+      deployOrder: undefined,
+      tag: '',
+      parentVersion: '',
+      changes: []
+    };
+    this.isAddModalOpen = true;
+  }
+
+  onMicroserviceChange(): void {
+    const microservice = this.getSelectedMicroservice();
+    if (microservice) {
+      // Auto-fill squad from microservice
+      this.newEntry.squad = microservice.squad;
+    }
+  }
+
+  getSelectedMicroservice(): Microservice | undefined {
+    if (!this.newEntry.microserviceId) return undefined;
+    return this.microservices.find(ms => ms.id === this.newEntry.microserviceId);
+  }
+
+  closeAddModal(): void {
+    this.isAddModalOpen = false;
+  }
+
+  onAddModalBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) {
+      this.closeAddModal();
+    }
+  }
+
+  saveNewEntry(): void {
+    if (!this.release || !this.newEntry.microserviceId || !this.newEntry.squad) {
+      this.toastService.error('Veuillez sélectionner un microservice et une squad');
+      return;
+    }
+
+    this.releaseNoteService.createEntry(this.release.id!, this.newEntry).subscribe({
+      next: (created) => {
+        this.entries.push(created);
+        this.applyFilters();
+        this.toastService.success('Microservice ajouté');
+        this.closeAddModal();
+      },
+      error: (error) => {
+        console.error('Error creating entry:', error);
+        this.toastService.error('Erreur lors de la création');
+      }
+    });
+  }
+
+  // Export
+  toggleExportDropdown(): void {
+    this.isExportDropdownOpen = !this.isExportDropdownOpen;
+  }
+
+  exportMarkdown(): void {
+    if (!this.release) return;
+
+    this.releaseNoteService.exportMarkdown(this.release.id!).subscribe({
+      next: (blob) => {
+        this.releaseNoteService.downloadFile(blob, `release-note-${this.release!.name}.md`);
+        this.toastService.success('Export Markdown réussi');
+        this.isExportDropdownOpen = false;
+      },
+      error: (error) => {
+        console.error('Error exporting markdown:', error);
+        this.toastService.error('Erreur lors de l\'export Markdown');
+      }
+    });
+  }
+
+  exportHtml(): void {
+    if (!this.release) return;
+
+    this.releaseNoteService.exportHtml(this.release.id!).subscribe({
+      next: (blob) => {
+        this.releaseNoteService.downloadFile(blob, `release-note-${this.release!.name}.html`);
+        this.toastService.success('Export HTML réussi');
+        this.isExportDropdownOpen = false;
+      },
+      error: (error) => {
+        console.error('Error exporting HTML:', error);
+        this.toastService.error('Erreur lors de l\'export HTML');
+      }
+    });
+  }
+
+  exportPng(): void {
+    // TODO: Implement PNG export using html2canvas
+    this.toastService.info('Export PNG à venir (utiliser html2canvas)');
+    this.isExportDropdownOpen = false;
+  }
+}

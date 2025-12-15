@@ -7,6 +7,7 @@ import com.catsbanque.eventplanning.entity.Release;
 import com.catsbanque.eventplanning.entity.Squad;
 import com.catsbanque.eventplanning.exception.ResourceNotFoundException;
 import com.catsbanque.eventplanning.repository.ReleaseRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,31 @@ import java.util.stream.Collectors;
 public class ReleaseService {
 
     private final ReleaseRepository releaseRepository;
+
+    /**
+     * Migration automatique des slugs pour les releases existantes
+     * Exécuté au démarrage de l'application
+     */
+    @PostConstruct
+    @Transactional
+    public void migrateSlugs() {
+        List<Release> releasesWithoutSlug = releaseRepository.findAll().stream()
+                .filter(r -> r.getSlug() == null || r.getSlug().isEmpty())
+                .collect(Collectors.toList());
+
+        if (!releasesWithoutSlug.isEmpty()) {
+            log.info("Migration des slugs: {} releases sans slug trouvées", releasesWithoutSlug.size());
+
+            for (Release release : releasesWithoutSlug) {
+                // Le slug sera généré automatiquement par @PreUpdate
+                release.setUpdatedAt(LocalDateTime.now());
+                releaseRepository.save(release);
+                log.debug("Slug généré pour release: {} -> {}", release.getName(), release.getSlug());
+            }
+
+            log.info("Migration des slugs terminée: {} slugs générés", releasesWithoutSlug.size());
+        }
+    }
 
     /**
      * Récupérer toutes les releases (futures + 20 dernières passées)
@@ -66,13 +92,14 @@ public class ReleaseService {
     }
 
     /**
-     * Récupérer une release par ID
+     * Récupérer une release par ID ou slug
      * Référence: release.controller.js:155-217
      */
     @Transactional(readOnly = true)
-    public ReleaseDto getReleaseById(String id) {
-        // Rechercher uniquement par ID (version n'existe plus)
-        Release release = releaseRepository.findById(id)
+    public ReleaseDto getReleaseById(String identifier) {
+        // Essayer d'abord par slug, puis par ID (rétrocompatibilité)
+        Release release = releaseRepository.findBySlug(identifier)
+                .or(() -> releaseRepository.findById(identifier))
                 .orElseThrow(() -> new ResourceNotFoundException("Release not found"));
 
         // Force le chargement des squads (eager loading)
@@ -118,12 +145,14 @@ public class ReleaseService {
      * Référence: release.controller.js:270-306
      */
     @Transactional
-    public ReleaseDto updateRelease(String id, UpdateReleaseRequest request) {
-        Release release = releaseRepository.findById(id)
+    public ReleaseDto updateRelease(String identifier, UpdateReleaseRequest request) {
+        Release release = releaseRepository.findBySlug(identifier)
+                .or(() -> releaseRepository.findById(identifier))
                 .orElseThrow(() -> new ResourceNotFoundException("Release not found"));
 
         if (request.getName() != null && !request.getName().isBlank()) {
             release.setName(request.getName());
+            // Le slug sera automatiquement regénéré par @PreUpdate
         }
 
         if (request.getReleaseDate() != null && !request.getReleaseDate().isBlank()) {
@@ -152,8 +181,9 @@ public class ReleaseService {
      * Référence: release.controller.js:309-329
      */
     @Transactional
-    public ReleaseDto updateReleaseStatus(String id, String status) {
-        Release release = releaseRepository.findById(id)
+    public ReleaseDto updateReleaseStatus(String identifier, String status) {
+        Release release = releaseRepository.findBySlug(identifier)
+                .or(() -> releaseRepository.findById(identifier))
                 .orElseThrow(() -> new ResourceNotFoundException("Release not found"));
 
         release.setStatus(status);
@@ -167,12 +197,14 @@ public class ReleaseService {
      * Référence: release.controller.js:332-345
      */
     @Transactional
-    public void deleteRelease(String id) {
-        Release release = releaseRepository.findById(id)
+    public void deleteRelease(String identifier) {
+        // Accepter slug ou ID
+        Release release = releaseRepository.findBySlug(identifier)
+                .or(() -> releaseRepository.findById(identifier))
                 .orElseThrow(() -> new ResourceNotFoundException("Release not found"));
 
         releaseRepository.delete(release);
-        log.info("Release deleted: {}", id);
+        log.info("Release deleted: {}", identifier);
     }
 
     /**

@@ -55,13 +55,12 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <div
             *ngFor="let release of upcomingReleases"
-            class="card-releases p-6 cursor-pointer relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02]"
+            class="card-releases p-6 relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02]"
           [class.hover:border-emerald-500]="release.type === 'release'"
           [class.hover:border-red-500]="release.type === 'hotfix'"
-          (click)="viewRelease(release.id!)"
         >
           <!-- Type Badge -->
-          <div class="absolute top-0 right-0 z-10">
+          <div class="absolute top-0 right-0 z-20">
             <span [class]="getReleaseTypeColors(release.type).badge"
                   class="inline-flex items-center space-x-1 px-3 py-1 rounded-bl-lg rounded-tr-lg text-xs font-semibold shadow-sm">
               <span class="material-icons text-sm">
@@ -71,14 +70,14 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </span>
           </div>
 
-          <!-- Action Buttons -->
-          <div class="absolute top-12 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
+          <!-- Action Buttons (below type badge) -->
+          <div class="absolute top-10 right-2 z-10 flex items-center space-x-1">
             <button
               appCanAccess="RELEASES"
               accessLevel="write"
               (click)="startEditingDate(release, $event)"
-              class="p-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all duration-200 hover:scale-110"
-              title="Modifier la release"
+              class="p-2 text-gray-600 dark:text-gray-400 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg transition-all duration-200 backdrop-blur-sm"
+              title="Modifier les informations"
             >
               <span class="material-icons text-lg">edit</span>
             </button>
@@ -86,8 +85,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               appCanAccess="RELEASES"
               accessLevel="write"
               (click)="deleteRelease($event, release)"
-              class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110"
-              title="Supprimer la release"
+              class="p-2 text-red-600 dark:text-red-400 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg transition-all duration-200 backdrop-blur-sm"
+              title="Supprimer"
             >
               <span class="material-icons text-lg">delete</span>
             </button>
@@ -135,7 +134,6 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           <div class="flex items-center justify-between mb-4" *ngIf="release.squads.length > 0">
             <div class="flex-1">
               <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
-                <span class="font-medium">Progression</span>
                 <span class="font-bold">{{ getCompletedSquads(release) }}/{{ release.squads.length }} squads</span>
               </div>
             </div>
@@ -154,42 +152,23 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           </div>
 
           <!-- Footer -->
-          <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
-
-            <!-- Export Button -->
-            <div class="relative" (click)="$event.stopPropagation()">
-              <button
-                appCanAccess="RELEASES"
-                accessLevel="read"
-                (click)="toggleExportMenu(release.id!)"
-                class="flex items-center space-x-1 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                title="Exporter la release"
-              >
-                <span class="material-icons text-sm">download</span>
-                <span>Export</span>
-              </button>
-
-              <!-- Export Dropdown -->
-              <div
-                *ngIf="exportMenuOpen === release.id"
-                class="absolute left-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-10"
-              >
-                <button
-                  (click)="exportRelease(release, 'markdown')"
-                  class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg transition-colors flex items-center space-x-2"
-                >
-                  <span class="material-icons text-sm">description</span>
-                  <span>Markdown</span>
-                </button>
-                <button
-                  (click)="exportRelease(release, 'html')"
-                  class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg transition-colors flex items-center space-x-2"
-                >
-                  <span class="material-icons text-sm">code</span>
-                  <span>HTML</span>
-                </button>
-              </div>
-            </div>
+          <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+            <button
+              (click)="navigateToPreparation(release.slug, $event)"
+              class="flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 hover:shadow-md"
+              title="Accéder à la préparation MEP"
+            >
+              <span class="material-icons text-base">assignment</span>
+              <span>Prépa MEP</span>
+            </button>
+            <button
+              (click)="navigateToReleaseNote(release.slug, $event)"
+              class="flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 hover:shadow-md"
+              title="Accéder à la release note"
+            >
+              <span class="material-icons text-base">description</span>
+              <span>Release Note</span>
+            </button>
           </div>
         </div>
         </div>
@@ -213,13 +192,12 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
             *ngFor="let release of pastReleases"
-            class="card-releases p-6 cursor-pointer relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] opacity-60 hover:opacity-90"
+            class="card-releases p-6 relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] opacity-60 hover:opacity-90"
             [class.hover:border-emerald-500]="release.type === 'release'"
             [class.hover:border-red-500]="release.type === 'hotfix'"
-            (click)="viewRelease(release.id!)"
           >
             <!-- Type Badge -->
-            <div class="absolute top-0 right-0 z-10">
+            <div class="absolute top-0 right-0 z-20">
               <span [class]="getReleaseTypeColors(release.type).badge"
                     class="inline-flex items-center space-x-1 px-3 py-1 rounded-bl-lg rounded-tr-lg text-xs font-semibold shadow-sm">
                 <span class="material-icons text-sm">
@@ -229,14 +207,14 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               </span>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="absolute top-12 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10">
+            <!-- Action Buttons (below type badge) -->
+            <div class="absolute top-10 right-2 z-10 flex items-center space-x-1">
               <button
                 appCanAccess="RELEASES"
                 accessLevel="write"
                 (click)="startEditingDate(release, $event)"
-                class="p-2 text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-all duration-200 hover:scale-110"
-                title="Modifier la release"
+                class="p-2 text-gray-600 dark:text-gray-400 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg transition-all duration-200 backdrop-blur-sm"
+                title="Modifier les informations"
               >
                 <span class="material-icons text-lg">edit</span>
               </button>
@@ -244,8 +222,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 appCanAccess="RELEASES"
                 accessLevel="write"
                 (click)="deleteRelease($event, release)"
-                class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 hover:scale-110"
-                title="Supprimer la release"
+                class="p-2 text-red-600 dark:text-red-400 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg transition-all duration-200 backdrop-blur-sm"
+                title="Supprimer"
               >
                 <span class="material-icons text-lg">delete</span>
               </button>
@@ -281,7 +259,6 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             <div class="flex items-center justify-between mb-4" *ngIf="release.squads.length > 0">
               <div class="flex-1">
                 <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
-                  <span class="font-medium">Progression</span>
                   <span class="font-bold">{{ getCompletedSquads(release) }}/{{ release.squads.length }} squads</span>
                 </div>
               </div>
@@ -300,41 +277,23 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </div>
 
             <!-- Footer -->
-            <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
-              <!-- Export Button -->
-              <div class="relative" (click)="$event.stopPropagation()">
-                <button
-                  appCanAccess="RELEASES"
-                  accessLevel="read"
-                  (click)="toggleExportMenu(release.id!)"
-                  class="flex items-center space-x-1 px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                  title="Exporter la release"
-                >
-                  <span class="material-icons text-sm">download</span>
-                  <span>Export</span>
-                </button>
-
-                <!-- Export Dropdown -->
-                <div
-                  *ngIf="exportMenuOpen === release.id"
-                  class="absolute left-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-10"
-                >
-                  <button
-                    (click)="exportRelease(release, 'markdown')"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-lg transition-colors flex items-center space-x-2"
-                  >
-                    <span class="material-icons text-sm">description</span>
-                    <span>Markdown</span>
-                  </button>
-                  <button
-                    (click)="exportRelease(release, 'html')"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-lg transition-colors flex items-center space-x-2"
-                  >
-                    <span class="material-icons text-sm">code</span>
-                    <span>HTML</span>
-                  </button>
-                </div>
-              </div>
+            <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
+              <button
+                (click)="navigateToPreparation(release.slug, $event)"
+                class="flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                title="Accéder à la préparation MEP"
+              >
+                <span class="material-icons text-base">assignment</span>
+                <span>Prépa MEP</span>
+              </button>
+              <button
+                (click)="navigateToReleaseNote(release.slug, $event)"
+                class="flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                title="Accéder à la release note"
+              >
+                <span class="material-icons text-base">description</span>
+                <span>Release Note</span>
+              </button>
             </div>
           </div>
         </div>
@@ -599,7 +558,6 @@ export class ReleasesListComponent implements OnInit {
 
   showCreateModal = false;
   isCreating = false;
-  exportMenuOpen: string | null = null;
 
   showEditDateModal = false;
   isUpdatingDate = false;
@@ -703,8 +661,14 @@ export class ReleasesListComponent implements OnInit {
     return this.RELEASE_TYPE_COLORS[type || 'release'];
   }
 
-  viewRelease(id: string): void {
-    this.router.navigate(['/releases', id]);
+  navigateToPreparation(releaseId: string, event: Event): void {
+    event.stopPropagation();
+    this.router.navigate(['/releases', releaseId, 'preparation']);
+  }
+
+  navigateToReleaseNote(releaseId: string, event: Event): void {
+    event.stopPropagation();
+    this.router.navigate(['/releases', releaseId, 'release-note']);
   }
 
   navigateToHistory(): void {
@@ -851,410 +815,4 @@ export class ReleasesListComponent implements OnInit {
     }
   }
 
-  toggleExportMenu(releaseId: string): void {
-    this.exportMenuOpen = this.exportMenuOpen === releaseId ? null : releaseId;
-  }
-
-  exportRelease(release: Release, format: 'markdown' | 'html'): void {
-    this.exportMenuOpen = null;
-
-    let content = '';
-    const fileName = `${release.name.replace(/\s+/g, '_')}`;
-
-    if (format === 'markdown') {
-      content = this.generateMarkdown(release);
-      this.downloadFile(content, `${fileName}.md`, 'text/markdown');
-    } else {
-      content = this.generateHTML(release);
-      this.downloadFile(content, `${fileName}.html`, 'text/html');
-    }
-  }
-
-  private generateMarkdown(release: Release): string {
-    let md = `# ${release.name}\n\n`;
-    md += `**Date de MEP:** ${this.formatDate(release.releaseDate)}  \n\n`;
-
-    if (release.description) {
-      md += `## Description\n\n${release.description}\n\n`;
-    }
-
-    // 1. Tontons MEP Table
-    md += `## Tontons MEP\n\n`;
-    const tontonHeaders = ['Squad', 'Tonton MEP', 'Statut'];
-    const tontonRows = release.squads.map(s => [
-      `Squad ${s.squadNumber}`,
-      s.tontonMep || '-',
-      s.isCompleted ? '✅ Validé' : '⏳ En cours'
-    ]);
-    md += this.generateMarkdownTable(tontonHeaders, tontonRows);
-    md += '\n';
-
-    // 2. Fonctionnalités Majeures
-    md += `## Fonctionnalités Majeures\n\n`;
-    release.squads.forEach(squad => {
-      md += `### Squad ${squad.squadNumber}\n\n`;
-      if (squad.features.length > 0) {
-        const featureHeaders = ['Titre', 'Description'];
-        const featureRows = squad.features.map(f => [f.title, f.description || '']);
-        md += this.generateMarkdownTable(featureHeaders, featureRows);
-        md += '\n';
-      } else if (squad.featuresEmptyConfirmed) {
-        md += '_Néant_\n\n';
-      } else {
-        md += '_Non renseigné_\n\n';
-      }
-    });
-
-    // 3. Actions Pré-MEP
-    md += `## Actions Pré-MEP\n\n`;
-    release.squads.forEach(squad => {
-      md += `### Squad ${squad.squadNumber}\n\n`;
-      const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
-      if (preMepActions.length > 0) {
-        md += this.generateActionsMarkdown(preMepActions);
-      } else if (squad.preMepEmptyConfirmed) {
-        md += '_Néant_\n\n';
-      } else {
-        md += '_Non renseigné_\n\n';
-      }
-    });
-
-    // 4. Actions Post-MEP
-    md += `## Actions Post-MEP\n\n`;
-    release.squads.forEach(squad => {
-      md += `### Squad ${squad.squadNumber}\n\n`;
-      const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
-      if (postMepActions.length > 0) {
-        md += this.generateActionsMarkdown(postMepActions);
-      } else if (squad.postMepEmptyConfirmed) {
-        md += '_Néant_\n\n';
-      } else {
-        md += '_Non renseigné_\n\n';
-      }
-    });
-
-    return md;
-  }
-
-  private generateActionsMarkdown(actions: Action[]): string {
-    let md = '';
-    const grouped = this.groupActionsByType(actions);
-
-    // Memory Flipping
-    if (grouped.memory_flipping.length > 0) {
-      md += `#### Memory Flipping\n\n`;
-      const headers = ['Nom du MF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
-      const rows = grouped.memory_flipping.map(a => [
-        a.flipping?.ruleName || '',
-        a.description || '',
-        a.flipping?.theme || '',
-        this.getRuleActionLabel(a.flipping?.ruleAction || ''),
-        this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
-        this.getFlippingCaissesDisplay(a.flipping?.targetCaisses),
-        this.getFlippingOSDisplay(a.flipping?.targetOS || []),
-        this.getFlippingVersionsDisplay(a.flipping?.targetVersions || [])
-      ]);
-      md += this.generateMarkdownTable(headers, rows);
-      md += '\n';
-    }
-
-    // Feature Flipping
-    if (grouped.feature_flipping.length > 0) {
-      md += `#### Feature Flipping\n\n`;
-      const headers = ['Nom du FF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
-      const rows = grouped.feature_flipping.map(a => [
-        a.flipping?.ruleName || '',
-        a.description || '',
-        a.flipping?.theme || '',
-        this.getRuleActionLabel(a.flipping?.ruleAction || ''),
-        this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
-        this.getFlippingCaissesDisplay(a.flipping?.targetCaisses),
-        this.getFlippingOSDisplay(a.flipping?.targetOS || []),
-        this.getFlippingVersionsDisplay(a.flipping?.targetVersions || [])
-      ]);
-      md += this.generateMarkdownTable(headers, rows);
-      md += '\n';
-    }
-
-    // Other Actions
-    if (grouped.other.length > 0) {
-      md += `#### Autres Actions\n\n`;
-      const headers = ['Description'];
-      const rows = grouped.other.map(a => [a.description]);
-      md += this.generateMarkdownTable(headers, rows);
-      md += '\n';
-    }
-
-    return md;
-  }
-
-  private generateMarkdownTable(headers: string[], rows: string[][]): string {
-    if (rows.length === 0) return '';
-
-    let table = `| ${headers.join(' | ')} |\n`;
-    table += `| ${headers.map(() => '---').join(' | ')} |\n`;
-
-    rows.forEach(row => {
-      const escapedRow = row.map(cell => (cell || '').replace(/\|/g, '\\|').replace(/\n/g, '<br>'));
-      table += `| ${escapedRow.join(' | ')} |\n`;
-    });
-
-    return table;
-  }
-
-  private generateHTML(release: Release): string {
-    let html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${release.name}</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; color: #1f2937; }
-    h1 { color: #111827; font-size: 2rem; margin-bottom: 0.5rem; }
-    h2 { color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; margin-top: 2rem; }
-    h3 { color: #374151; margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
-    h4 { color: #4b5563; margin-top: 1.25rem; font-size: 1.1rem; }
-    h5 { color: #6b7280; margin-top: 1rem; font-size: 1rem; font-weight: 600; }
-    .meta { color: #6b7280; margin-bottom: 2rem; }
-    .squad { margin-bottom: 2rem; padding: 1.5rem; background: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb; }
-    .squad.completed { background: #f0fdf4; border-color: #bbf7d0; }
-    
-    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem; }
-    th { background-color: #f3f4f6; text-align: left; padding: 0.75rem; border: 1px solid #e5e7eb; font-weight: 600; color: #374151; }
-    td { padding: 0.75rem; border: 1px solid #e5e7eb; color: #4b5563; vertical-align: top; }
-    tr:nth-child(even) { background-color: #f9fafb; }
-    .squad.completed tr:nth-child(even) { background-color: #f0fdf4; }
-    .squad.completed th { background-color: #dcfce7; }
-    .empty-section { font-style: italic; color: #6b7280; margin-top: 0.5rem; margin-bottom: 1rem; }
-  </style>
-</head>
-<body>
-  <h1>${release.name}</h1>
-  <div class="meta">
-    <strong>Date de MEP:</strong> ${this.formatDate(release.releaseDate)}
-  </div>`;
-
-    if (release.description) {
-      html += `<h2>Description</h2><p>${release.description}</p>`;
-    }
-
-    // 1. Tontons MEP Table
-    html += `<h2>Tontons MEP</h2>`;
-    const tontonHeaders = ['Squad', 'Tonton MEP', 'Statut'];
-    const tontonRows = release.squads.map(s => [
-      `Squad ${s.squadNumber}`,
-      s.tontonMep || '-',
-      s.isCompleted ? '✅ Validé' : '⏳ En cours'
-    ]);
-    html += this.generateHTMLTable(tontonHeaders, tontonRows);
-
-    // 2. Fonctionnalités Majeures
-    html += `<h2>Fonctionnalités Majeures</h2>`;
-    release.squads.forEach(squad => {
-      html += `<h3>Squad ${squad.squadNumber}</h3>`;
-      if (squad.features.length > 0) {
-        const featureHeaders = ['Titre', 'Description'];
-        const featureRows = squad.features.map(f => [f.title, f.description || '']);
-        html += this.generateHTMLTable(featureHeaders, featureRows);
-      } else if (squad.featuresEmptyConfirmed) {
-        html += `<p class="empty-section">Néant</p>`;
-      } else {
-        html += `<p class="empty-section" style="color: #ef4444;">Non renseigné</p>`;
-      }
-    });
-
-    // 3. Actions Pré-MEP
-    html += `<h2>Actions Pré-MEP</h2>`;
-    release.squads.forEach(squad => {
-      html += `<h3>Squad ${squad.squadNumber}</h3>`;
-      const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
-      if (preMepActions.length > 0) {
-        html += this.generateActionsHTML(preMepActions);
-      } else if (squad.preMepEmptyConfirmed) {
-        html += `<p class="empty-section">Néant</p>`;
-      } else {
-        html += `<p class="empty-section" style="color: #ef4444;">Non renseigné</p>`;
-      }
-    });
-
-    // 4. Actions Post-MEP
-    html += `<h2>Actions Post-MEP</h2>`;
-    release.squads.forEach(squad => {
-      html += `<h3>Squad ${squad.squadNumber}</h3>`;
-      const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
-      if (postMepActions.length > 0) {
-        html += this.generateActionsHTML(postMepActions);
-      } else if (squad.postMepEmptyConfirmed) {
-        html += `<p class="empty-section">Néant</p>`;
-      } else {
-        html += `<p class="empty-section" style="color: #ef4444;">Non renseigné</p>`;
-      }
-    });
-
-    html += '</body></html>';
-    return html;
-  }
-
-  private generateActionsHTML(actions: Action[]): string {
-    let html = '';
-    const grouped = this.groupActionsByType(actions);
-
-    // Memory Flipping
-    if (grouped.memory_flipping.length > 0) {
-      html += `<h4>Memory Flipping</h4>`;
-      const headers = ['Nom du MF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
-      const rows = grouped.memory_flipping.map(a => [
-        a.flipping?.ruleName || '',
-        a.description || '',
-        a.flipping?.theme || '',
-        this.getRuleActionLabel(a.flipping?.ruleAction || ''),
-        this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
-        this.getFlippingCaissesDisplay(a.flipping?.targetCaisses),
-        this.getFlippingOSDisplay(a.flipping?.targetOS || []),
-        this.getFlippingVersionsDisplay(a.flipping?.targetVersions || [])
-      ]);
-      html += this.generateHTMLTable(headers, rows);
-    }
-
-    // Feature Flipping
-    if (grouped.feature_flipping.length > 0) {
-      html += `<h4>Feature Flipping</h4>`;
-      const headers = ['Nom du FF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
-      const rows = grouped.feature_flipping.map(a => [
-        a.flipping?.ruleName || '',
-        a.description || '',
-        a.flipping?.theme || '',
-        this.getRuleActionLabel(a.flipping?.ruleAction || ''),
-        this.getFlippingClientsDisplay(a.flipping?.targetClients || []),
-        this.getFlippingCaissesDisplay(a.flipping?.targetCaisses),
-        this.getFlippingOSDisplay(a.flipping?.targetOS || []),
-        this.getFlippingVersionsDisplay(a.flipping?.targetVersions || [])
-      ]);
-      html += this.generateHTMLTable(headers, rows);
-    }
-
-    // Other Actions
-    if (grouped.other.length > 0) {
-      html += `<h4>Autres Actions</h4>`;
-      const headers = ['Description'];
-      const rows = grouped.other.map(a => [a.description]);
-      html += this.generateHTMLTable(headers, rows);
-    }
-
-    return html;
-  }
-
-  private generateHTMLTable(headers: string[], rows: string[][]): string {
-    if (rows.length === 0) return '';
-
-    let html = `<table><thead><tr>`;
-    headers.forEach(header => {
-      html += `<th>${header}</th>`;
-    });
-    html += `</tr></thead><tbody>`;
-
-    rows.forEach(row => {
-      html += `<tr>`;
-      row.forEach(cell => {
-        html += `<td>${(cell || '').replace(/\n/g, '<br>')}</td>`;
-      });
-      html += `</tr>`;
-    });
-
-    html += `</tbody></table>`;
-    return html;
-  }
-
-  private groupActionsByType(actions: Action[]): { memory_flipping: Action[], feature_flipping: Action[], other: Action[] } {
-    const grouped = {
-      memory_flipping: [] as Action[],
-      feature_flipping: [] as Action[],
-      other: [] as Action[]
-    };
-
-    actions.forEach(action => {
-      if (action.type === 'memory_flipping') {
-        grouped.memory_flipping.push(action);
-      } else if (action.type === 'feature_flipping') {
-        grouped.feature_flipping.push(action);
-      } else {
-        grouped.other.push(action);
-      }
-    });
-
-    return grouped;
-  }
-
-  // Helper methods for formatting
-  private getFlippingTargets(data: string | string[]): string[] {
-    if (Array.isArray(data)) return data;
-    try {
-      return JSON.parse(data);
-    } catch {
-      return [];
-    }
-  }
-
-  private getFlippingClientsDisplay(targetClients: string | string[]): string {
-    const clients = this.getFlippingTargets(targetClients);
-    if (clients.length === 0 || clients.includes('all')) {
-      return 'ALL';
-    }
-    return clients.join(', ');
-  }
-
-  private getFlippingCaissesDisplay(targetCaisses?: string | null): string {
-    if (!targetCaisses) {
-      return 'ALL';
-    }
-    return targetCaisses;
-  }
-
-  private getFlippingOSDisplay(targetOS: string | string[]): string {
-    const osList = this.getFlippingTargets(targetOS);
-    if (osList.length === 0 || (osList.includes('ios') && osList.includes('android'))) {
-      return 'ALL';
-    }
-    return osList.join(', ').toUpperCase();
-  }
-
-  private getFlippingVersionsDisplay(targetVersions: string | any[]): string {
-    let versions: any[];
-    if (Array.isArray(targetVersions)) {
-      versions = targetVersions;
-    } else {
-      try {
-        versions = JSON.parse(targetVersions);
-      } catch {
-        versions = [];
-      }
-    }
-
-    if (versions.length === 0) {
-      return 'ALL';
-    }
-
-    return versions.map((v: any) => `${v.operator} ${v.version}`).join(', ');
-  }
-
-  private getRuleActionLabel(action: string): string {
-    const labels: any = {
-      'create_rule': 'Créer la règle',
-      'obsolete_rule': 'Rendre obsolète',
-      'disable_rule': 'Désactiver',
-      'enable_rule': 'Activer'
-    };
-    return labels[action] || action;
-  }
-
-  private downloadFile(content: string, fileName: string, mimeType: string): void {
-    const blob = new Blob([content], { type: mimeType });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    window.URL.revokeObjectURL(url);
-  }
 }
