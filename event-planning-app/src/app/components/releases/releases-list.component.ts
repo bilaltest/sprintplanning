@@ -70,35 +70,48 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </span>
           </div>
 
-          <!-- Action Buttons (below type badge) -->
-          <div class="absolute top-10 right-2 z-10 flex items-center space-x-1">
-            <button
-              appCanAccess="RELEASES"
-              accessLevel="write"
-              (click)="startEditingDate(release, $event)"
-              class="p-2 text-gray-600 dark:text-gray-400 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg transition-all duration-200 backdrop-blur-sm"
-              title="Modifier les informations"
-            >
-              <span class="material-icons text-lg">edit</span>
-            </button>
-            <button
-              appCanAccess="RELEASES"
-              accessLevel="write"
-              (click)="deleteRelease($event, release)"
-              class="p-2 text-red-600 dark:text-red-400 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg transition-all duration-200 backdrop-blur-sm"
-              title="Supprimer"
-            >
-              <span class="material-icons text-lg">delete</span>
-            </button>
-          </div>
-
           <!-- Header -->
-          <div class="flex items-start justify-between mb-4 pt-12 pr-8">
+          <div class="flex items-start justify-between mb-4 pt-8">
             <div class="flex-1">
               <h3 [class]="getReleaseTypeColors(release.type).text"
                   class="text-xl font-bold mb-1">
                 {{ release.name }}
               </h3>
+            </div>
+
+            <!-- Kebab menu (3 dots) -->
+            <div class="relative">
+              <button
+                appCanAccess="RELEASES"
+                accessLevel="write"
+                (click)="toggleKebabMenu(release.id!, $event)"
+                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200"
+                title="Plus d'options"
+              >
+                <span class="material-icons">more_vert</span>
+              </button>
+
+              <!-- Dropdown menu -->
+              <div
+                *ngIf="openKebabMenuId === release.id"
+                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-30 overflow-hidden"
+                (click)="$event.stopPropagation()"
+              >
+                <button
+                  (click)="startEditingDate(release, $event); closeKebabMenu()"
+                  class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+                >
+                  <span class="material-icons text-gray-600 dark:text-gray-400">edit</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">Modifier</span>
+                </button>
+                <button
+                  (click)="deleteRelease($event, release); closeKebabMenu()"
+                  class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+                >
+                  <span class="material-icons text-red-600 dark:text-red-400">delete</span>
+                  <span class="text-sm font-medium text-red-600 dark:text-red-400">Supprimer</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -151,22 +164,22 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </div>
           </div>
 
-          <!-- Footer -->
+          <!-- Footer - Main Actions -->
           <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
             <button
               (click)="navigateToPreparation(release.slug, $event)"
-              class="flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 hover:shadow-md"
+              class="group flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98] border border-blue-400/30"
               title="Accéder à la préparation MEP"
             >
-              <span class="material-icons text-base">assignment</span>
+              <span class="material-icons text-lg group-hover:rotate-12 transition-transform">assignment_turned_in</span>
               <span>Prépa MEP</span>
             </button>
             <button
               (click)="navigateToReleaseNote(release.slug, $event)"
-              class="flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 hover:shadow-md"
+              class="group flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98] border border-emerald-400/30"
               title="Accéder à la release note"
             >
-              <span class="material-icons text-base">description</span>
+              <span class="material-icons text-lg group-hover:scale-110 transition-transform">description</span>
               <span>Release Note</span>
             </button>
           </div>
@@ -207,35 +220,48 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               </span>
             </div>
 
-            <!-- Action Buttons (below type badge) -->
-            <div class="absolute top-10 right-2 z-10 flex items-center space-x-1">
-              <button
-                appCanAccess="RELEASES"
-                accessLevel="write"
-                (click)="startEditingDate(release, $event)"
-                class="p-2 text-gray-600 dark:text-gray-400 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg transition-all duration-200 backdrop-blur-sm"
-                title="Modifier les informations"
-              >
-                <span class="material-icons text-lg">edit</span>
-              </button>
-              <button
-                appCanAccess="RELEASES"
-                accessLevel="write"
-                (click)="deleteRelease($event, release)"
-                class="p-2 text-red-600 dark:text-red-400 hover:bg-white/80 dark:hover:bg-gray-800/80 rounded-lg transition-all duration-200 backdrop-blur-sm"
-                title="Supprimer"
-              >
-                <span class="material-icons text-lg">delete</span>
-              </button>
-            </div>
-
             <!-- Header -->
-            <div class="flex items-start justify-between mb-4 pt-12 pr-8">
+            <div class="flex items-start justify-between mb-4 pt-8">
               <div class="flex-1">
                 <h3 [class]="getReleaseTypeColors(release.type).text"
                     class="text-xl font-bold mb-1">
                   {{ release.name }}
                 </h3>
+              </div>
+
+              <!-- Kebab menu (3 dots) -->
+              <div class="relative">
+                <button
+                  appCanAccess="RELEASES"
+                  accessLevel="write"
+                  (click)="toggleKebabMenu(release.id!, $event)"
+                  class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200"
+                  title="Plus d'options"
+                >
+                  <span class="material-icons">more_vert</span>
+                </button>
+
+                <!-- Dropdown menu -->
+                <div
+                  *ngIf="openKebabMenuId === release.id"
+                  class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-30 overflow-hidden"
+                  (click)="$event.stopPropagation()"
+                >
+                  <button
+                    (click)="startEditingDate(release, $event); closeKebabMenu()"
+                    class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+                  >
+                    <span class="material-icons text-gray-600 dark:text-gray-400">edit</span>
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">Modifier</span>
+                  </button>
+                  <button
+                    (click)="deleteRelease($event, release); closeKebabMenu()"
+                    class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+                  >
+                    <span class="material-icons text-red-600 dark:text-red-400">delete</span>
+                    <span class="text-sm font-medium text-red-600 dark:text-red-400">Supprimer</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -276,22 +302,22 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               </div>
             </div>
 
-            <!-- Footer -->
+            <!-- Footer - Main Actions -->
             <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
               <button
                 (click)="navigateToPreparation(release.slug, $event)"
-                class="flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                class="group flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98] border border-blue-400/30"
                 title="Accéder à la préparation MEP"
               >
-                <span class="material-icons text-base">assignment</span>
+                <span class="material-icons text-lg group-hover:rotate-12 transition-transform">assignment_turned_in</span>
                 <span>Prépa MEP</span>
               </button>
               <button
                 (click)="navigateToReleaseNote(release.slug, $event)"
-                class="flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all duration-200 hover:shadow-md"
+                class="group flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98] border border-emerald-400/30"
                 title="Accéder à la release note"
               >
-                <span class="material-icons text-base">description</span>
+                <span class="material-icons text-lg group-hover:scale-110 transition-transform">description</span>
                 <span>Release Note</span>
               </button>
             </div>
@@ -565,6 +591,8 @@ export class ReleasesListComponent implements OnInit {
   newMepDate = '';
   newReleaseName = '';
 
+  openKebabMenuId: string | null = null;
+
   newRelease: any = {
     name: '',
     version: '',
@@ -611,6 +639,14 @@ export class ReleasesListComponent implements OnInit {
           return releaseDate < today;
         })
         .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime());
+    });
+
+    // Close kebab menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        this.closeKebabMenu();
+      }
     });
   }
 
@@ -813,6 +849,15 @@ export class ReleasesListComponent implements OnInit {
         'Impossible de supprimer la release. Veuillez réessayer.'
       );
     }
+  }
+
+  toggleKebabMenu(releaseId: string, event: Event): void {
+    event.stopPropagation();
+    this.openKebabMenuId = this.openKebabMenuId === releaseId ? null : releaseId;
+  }
+
+  closeKebabMenu(): void {
+    this.openKebabMenuId = null;
   }
 
 }

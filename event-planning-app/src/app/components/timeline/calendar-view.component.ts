@@ -39,43 +39,46 @@ interface DayCard {
   imports: [CommonModule, CanAccessDirective],
   template: `
     <div class="quarterly-view-container">
-      <!-- Scroll container vertical -->
+      <!-- Scroll container vertical - RESPONSIVE -->
       <div
         class="overflow-y-auto custom-scrollbar"
         #scrollContainer
         (scroll)="onScroll($event)"
-        style="max-height: calc(100vh - 300px);"
+        style="max-height: calc(100vh - 250px);"
       >
         <div class="space-y-8 pb-6">
           <div *ngFor="let monthCard of monthCards" class="month-section">
-            <!-- En-tête du mois -->
-            <div class="sticky top-0 z-10 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-2 rounded-t-xl shadow-md mb-4 relative overflow-hidden">
+            <!-- En-tête du mois - RESPONSIVE -->
+            <div class="sticky top-0 z-10 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-3 sm:px-4 py-2.5 sm:py-2 rounded-t-xl shadow-md mb-4 relative overflow-hidden">
               <div class="absolute inset-0 bg-black/10"></div>
-              <!-- Déco géométrique - Accent subtil -->
-              <div class="absolute right-2 top-1/2 -translate-y-1/2">
+              <!-- Déco géométrique - Accent subtil (caché sur très petit écran) -->
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:block">
                 <div class="flex items-center space-x-1">
                   <div class="w-1.5 h-1.5 bg-white/20 rounded-full"></div>
                   <div class="w-1 h-1 bg-white/30 rounded-full"></div>
                   <div class="w-1.5 h-1.5 bg-white/25 rounded-full"></div>
                 </div>
               </div>
-              <h3 class="text-base font-bold relative z-10">
+              <h3 class="text-lg sm:text-base font-bold relative z-10">
                 {{ monthCard.monthName }} {{ monthCard.year }}
               </h3>
             </div>
 
             <!-- Grille des semaines -->
-            <div class="space-y-3 px-2">
+            <div class="space-y-3 px-1 sm:px-2">
               <div *ngFor="let week of getWeeks(monthCard.days)" class="week-row">
-                <!-- En-tête de semaine -->
-                <div class="flex items-center mb-2 px-2">
-                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                <!-- En-tête de semaine - RESPONSIVE -->
+                <div class="flex items-center mb-2 px-1 sm:px-2">
+                  <span class="text-sm sm:text-xs font-semibold text-gray-500 dark:text-gray-400">
                     Semaine {{ week[0].weekNumber }}
                   </span>
                 </div>
 
-                <!-- Jours de la semaine -->
-                <div class="grid grid-cols-7 gap-2">
+                <!-- Jours de la semaine - RESPONSIVE -->
+                <!-- Mobile (360px-440px): 1 colonne -->
+                <!-- Tablet (810px): 4 colonnes -->
+                <!-- Desktop (1920px+): 7 colonnes -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
                   <div
                     *ngFor="let day of week"
                     class="day-card-mini"
@@ -113,10 +116,10 @@ interface DayCard {
                       >
                         <div class="absolute inset-0 bg-black/10"></div>
                         <div class="relative z-10 text-center">
-                          <div class="text-[9px] uppercase tracking-wide font-semibold opacity-90">
+                          <div class="text-[10px] sm:text-[9px] uppercase tracking-wide font-semibold opacity-90">
                             {{ day.dayName }}
                           </div>
-                          <div class="text-xl font-bold">{{ day.dayNumber }}</div>
+                          <div class="text-2xl sm:text-xl font-bold">{{ day.dayNumber }}</div>
                         </div>
                       </div>
 
@@ -125,10 +128,10 @@ interface DayCard {
                         <div *ngIf="day.events.length === 0" class="h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500">
                           <button
                             (click)="onAddEvent(day.dateStr)"
-                            class="p-1 hover:bg-primary-100 dark:hover:bg-primary-900/20 rounded text-primary-500 transition-colors"
+                            class="p-2 sm:p-1 hover:bg-primary-100 dark:hover:bg-primary-900/20 rounded text-primary-500 transition-colors touch-target"
                             title="Ajouter"
                           >
-                            <span class="material-icons text-sm">add_circle_outline</span>
+                            <span class="material-icons text-lg sm:text-sm">add_circle_outline</span>
                           </button>
                         </div>
 
@@ -153,10 +156,10 @@ interface DayCard {
                                 </span>
                               </div>
                               <div class="flex-1 min-w-0">
-                                <h4 class="font-bold text-gray-900 dark:text-white text-[11px] leading-tight line-clamp-2">
+                                <h4 class="font-bold text-gray-900 dark:text-white text-xs sm:text-[11px] leading-tight line-clamp-2">
                                   {{ event.title }}
                                 </h4>
-                                <div *ngIf="event.startTime" class="text-[9px] text-gray-600 dark:text-gray-400">
+                                <div *ngIf="event.startTime" class="text-[10px] sm:text-[9px] text-gray-600 dark:text-gray-400">
                                   {{ event.startTime }}
                                 </div>
                               </div>
@@ -177,23 +180,23 @@ interface DayCard {
                             appCanAccess="CALENDAR"
                             accessLevel="write"
                             (click)="onAddEvent(day.dateStr)"
-                            class="w-full py-1 border border-dashed border-gray-300 dark:border-gray-600 rounded text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-colors text-[10px] font-medium flex items-center justify-center"
+                            class="w-full py-1.5 sm:py-1 border border-dashed border-gray-300 dark:border-gray-600 rounded text-gray-500 dark:text-gray-400 hover:border-primary-500 hover:text-primary-500 transition-colors text-xs sm:text-[10px] font-medium flex items-center justify-center"
                             title="Ajouter un événement"
                           >
-                            <span class="material-icons" style="font-size: 14px;">add</span>
+                            <span class="material-icons text-base sm:text-sm">add</span>
                           </button>
                         </div>
                       </div>
 
                       <!-- Footer -->
                       <div class="px-2 py-1 bg-gray-100 dark:bg-gray-750 border-t border-gray-200 dark:border-gray-600">
-                        <div class="flex items-center justify-between text-[9px] text-gray-600 dark:text-gray-400">
-                          <span>{{ day.events.length }} evt</span>
+                        <div class="flex items-center justify-between text-[10px] sm:text-[9px] text-gray-600 dark:text-gray-400">
+                          <span>{{ day.events.length }} {{ day.events.length > 1 ? 'évts' : 'evt' }}</span>
                           <span *ngIf="day.isHoliday" class="text-red-500 dark:text-red-400">
-                            <span class="material-icons" style="font-size: 10px;">celebration</span>
+                            <span class="material-icons text-xs sm:text-[10px]">celebration</span>
                           </span>
                           <span *ngIf="day.isWeekend && !day.isHoliday" class="text-gray-500 dark:text-gray-400">
-                            <span class="material-icons" style="font-size: 10px;">weekend</span>
+                            <span class="material-icons text-xs sm:text-[10px]">weekend</span>
                           </span>
                         </div>
                       </div>
@@ -214,6 +217,32 @@ interface DayCard {
 
     .day-card-mini {
       min-height: 180px;
+    }
+
+    /* Responsive: Adjust day card height */
+    @media (max-width: 640px) {
+      .day-card-mini {
+        min-height: 220px; /* Plus haut sur mobile pour une lecture confortable */
+      }
+    }
+
+    @media (min-width: 641px) and (max-width: 1023px) {
+      .day-card-mini {
+        min-height: 200px; /* Hauteur moyenne sur tablette */
+      }
+    }
+
+    /* Touch targets - Minimum 44px pour accessibilité mobile */
+    .touch-target {
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    @media (min-width: 641px) {
+      .touch-target {
+        min-width: auto;
+        min-height: auto;
+      }
     }
 
     .day-card {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -19,10 +19,22 @@ interface NavItem {
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <aside class="sidebar" [class.collapsed]="isCollapsed">
+    <!-- Mobile backdrop overlay -->
+    <div
+      *ngIf="isMobileMenuOpen && isMobile"
+      class="sidebar-backdrop"
+      (click)="closeMobileMenu()"
+    ></div>
+
+    <aside
+      class="sidebar"
+      [class.collapsed]="isCollapsed && !isMobile"
+      [class.mobile-open]="isMobileMenuOpen"
+      [class.mobile-closed]="!isMobileMenuOpen && isMobile"
+    >
       <!-- Logo / Brand -->
-      <div class="sidebar-header" [class.collapsed]="isCollapsed">
-        <div class="flex items-center space-x-3" *ngIf="!isCollapsed">
+      <div class="sidebar-header" [class.collapsed]="isCollapsed && !isMobile">
+        <div class="flex items-center space-x-3" *ngIf="!isCollapsed || isMobile">
           <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
             <span class="material-icons text-white">dashboard</span>
           </div>
@@ -32,14 +44,14 @@ interface NavItem {
           </div>
         </div>
 
-        <!-- Toggle button -->
+        <!-- Toggle button (desktop) / Close button (mobile) -->
         <button
-          (click)="toggleSidebar()"
+          (click)="isMobile ? closeMobileMenu() : toggleSidebar()"
           class="toggle-btn"
-          [title]="isCollapsed ? 'Ouvrir la sidebar' : 'Fermer la sidebar'"
+          [title]="isMobile ? 'Fermer le menu' : (isCollapsed ? 'Ouvrir la sidebar' : 'Fermer la sidebar')"
         >
           <span class="material-icons text-gray-600 dark:text-gray-300">
-            {{ isCollapsed ? 'chevron_right' : 'chevron_left' }}
+            {{ isMobile ? 'close' : (isCollapsed ? 'chevron_right' : 'chevron_left') }}
           </span>
         </button>
       </div>
@@ -52,19 +64,20 @@ interface NavItem {
           routerLinkActive="active"
           [routerLinkActiveOptions]="{exact: item.route === '/home'}"
           class="nav-item"
-          [class.collapsed]="isCollapsed"
-          [title]="isCollapsed ? item.label : ''"
+          [class.collapsed]="isCollapsed && !isMobile"
+          [title]="(isCollapsed && !isMobile) ? item.label : ''"
+          (click)="onNavItemClick()"
         >
           <span class="material-icons">{{ item.icon }}</span>
-          <span *ngIf="!isCollapsed" class="nav-label">{{ item.label }}</span>
+          <span *ngIf="!isCollapsed || isMobile" class="nav-label">{{ item.label }}</span>
         </a>
       </nav>
 
       <!-- Footer (User info + Actions) -->
       <div class="sidebar-footer">
         <!-- User Info -->
-        <div *ngIf="currentUser" class="user-info mb-3" [class.collapsed]="isCollapsed">
-          <div *ngIf="!isCollapsed" class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+        <div *ngIf="currentUser" class="user-info mb-3" [class.collapsed]="isCollapsed && !isMobile">
+          <div *ngIf="!isCollapsed || isMobile" class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
             <div class="flex items-center space-x-3 mb-2">
               <div class="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center">
                 <span class="text-white font-semibold text-sm">
@@ -81,7 +94,7 @@ interface NavItem {
               </div>
             </div>
           </div>
-          <div *ngIf="isCollapsed" class="flex justify-center">
+          <div *ngIf="isCollapsed && !isMobile" class="flex justify-center">
             <div class="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center">
               <span class="text-white font-semibold text-sm">
                 {{ currentUser.firstName.charAt(0) }}{{ currentUser.lastName.charAt(0) }}
@@ -94,11 +107,11 @@ interface NavItem {
         <button
           (click)="toggleDarkMode()"
           class="nav-item w-full"
-          [class.collapsed]="isCollapsed"
-          [title]="isCollapsed ? 'Changer de thème' : ''"
+          [class.collapsed]="isCollapsed && !isMobile"
+          [title]="(isCollapsed && !isMobile) ? 'Changer de thème' : ''"
         >
           <span class="material-icons">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
-          <span *ngIf="!isCollapsed" class="nav-label">
+          <span *ngIf="!isCollapsed || isMobile" class="nav-label">
             {{ isDark ? 'Mode clair' : 'Mode sombre' }}
           </span>
         </button>
@@ -107,24 +120,60 @@ interface NavItem {
         <button
           (click)="logout()"
           class="nav-item w-full text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-          [class.collapsed]="isCollapsed"
-          [title]="isCollapsed ? 'Se déconnecter' : ''"
+          [class.collapsed]="isCollapsed && !isMobile"
+          [title]="(isCollapsed && !isMobile) ? 'Se déconnecter' : ''"
         >
           <span class="material-icons">logout</span>
-          <span *ngIf="!isCollapsed" class="nav-label">Déconnexion</span>
+          <span *ngIf="!isCollapsed || isMobile" class="nav-label">Déconnexion</span>
         </button>
       </div>
     </aside>
   `,
   styles: [`
+    /* Base sidebar styles */
     .sidebar {
-      @apply fixed left-0 top-0 h-screen bg-white dark:bg-gray-750 border-r border-gray-200 dark:border-gray-600 transition-all duration-300 z-40 flex flex-col;
+      @apply fixed left-0 top-0 h-screen bg-white dark:bg-gray-750 border-r border-gray-200 dark:border-gray-600 flex flex-col;
       width: 280px;
       overflow: hidden;
+      z-index: 1000;
+      transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
     }
 
-    .sidebar.collapsed {
-      width: 72px;
+    /* Desktop: Collapsed state */
+    @media (min-width: 1024px) {
+      .sidebar.collapsed {
+        width: 72px;
+      }
+    }
+
+    /* Mobile: Hidden by default, slide in when open */
+    @media (max-width: 640px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+        width: 280px;
+      }
+    }
+
+    /* Tablet (iPad Portrait): Auto-collapsed to icons only */
+    @media (min-width: 641px) and (max-width: 1023px) {
+      .sidebar {
+        width: 72px;
+      }
+    }
+
+    /* Backdrop for mobile */
+    .sidebar-backdrop {
+      @apply fixed inset-0 bg-black bg-opacity-50 z-[999];
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .sidebar-header {
@@ -132,8 +181,18 @@ interface NavItem {
       white-space: nowrap;
     }
 
-    .sidebar-header.collapsed {
-      @apply justify-center p-4;
+    /* Desktop collapsed header */
+    @media (min-width: 1024px) {
+      .sidebar-header.collapsed {
+        @apply justify-center p-4;
+      }
+    }
+
+    /* Tablet: Always show collapsed header */
+    @media (min-width: 641px) and (max-width: 1023px) {
+      .sidebar-header {
+        @apply justify-center p-4;
+      }
     }
 
     .toggle-btn {
@@ -148,8 +207,18 @@ interface NavItem {
       @apply flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 cursor-pointer;
     }
 
-    .nav-item.collapsed {
-      @apply justify-center px-0;
+    /* Desktop collapsed nav items */
+    @media (min-width: 1024px) {
+      .nav-item.collapsed {
+        @apply justify-center px-0;
+      }
+    }
+
+    /* Tablet: Always show collapsed nav items */
+    @media (min-width: 641px) and (max-width: 1023px) {
+      .nav-item {
+        @apply justify-center px-0;
+      }
     }
 
     .nav-item.active {
@@ -181,6 +250,8 @@ export class SidebarComponent implements OnInit {
   isCollapsed = false;
   isDark = false;
   currentUser: User | null = null;
+  isMobile = false;
+  isMobileMenuOpen = false;
 
   navItems: NavItem[] = [
     { label: 'Accueil', icon: 'home', route: '/home' },
@@ -195,12 +266,39 @@ export class SidebarComponent implements OnInit {
     private sidebarService: SidebarService,
     private authService: AuthService,
     private permissionService: PermissionService
-  ) {}
+  ) {
+    this.checkScreenSize();
+  }
+
+  @HostListener('window:resize')
+  onResize(): void {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize(): void {
+    const width = window.innerWidth;
+    this.isMobile = width <= 640; // Samsung S25 (360px) + iPhone 17 Pro Max (440px)
+
+    // Auto-close mobile menu if resizing to desktop
+    if (!this.isMobile && this.isMobileMenuOpen) {
+      this.isMobileMenuOpen = false;
+    }
+
+    // On tablet (iPad Portrait 810px), force collapsed sidebar
+    if (width > 640 && width <= 1023) {
+      this.isCollapsed = true;
+    }
+  }
 
   ngOnInit(): void {
     // Subscribe to sidebar state
     this.sidebarService.collapsed$.subscribe(collapsed => {
       this.isCollapsed = collapsed;
+    });
+
+    // Subscribe to mobile menu state
+    this.sidebarService.mobileMenuOpen$.subscribe(open => {
+      this.isMobileMenuOpen = open;
     });
 
     // Subscribe to current user and apply their theme preference
@@ -222,6 +320,23 @@ export class SidebarComponent implements OnInit {
 
   toggleSidebar(): void {
     this.sidebarService.toggle();
+  }
+
+  openMobileMenu(): void {
+    if (this.isMobile) {
+      this.sidebarService.openMobileMenu();
+    }
+  }
+
+  closeMobileMenu(): void {
+    this.sidebarService.closeMobileMenu();
+  }
+
+  onNavItemClick(): void {
+    // Close mobile menu when navigating
+    if (this.isMobile) {
+      this.closeMobileMenu();
+    }
   }
 
   async toggleDarkMode(): Promise<void> {

@@ -27,8 +27,7 @@ import { fr } from 'date-fns/locale';
     MatDialogModule,
     MajorFeaturesComponent,
     FilterToolbarComponent,
-    MicroservicesTableComponent,
-    ReleaseNoteEntryModalComponent
+    MicroservicesTableComponent
   ],
   template: `
     <div class="max-w-7xl mx-auto space-y-6" *ngIf="release">
@@ -197,7 +196,7 @@ import { fr } from 'date-fns/locale';
     ></app-release-note-entry-modal>
   `
 })
-export class ReleaseNoteComponent implements OnInit {
+export class ReleaseNoteRefactoredComponent implements OnInit {
   release: Release | null = null;
   entries: ReleaseNoteEntry[] = [];
   filteredEntries: ReleaseNoteEntry[] = [];

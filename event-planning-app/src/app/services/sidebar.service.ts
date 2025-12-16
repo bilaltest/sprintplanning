@@ -8,6 +8,9 @@ export class SidebarService {
   private collapsedSubject = new BehaviorSubject<boolean>(false);
   public collapsed$: Observable<boolean> = this.collapsedSubject.asObservable();
 
+  private mobileMenuOpenSubject = new BehaviorSubject<boolean>(false);
+  public mobileMenuOpen$: Observable<boolean> = this.mobileMenuOpenSubject.asObservable();
+
   constructor() {
     // Load initial state from localStorage
     const collapsed = localStorage.getItem('sidebarCollapsed');
@@ -29,5 +32,17 @@ export class SidebarService {
 
   isCollapsed(): boolean {
     return this.collapsedSubject.value;
+  }
+
+  openMobileMenu(): void {
+    this.mobileMenuOpenSubject.next(true);
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpenSubject.next(false);
+  }
+
+  isMobileMenuOpen(): boolean {
+    return this.mobileMenuOpenSubject.value;
   }
 }

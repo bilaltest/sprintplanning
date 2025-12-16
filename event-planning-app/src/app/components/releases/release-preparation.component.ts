@@ -210,113 +210,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           </div>
         </div>
 
-        <!-- 2. Fonctionnalités Majeures -->
-        <div class="card overflow-hidden">
-          <div class="p-4 border-b bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-green-100 dark:hover:from-green-900/30 transition-all duration-200" (click)="toggleSection('features')">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center">
-                <span class="material-icons text-xl text-green-600 dark:text-green-400">star</span>
-              </div>
-              <h2 class="text-lg font-bold text-gray-900 dark:text-white">Fonctionnalités Majeures</h2>
-            </div>
-            <span class="material-icons text-gray-500">
-              {{ expandedSections.has('features') ? 'expand_less' : 'expand_more' }}
-            </span>
-          </div>
-          <div *ngIf="expandedSections.has('features')" class="p-6 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900/30">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm h-full">
-              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-3 mb-3">
-                <div class="flex items-center space-x-2">
-                  <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
-                    <span class="text-white font-bold text-sm">{{ squad.squadNumber }}</span>
-                  </div>
-                  <h3 class="text-base font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h3>
-                </div>
-                <button
-                  appCanAccess="RELEASES"
-                  accessLevel="write"
-                  (click)="startAddingFeature(squad)"
-                  class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
-                >
-                  <span class="material-icons text-sm">add</span>
-                  <span>Ajouter</span>
-                </button>
-              </div>
-
-              <!-- Add/Edit Feature Form -->
-              <div *ngIf="addingFeatureToSquad?.id === squad.id" class="form-inline-glass">
-                <h4 class="font-medium text-gray-900 dark:text-white mb-3">
-                  {{ editingFeatureId ? "Modifier la fonctionnalité" : "Nouvelle fonctionnalité" }}
-                </h4>
-                <div class="space-y-3">
-                  <input
-                    type="text"
-                    [(ngModel)]="newFeature.title"
-                    placeholder="Titre de la fonctionnalité"
-                    class="input text-sm w-full"
-                  />
-                  <textarea
-                    [(ngModel)]="newFeature.description"
-                    placeholder="Description (optionnel)"
-                    rows="2"
-                    class="input text-sm w-full"
-                  ></textarea>
-                  <div class="flex space-x-2 pt-1">
-                    <button appCanAccess="RELEASES" accessLevel="write" (click)="addFeature(squad.id!)" class="btn btn-primary btn-sm">Enregistrer</button>
-                    <button (click)="cancelAddFeature()" class="btn btn-secondary btn-sm">Annuler</button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Features List -->
-              <div class="mt-3">
-                <div *ngIf="squad.features.length > 0" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
-                  <div *ngFor="let feature of squad.features" class="group relative bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent border-l-4 border-green-500 p-3 rounded-r-lg hover:shadow-md transition-all duration-200">
-                    <div class="flex items-start justify-between">
-                      <div class="flex items-start space-x-3 flex-1">
-                        <div class="flex-shrink-0 w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
-                          <span class="material-icons text-sm text-green-600 dark:text-green-400">star</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                          <h4 class="font-semibold text-gray-900 dark:text-white leading-snug">{{ feature.title }}</h4>
-                          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed" *ngIf="feature.description">{{ feature.description }}</p>
-                        </div>
-                      </div>
-                      <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity ml-3">
-                        <button appCanAccess="RELEASES" accessLevel="write" (click)="startEditingFeature(squad, feature)" class="p-1.5 text-primary-600 hover:text-primary-800 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-lg transition-colors">
-                          <span class="material-icons text-base">edit</span>
-                        </button>
-                        <button appCanAccess="RELEASES" accessLevel="write" (click)="deleteFeature(squad.id!, feature.id!)" class="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                          <span class="material-icons text-base">delete</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div *ngIf="squad.features.length === 0" class="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 transition-all hover:border-gray-400 dark:hover:border-gray-500">
-                  <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
-                    <span class="material-icons text-3xl text-green-400 dark:text-green-500">playlist_add_check</span>
-                  </div>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">Aucune fonctionnalité majeure</p>
-                  <label class="relative inline-flex items-center cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      [checked]="squad.featuresEmptyConfirmed"
-                      (change)="toggleEmptyStatus(squad, 'features')"
-                      class="sr-only peer"
-                    >
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary-600 shadow-inner"></div>
-                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Rien à signaler (Néant)</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. Actions Pré-MEP -->
+        <!-- 2. Actions Pré-MEP -->
         <div class="card overflow-hidden">
           <div class="p-4 border-b bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-green-100 dark:hover:from-green-900/30 transition-all duration-200" (click)="toggleSection('pre_mep')">
             <div class="flex items-center space-x-3">
@@ -657,7 +551,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
           </div>
         </div>
 
-        <!-- 4. Actions Post-MEP -->
+        <!-- 3. Actions Post-MEP -->
         <div class="card overflow-hidden">
           <div class="p-4 border-b bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-green-100 dark:hover:from-green-900/30 transition-all duration-200" (click)="toggleSection('post_mep')">
             <div class="flex items-center space-x-3">
@@ -1061,13 +955,8 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 })
 export class ReleasePreparationComponent implements OnInit {
   release: Release | null = null;
-  expandedSections = new Set<string>(['tontons', 'features', 'pre_mep', 'post_mep']);
+  expandedSections = new Set<string>(['tontons', 'pre_mep', 'post_mep']);
   exportMenuOpen = false;
-
-  // Feature form
-  addingFeatureToSquad: Squad | null = null;
-  editingFeatureId: string | null = null;
-  newFeature: CreateFeatureDto = { title: '', description: '' };
 
   // Action form
   addingActionToSquad: Squad | null = null;
@@ -1182,84 +1071,6 @@ export class ReleasePreparationComponent implements OnInit {
       a.phase === phase &&
       (!a.flipping || (a.type !== 'feature_flipping' && a.type !== 'memory_flipping'))
     );
-  }
-
-  // Feature methods
-  startAddingFeature(squad: Squad): void {
-    this.addingFeatureToSquad = squad;
-    this.editingFeatureId = null;
-    this.newFeature = { title: '', description: '' };
-  }
-
-  startEditingFeature(squad: Squad, feature: Feature): void {
-    this.addingFeatureToSquad = squad;
-    this.editingFeatureId = feature.id!;
-    this.newFeature = {
-      title: feature.title,
-      description: feature.description || ''
-    };
-  }
-
-  async addFeature(squadId: string): Promise<void> {
-    if (!this.newFeature.title.trim()) return;
-
-    try {
-      if (this.editingFeatureId) {
-        await this.releaseService.updateFeature(this.editingFeatureId, this.newFeature);
-      } else {
-        await this.releaseService.addFeature(squadId, this.newFeature);
-      }
-
-      await this.loadRelease();
-      this.cancelAddFeature();
-      await this.checkAndUpdateCompletion(squadId);
-
-      this.toastService.success(
-        this.editingFeatureId ? 'Fonctionnalité modifiée' : 'Fonctionnalité ajoutée',
-        `${this.newFeature.title} a été ${this.editingFeatureId ? 'modifiée' : 'ajoutée'} avec succès`
-      );
-    } catch (error) {
-      console.error('Error adding/updating feature:', error);
-      this.toastService.error(
-        'Erreur',
-        `Impossible ${this.editingFeatureId ? 'de modifier' : 'd\'ajouter'} la fonctionnalité. Veuillez réessayer.`
-      );
-    }
-  }
-
-  cancelAddFeature(): void {
-    this.addingFeatureToSquad = null;
-    this.editingFeatureId = null;
-    this.newFeature = { title: '', description: '' };
-  }
-
-  async deleteFeature(squadId: string, featureId: string): Promise<void> {
-    const confirmed = await this.confirmationService.confirm({
-      title: 'Supprimer la fonctionnalité',
-      message: 'Êtes-vous sûr de vouloir supprimer cette fonctionnalité ? Cette action est irréversible.',
-      confirmText: 'Supprimer',
-      cancelText: 'Annuler',
-      confirmButtonClass: 'danger'
-    });
-
-    if (!confirmed) return;
-
-    try {
-      await this.releaseService.deleteFeature(featureId);
-      await this.loadRelease();
-      await this.checkAndUpdateCompletion(squadId);
-
-      this.toastService.success(
-        'Fonctionnalité supprimée',
-        'La fonctionnalité a été supprimée avec succès'
-      );
-    } catch (error) {
-      console.error('Error deleting feature:', error);
-      this.toastService.error(
-        'Erreur de suppression',
-        'Impossible de supprimer la fonctionnalité. Veuillez réessayer.'
-      );
-    }
   }
 
   // Action methods
@@ -1694,32 +1505,29 @@ export class ReleasePreparationComponent implements OnInit {
   }
 
   getSquadProgress(squad: Squad): number {
-    let completedSections = 0;
-    const totalSections = 4;
+    let progress = 0;
 
-    // Tonton MEP
-    if (squad.tontonMep && squad.tontonMep.trim() !== '') {
-      completedSections++;
-    }
-
-    // Features
-    if (squad.features.length > 0 || squad.featuresEmptyConfirmed) {
-      completedSections++;
-    }
-
-    // Pre-MEP
+    // Pre-MEP: 50%
     const preMepActions = this.getActionsByPhase(squad, 'pre_mep');
-    if (preMepActions.length > 0 || squad.preMepEmptyConfirmed) {
-      completedSections++;
+    const completedPreMepActions = preMepActions.filter(a => a.status === 'completed').length;
+
+    if (preMepActions.length === 0 && squad.preMepEmptyConfirmed) {
+      progress += 50; // Pre-MEP confirmé comme vide
+    } else if (preMepActions.length > 0) {
+      progress += (completedPreMepActions / preMepActions.length) * 50;
     }
 
-    // Post-MEP
+    // Post-MEP: 50%
     const postMepActions = this.getActionsByPhase(squad, 'post_mep');
-    if (postMepActions.length > 0 || squad.postMepEmptyConfirmed) {
-      completedSections++;
+    const completedPostMepActions = postMepActions.filter(a => a.status === 'completed').length;
+
+    if (postMepActions.length === 0 && squad.postMepEmptyConfirmed) {
+      progress += 50; // Post-MEP confirmé comme vide
+    } else if (postMepActions.length > 0) {
+      progress += (completedPostMepActions / postMepActions.length) * 50;
     }
 
-    return Math.round((completedSections / totalSections) * 100);
+    return Math.round(progress);
   }
 
   getGlobalProgress(): number {
@@ -1737,21 +1545,21 @@ export class ReleasePreparationComponent implements OnInit {
   getMissingSteps(squad: Squad): string {
     const missing: string[] = [];
 
-    if (!squad.tontonMep || squad.tontonMep.trim() === '') {
-      missing.push('Tonton MEP');
-    }
-
-    if (squad.features.length === 0 && !squad.featuresEmptyConfirmed) {
-      missing.push('Fonctionnalités');
-    }
-
     const preMepActions = this.getActionsByPhase(squad, 'pre_mep');
-    if (preMepActions.length === 0 && !squad.preMepEmptyConfirmed) {
+    const completedPreMepActions = preMepActions.filter(a => a.status === 'completed').length;
+
+    if (preMepActions.length > 0 && completedPreMepActions < preMepActions.length) {
+      missing.push(`Pré-MEP (${completedPreMepActions}/${preMepActions.length})`);
+    } else if (preMepActions.length === 0 && !squad.preMepEmptyConfirmed) {
       missing.push('Actions Pré-MEP');
     }
 
     const postMepActions = this.getActionsByPhase(squad, 'post_mep');
-    if (postMepActions.length === 0 && !squad.postMepEmptyConfirmed) {
+    const completedPostMepActions = postMepActions.filter(a => a.status === 'completed').length;
+
+    if (postMepActions.length > 0 && completedPostMepActions < postMepActions.length) {
+      missing.push(`Post-MEP (${completedPostMepActions}/${postMepActions.length})`);
+    } else if (postMepActions.length === 0 && !squad.postMepEmptyConfirmed) {
       missing.push('Actions Post-MEP');
     }
 
@@ -1762,11 +1570,9 @@ export class ReleasePreparationComponent implements OnInit {
     return 'Manquant : ' + missing.join(', ');
   }
 
-  async toggleEmptyStatus(squad: Squad, section: 'features' | 'pre_mep' | 'post_mep'): Promise<void> {
+  async toggleEmptyStatus(squad: Squad, section: 'pre_mep' | 'post_mep'): Promise<void> {
     const updateData: any = {};
-    if (section === 'features') {
-      updateData.featuresEmptyConfirmed = !squad.featuresEmptyConfirmed;
-    } else if (section === 'pre_mep') {
+    if (section === 'pre_mep') {
       updateData.preMepEmptyConfirmed = !squad.preMepEmptyConfirmed;
     } else if (section === 'post_mep') {
       updateData.postMepEmptyConfirmed = !squad.postMepEmptyConfirmed;
@@ -1853,23 +1659,7 @@ export class ReleasePreparationComponent implements OnInit {
     md += this.generateMarkdownTable(tontonHeaders, tontonRows);
     md += '\n';
 
-    // 2. Fonctionnalités Majeures
-    md += `## Fonctionnalités Majeures\n\n`;
-    release.squads.forEach(squad => {
-      md += `### Squad ${squad.squadNumber}\n\n`;
-      if (squad.features.length > 0) {
-        const featureHeaders = ['Titre', 'Description'];
-        const featureRows = squad.features.map(f => [f.title, f.description || '']);
-        md += this.generateMarkdownTable(featureHeaders, featureRows);
-        md += '\n';
-      } else if (squad.featuresEmptyConfirmed) {
-        md += '_Néant_\n\n';
-      } else {
-        md += '_Non renseigné_\n\n';
-      }
-    });
-
-    // 3. Actions Pré-MEP
+    // 2. Actions Pré-MEP
     md += `## Actions Pré-MEP\n\n`;
     release.squads.forEach(squad => {
       md += `### Squad ${squad.squadNumber}\n\n`;
@@ -1883,7 +1673,7 @@ export class ReleasePreparationComponent implements OnInit {
       }
     });
 
-    // 4. Actions Post-MEP
+    // 3. Actions Post-MEP
     md += `## Actions Post-MEP\n\n`;
     release.squads.forEach(squad => {
       md += `### Squad ${squad.squadNumber}\n\n`;
@@ -2013,22 +1803,7 @@ export class ReleasePreparationComponent implements OnInit {
     ]);
     html += this.generateHTMLTable(tontonHeaders, tontonRows);
 
-    // 2. Fonctionnalités Majeures
-    html += `<h2>Fonctionnalités Majeures</h2>`;
-    release.squads.forEach(squad => {
-      html += `<h3>Squad ${squad.squadNumber}</h3>`;
-      if (squad.features.length > 0) {
-        const featureHeaders = ['Titre', 'Description'];
-        const featureRows = squad.features.map(f => [f.title, f.description || '']);
-        html += this.generateHTMLTable(featureHeaders, featureRows);
-      } else if (squad.featuresEmptyConfirmed) {
-        html += `<p class="empty-section">Néant</p>`;
-      } else {
-        html += `<p class="empty-section" style="color: #ef4444;">Non renseigné</p>`;
-      }
-    });
-
-    // 3. Actions Pré-MEP
+    // 2. Actions Pré-MEP
     html += `<h2>Actions Pré-MEP</h2>`;
     release.squads.forEach(squad => {
       html += `<h3>Squad ${squad.squadNumber}</h3>`;
@@ -2042,7 +1817,7 @@ export class ReleasePreparationComponent implements OnInit {
       }
     });
 
-    // 4. Actions Post-MEP
+    // 3. Actions Post-MEP
     html += `<h2>Actions Post-MEP</h2>`;
     release.squads.forEach(squad => {
       html += `<h3>Squad ${squad.squadNumber}</h3>`;
