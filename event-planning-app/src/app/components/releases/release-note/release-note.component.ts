@@ -23,6 +23,13 @@ interface GroupedEntry {
   isExpanded: boolean;
 }
 
+interface ColumnConfig {
+  key: string;
+  label: string;
+  visible: boolean;
+  alwaysVisible?: boolean; // Colonnes qui ne peuvent pas être cachées
+}
+
 @Component({
   selector: 'app-release-note',
   standalone: true,
@@ -31,7 +38,7 @@ interface GroupedEntry {
     <div class="max-w-7xl mx-auto space-y-6" *ngIf="release">
 
       <!-- Header avec gradient -->
-      <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-900 rounded-2xl shadow-xl p-8">
+      <div class="relative overflow-visible bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-900 rounded-2xl shadow-xl p-8">
         <div class="absolute inset-0 opacity-10">
           <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
         </div>
@@ -65,14 +72,71 @@ interface GroupedEntry {
               </div>
             </div>
 
-            <!-- Link to Prépa MEP -->
-            <a
-              [routerLink]="['/releases', release.id, 'preparation']"
-              class="hidden lg:flex items-center space-x-2 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all duration-200 backdrop-blur-sm border border-white/20 hover:shadow-lg"
-            >
-              <span class="material-icons">assignment</span>
-              <span class="font-medium">Voir Prépa MEP</span>
-            </a>
+            <!-- Actions buttons -->
+            <div class="hidden lg:flex items-center space-x-3">
+              <!-- Export dropdown -->
+              <div class="relative">
+                <button
+                  #exportButton
+                  (click)="toggleExportDropdown($event)"
+                  class="flex items-center space-x-2 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all duration-200 backdrop-blur-sm border border-white/20 hover:shadow-lg"
+                >
+                  <span class="material-icons">download</span>
+                  <span class="font-medium">Exporter</span>
+                  <span class="material-icons text-lg">{{ isExportDropdownOpen ? 'expand_less' : 'expand_more' }}</span>
+                </button>
+
+                <!-- Dropdown menu -->
+                <div
+                  *ngIf="isExportDropdownOpen"
+                  class="fixed mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-[100] overflow-hidden"
+                  [style.top.px]="exportDropdownTop"
+                  [style.right.px]="exportDropdownRight"
+                >
+                  <button
+                    (click)="exportMarkdown()"
+                    class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+                  >
+                    <span class="material-icons text-gray-600 dark:text-gray-400">article</span>
+                    <div>
+                      <div class="font-medium text-gray-900 dark:text-white">Markdown</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Format .md</div>
+                    </div>
+                  </button>
+
+                  <button
+                    (click)="exportHtml()"
+                    class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+                  >
+                    <span class="material-icons text-gray-600 dark:text-gray-400">code</span>
+                    <div>
+                      <div class="font-medium text-gray-900 dark:text-white">HTML</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Email & web</div>
+                    </div>
+                  </button>
+
+                  <button
+                    (click)="exportPng()"
+                    class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
+                  >
+                    <span class="material-icons text-gray-600 dark:text-gray-400">image</span>
+                    <div>
+                      <div class="font-medium text-gray-900 dark:text-white">PNG</div>
+                      <div class="text-xs text-gray-500 dark:text-gray-400">Image</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Link to Prépa MEP -->
+              <a
+                [routerLink]="['/releases', release.id, 'preparation']"
+                class="flex items-center space-x-2 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all duration-200 backdrop-blur-sm border border-white/20 hover:shadow-lg"
+              >
+                <span class="material-icons">assignment</span>
+                <span class="font-medium">Voir Prépa MEP</span>
+              </a>
+            </div>
           </div>
 
           <p class="text-white/90 mt-4 text-lg leading-relaxed max-w-3xl" *ngIf="release.description">
@@ -125,66 +189,59 @@ interface GroupedEntry {
         </div>
 
         <div class="flex items-center space-x-3">
+          <!-- Column selector -->
+          <div class="relative">
+            <button
+              (click)="toggleColumnSelector()"
+              class="flex items-center space-x-2 px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-all duration-200 border border-gray-300 dark:border-gray-600"
+              title="Colonnes visibles"
+            >
+              <span class="material-icons text-sm">view_column</span>
+              <span class="text-sm font-medium">{{ getVisibleColumnsCount() }}/{{ columns.length }}</span>
+              <span class="material-icons text-base">{{ isColumnSelectorOpen ? 'expand_less' : 'expand_more' }}</span>
+            </button>
+
+            <!-- Column selector dropdown -->
+            <div
+              *ngIf="isColumnSelectorOpen"
+              class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden"
+            >
+              <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="font-semibold text-gray-900 dark:text-white text-sm">Colonnes visibles</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Sélectionnez les colonnes à afficher</p>
+              </div>
+              <div class="max-h-96 overflow-y-auto">
+                <label
+                  *ngFor="let column of columns"
+                  class="flex items-center px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                  [class.opacity-50]="column.alwaysVisible"
+                  [class.cursor-not-allowed]="column.alwaysVisible"
+                >
+                  <input
+                    type="checkbox"
+                    [checked]="column.visible"
+                    [disabled]="column.alwaysVisible"
+                    (change)="toggleColumnVisibility(column)"
+                    class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 disabled:cursor-not-allowed"
+                  />
+                  <span class="ml-3 text-sm text-gray-900 dark:text-white">
+                    {{ column.label }}
+                    <span *ngIf="column.alwaysVisible" class="text-xs text-gray-400 ml-1">(toujours visible)</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
           <!-- Add microservice button -->
           <button
             *ngIf="hasWriteAccess()"
             (click)="openAddMicroserviceModal()"
             class="flex items-center space-x-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
           >
-            <span class="material-icons">add</span>
+            <span class="material-icons text-sm">add</span>
             <span class="font-medium">Ajouter un microservice</span>
           </button>
-
-          <!-- Export dropdown -->
-          <div class="relative">
-            <button
-              (click)="toggleExportDropdown()"
-              class="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-all duration-200 border border-gray-300 dark:border-gray-600"
-            >
-              <span class="material-icons">download</span>
-              <span class="font-medium">Exporter</span>
-              <span class="material-icons text-lg">{{ isExportDropdownOpen ? 'expand_less' : 'expand_more' }}</span>
-            </button>
-
-            <!-- Dropdown menu -->
-            <div
-              *ngIf="isExportDropdownOpen"
-              class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden"
-            >
-              <button
-                (click)="exportMarkdown()"
-                class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
-              >
-                <span class="material-icons text-gray-600 dark:text-gray-400">article</span>
-                <div>
-                  <div class="font-medium text-gray-900 dark:text-white">Markdown</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">Format .md</div>
-                </div>
-              </button>
-
-              <button
-                (click)="exportHtml()"
-                class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
-              >
-                <span class="material-icons text-gray-600 dark:text-gray-400">code</span>
-                <div>
-                  <div class="font-medium text-gray-900 dark:text-white">HTML</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">Email & web</div>
-                </div>
-              </button>
-
-              <button
-                (click)="exportPng()"
-                class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center space-x-3"
-              >
-                <span class="material-icons text-gray-600 dark:text-gray-400">image</span>
-                <div>
-                  <div class="font-medium text-gray-900 dark:text-white">PNG</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">Image</div>
-                </div>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -194,16 +251,56 @@ interface GroupedEntry {
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-900/50 sticky top-0 z-10">
               <tr>
-                <th class="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[70px]">Ordre</th>
-                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">Squad</th>
-                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Microservice</th>
-                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-24">Solution</th>
-                <th class="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-16">MEP</th>
-                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[110px]">Tag</th>
-                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">Tag N-1</th>
-                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[110px]">MB Lib</th>
-                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Changes</th>
-                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-40">Commentaire</th>
+                <th *ngIf="isColumnVisible('deployOrder')" class="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[70px]">
+                  <button (click)="toggleSort('deployOrder')" class="flex items-center justify-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors w-full">
+                    <span>Ordre</span>
+                    <span class="material-icons text-sm">{{ getSortIcon('deployOrder') }}</span>
+                  </button>
+                </th>
+                <th *ngIf="isColumnVisible('squad')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">
+                  <button (click)="toggleSort('squad')" class="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                    <span>Squad</span>
+                    <span class="material-icons text-sm">{{ getSortIcon('squad') }}</span>
+                  </button>
+                </th>
+                <th *ngIf="isColumnVisible('microservice')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                  <button (click)="toggleSort('microservice')" class="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                    <span>Microservice</span>
+                    <span class="material-icons text-sm">{{ getSortIcon('microservice') }}</span>
+                  </button>
+                </th>
+                <th *ngIf="isColumnVisible('solution')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-24">
+                  <button (click)="toggleSort('solution')" class="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                    <span>Solution</span>
+                    <span class="material-icons text-sm">{{ getSortIcon('solution') }}</span>
+                  </button>
+                </th>
+                <th *ngIf="isColumnVisible('partEnMep')" class="px-3 py-2 text-center text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-16">
+                  <button (click)="toggleSort('partEnMep')" class="flex items-center justify-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors w-full">
+                    <span>MEP</span>
+                    <span class="material-icons text-sm">{{ getSortIcon('partEnMep') }}</span>
+                  </button>
+                </th>
+                <th *ngIf="isColumnVisible('tag')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[110px]">
+                  <button (click)="toggleSort('tag')" class="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                    <span>Tag</span>
+                    <span class="material-icons text-sm">{{ getSortIcon('tag') }}</span>
+                  </button>
+                </th>
+                <th *ngIf="isColumnVisible('previousTag')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-20">
+                  <button (click)="toggleSort('previousTag')" class="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                    <span>Tag N-1</span>
+                    <span class="material-icons text-sm">{{ getSortIcon('previousTag') }}</span>
+                  </button>
+                </th>
+                <th *ngIf="isColumnVisible('parentVersion')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[110px]">
+                  <button (click)="toggleSort('parentVersion')" class="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                    <span>MB Lib</span>
+                    <span class="material-icons text-sm">{{ getSortIcon('parentVersion') }}</span>
+                  </button>
+                </th>
+                <th *ngIf="isColumnVisible('changes')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[300px]">Changes</th>
+                <th *ngIf="isColumnVisible('comment')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider min-w-[200px]">Commentaire</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -213,18 +310,17 @@ interface GroupedEntry {
                 [class.opacity-50]="!entry.partEnMep"
               >
                 <!-- Deploy Order (editable inline) -->
-                <td class="px-3 py-2">
-                  <div class="flex items-center justify-center space-x-1 bg-gray-50 dark:bg-gray-900/50 rounded px-2 py-1 border border-gray-200 dark:border-gray-700 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-200 transition-all max-w-[70px]">
+                <td *ngIf="isColumnVisible('deployOrder')" class="px-3 py-2">
+                  <div class="flex items-center space-x-1 bg-gray-50 dark:bg-gray-900/50 rounded px-2 py-1 border border-gray-200 dark:border-gray-700 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-200 transition-all w-[60px]">
                     <input
                       #deployOrderInput
-                      type="number"
+                      type="text"
                       maxlength="2"
-                      max="99"
                       [value]="entry.deployOrder || ''"
                       (keyup.enter)="updateField(entry, 'deployOrder', deployOrderInput.value)"
                       [disabled]="!entry.partEnMep || !hasWriteAccess()"
                       placeholder="-"
-                      class="w-7 bg-transparent text-xs text-center font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="w-5 bg-transparent text-xs text-center font-medium text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <button
                       *ngIf="hasWriteAccess() && entry.partEnMep"
@@ -234,7 +330,7 @@ interface GroupedEntry {
                         'opacity-30 cursor-not-allowed': deployOrderInput.value === (entry.deployOrder?.toString() || ''),
                         'text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30': deployOrderInput.value !== (entry.deployOrder?.toString() || '')
                       }"
-                      class="p-0.5 rounded transition-all"
+                      class="p-0.5 rounded transition-all flex-shrink-0"
                       title="Valider"
                     >
                       <span class="material-icons text-sm">check</span>
@@ -243,7 +339,7 @@ interface GroupedEntry {
                 </td>
 
                 <!-- Squad (read-only badge) -->
-                <td class="px-3 py-2">
+                <td *ngIf="isColumnVisible('squad')" class="px-3 py-2">
                   <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" [ngClass]="{
                     'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300': entry.squad === 'Squad 1',
                     'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300': entry.squad === 'Squad 2',
@@ -257,21 +353,21 @@ interface GroupedEntry {
                 </td>
 
                 <!-- Microservice (read-only) -->
-                <td class="px-3 py-2">
+                <td *ngIf="isColumnVisible('microservice')" class="px-3 py-2">
                   <div class="font-medium text-gray-900 dark:text-white text-sm truncate max-w-xs" [title]="entry.microservice">
                     {{ entry.microservice }}
                   </div>
                 </td>
 
                 <!-- Solution (read-only) -->
-                <td class="px-3 py-2">
+                <td *ngIf="isColumnVisible('solution')" class="px-3 py-2">
                   <span class="text-xs text-gray-600 dark:text-gray-400 font-mono">
                     {{ entry.solution || '-' }}
                   </span>
                 </td>
 
                 <!-- Part en MEP (checkbox) -->
-                <td class="px-3 py-2 text-center">
+                <td *ngIf="isColumnVisible('partEnMep')" class="px-3 py-2 text-center">
                   <input
                     type="checkbox"
                     [(ngModel)]="entry.partEnMep"
@@ -282,7 +378,7 @@ interface GroupedEntry {
                 </td>
 
                 <!-- Tag (editable inline) -->
-                <td class="px-3 py-2">
+                <td *ngIf="isColumnVisible('tag')" class="px-3 py-2">
                   <div class="flex items-center space-x-1 bg-gray-50 dark:bg-gray-900/50 rounded px-2 py-1 border border-gray-200 dark:border-gray-700 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-200 transition-all max-w-[110px]">
                     <input
                       #tagInput
@@ -311,14 +407,14 @@ interface GroupedEntry {
                 </td>
 
                 <!-- Tag N-1 (read-only display) -->
-                <td class="px-3 py-2">
+                <td *ngIf="isColumnVisible('previousTag')" class="px-3 py-2">
                   <div class="text-gray-600 dark:text-gray-400 font-mono text-xs w-16">
                     {{ entry.previousTag || '-' }}
                   </div>
                 </td>
 
                 <!-- Parent Version (editable inline) -->
-                <td class="px-3 py-2">
+                <td *ngIf="isColumnVisible('parentVersion')" class="px-3 py-2">
                   <div class="flex items-center space-x-1 bg-gray-50 dark:bg-gray-900/50 rounded px-2 py-1 border border-gray-200 dark:border-gray-700 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-200 transition-all max-w-[110px]">
                     <input
                       #parentVersionInput
@@ -347,15 +443,15 @@ interface GroupedEntry {
                 </td>
 
                 <!-- Changes (quick view with badges) -->
-                <td class="px-3 py-2">
-                  <div class="flex flex-wrap gap-1" *ngIf="entry.changes && entry.changes.length > 0">
+                <td *ngIf="isColumnVisible('changes')" class="px-3 py-2 min-w-[300px]">
+                  <div class="flex flex-col gap-1" *ngIf="entry.changes && entry.changes.length > 0">
                     <div
                       *ngFor="let change of entry.changes"
-                      class="inline-flex items-center px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs font-medium"
+                      class="inline-flex items-start px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs"
                       [title]="change.jiraId + ': ' + change.description"
                     >
-                      <span class="font-semibold">{{ change.jiraId }}</span>
-                      <span class="ml-1 text-blue-600 dark:text-blue-400 truncate max-w-[100px]">: {{ change.description }}</span>
+                      <span class="font-semibold shrink-0">{{ change.jiraId }}</span>
+                      <span class="ml-1 text-blue-600 dark:text-blue-400">: {{ change.description }}</span>
                     </div>
                   </div>
                   <!-- Button to edit -->
@@ -369,7 +465,7 @@ interface GroupedEntry {
                   </button>
                 </td>
                 <!-- Commentaire (editable inline avec auto-height) -->
-                <td class="px-3 py-2">
+                <td *ngIf="isColumnVisible('comment')" class="px-3 py-2">
                   <div class="flex items-start space-x-1 bg-gray-50 dark:bg-gray-900/50 rounded px-2 py-1 border border-gray-200 dark:border-gray-700 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-200 transition-all">
                     <textarea
                       #commentInput
@@ -452,20 +548,35 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
 
   // Microservices
   microservices: Microservice[] = [];
-  microservicesBySquad: Map<string, Microservice[]> = new Map();
 
   // Filters
   selectedSquad = '';
   searchQuery = '';
   showOnlyPartEnMep = false;
 
+  // Sorting
+  sortColumn: string = 'deployOrder'; // Par défaut, trier par ordre de déploiement
+  sortDirection: 'asc' | 'desc' = 'asc';
+
   // Export dropdown
   isExportDropdownOpen = false;
+  exportDropdownTop = 0;
+  exportDropdownRight = 0;
 
-  // Inline editing
-  editingEntryId: string | null = null;
-  editingEntry: any = {};
-  editingField = '';
+  // Column visibility
+  isColumnSelectorOpen = false;
+  columns: ColumnConfig[] = [
+    { key: 'deployOrder', label: 'Ordre', visible: true, alwaysVisible: true },
+    { key: 'squad', label: 'Squad', visible: true, alwaysVisible: true },
+    { key: 'microservice', label: 'Microservice', visible: true, alwaysVisible: true },
+    { key: 'solution', label: 'Solution', visible: true },
+    { key: 'partEnMep', label: 'MEP', visible: true },
+    { key: 'tag', label: 'Tag', visible: true },
+    { key: 'previousTag', label: 'Tag N-1', visible: true },
+    { key: 'parentVersion', label: 'MB Lib', visible: true },
+    { key: 'changes', label: 'Changes', visible: true },
+    { key: 'comment', label: 'Commentaire', visible: true }
+  ];
 
   // Changes modal
   isChangesModalOpen = false;
@@ -486,24 +597,23 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    console.log('🚀 ReleaseNoteComponent ngOnInit() called');
     const releaseId = this.route.snapshot.paramMap.get('id');
-    console.log('   Release ID from route:', releaseId);
 
     if (releaseId) {
-      console.log('   ✅ Loading release, entries, and microservices...');
       this.loadRelease(releaseId);
       this.loadEntries(releaseId);
       this.loadMicroservices(releaseId);
-    } else {
-      console.error('   ❌ No releaseId found in route!');
     }
+
+    // Load column preferences from sessionStorage
+    this.loadColumnPreferences();
 
     // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.relative')) {
         this.isExportDropdownOpen = false;
+        this.isColumnSelectorOpen = false;
       }
     });
   }
@@ -527,33 +637,18 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
   }
 
   loadMicroservices(releaseId?: string): void {
-    // Charger microservices avec previousTag pré-rempli en passant releaseId
     this.microserviceService.getAllActive(releaseId).subscribe({
       next: (microservices) => {
-        console.log('📦 Microservices loaded:', microservices.length);
         this.microservices = microservices;
-        this.groupMicroservicesBySquad();
-        // ⚠️ N'appeler applyFilters() QUE si les entries sont déjà chargées
+        // Appliquer les filtres seulement si les entries sont déjà chargées
         if (this.entries.length > 0) {
-          console.log('✅ Entries already loaded, applying filters');
           this.applyFilters();
-        } else {
-          console.log('⏳ Waiting for entries to load...');
         }
       },
       error: (error) => {
         console.error('Error loading microservices:', error);
         this.toastService.error('Erreur lors du chargement des microservices');
       }
-    });
-  }
-
-  groupMicroservicesBySquad(): void {
-    this.microservicesBySquad.clear();
-    SQUAD_OPTIONS.forEach(squad => {
-      this.microservicesBySquad.set(squad,
-        this.microservices.filter(ms => ms.squad === squad)
-      );
     });
   }
 
@@ -565,15 +660,13 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((result: Microservice | undefined) => {
       if (result && this.release) {
-        // ⚠️ Vérifier si une entrée existe déjà pour ce microservice dans cette release
+        // Vérifier si une entrée existe déjà pour ce microservice dans cette release
         const existingEntry = this.entries.find(e =>
           e.microserviceId === result.id ||
           (e.microservice && e.microservice === result.name)
         );
 
         if (existingEntry) {
-          // Entrée existe déjà → juste recharger pour afficher le nouveau microservice
-          console.log('✅ Entry already exists for microservice', result.name, '- skipping creation');
           this.loadMicroservices(this.release!.id);
           this.applyFilters();
           this.toastService.success('Microservice créé (déjà présent dans le tableau)');
@@ -585,61 +678,25 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
           microserviceId: result.id,
           microservice: result.name,
           squad: result.squad,
-          partEnMep: false, // Par défaut, pas concerné par la MEP
+          partEnMep: false,
           changes: []
         };
 
         this.releaseNoteService.createEntry(this.release.id!, newEntryRequest).subscribe({
           next: (created) => {
             this.entries.push(created);
-            this.loadMicroservices(this.release!.id); // Recharger avec tags N-1
+            this.loadMicroservices(this.release!.id);
             this.applyFilters();
             this.toastService.success('Microservice créé et ajouté au tableau');
           },
           error: (error) => {
             console.error('Error creating release note entry:', error);
-            // Le microservice est créé mais pas l'entrée → juste recharger
             this.loadMicroservices(this.release!.id);
             this.toastService.warning('Microservice créé, mais erreur lors de l\'ajout au tableau');
           }
         });
       }
     });
-  }
-
-  openEditMicroserviceModal(microservice: Microservice): void {
-    const dialogRef = this.dialog.open(MicroserviceManagementModalComponent, {
-      width: '600px',
-      data: { mode: 'edit', microservice }
-    });
-
-    dialogRef.afterClosed().subscribe((result: Microservice | undefined) => {
-      if (result) {
-        this.loadMicroservices();
-        this.toastService.success('Microservice modifié avec succès');
-      }
-    });
-  }
-
-  async deleteMicroservice(microservice: Microservice): Promise<void> {
-    const confirmed = await this.confirmationService.confirm({
-      title: 'Supprimer le microservice',
-      message: `Êtes-vous sûr de vouloir désactiver "${microservice.name}" ? Il ne sera plus visible dans la liste.`,
-      confirmButtonClass: 'danger'
-    });
-
-    if (confirmed) {
-      this.microserviceService.delete(microservice.id!).subscribe({
-        next: () => {
-          this.loadMicroservices();
-          this.toastService.success('Microservice désactivé avec succès');
-        },
-        error: (error) => {
-          console.error('Error deleting microservice:', error);
-          this.toastService.error('Erreur lors de la suppression du microservice');
-        }
-      });
-    }
   }
 
   async loadRelease(releaseId: string): Promise<void> {
@@ -654,21 +711,9 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
   }
 
   loadEntries(releaseId: string): void {
-    console.log('🔄 loadEntries() called with releaseId:', releaseId);
     this.releaseNoteService.getAllEntries(releaseId).subscribe({
       next: (entries) => {
-        console.log('📥 RAW Entries from service (BEFORE assignment):', JSON.parse(JSON.stringify(entries)));
-
         this.entries = entries;
-
-        console.log('📥 this.entries (AFTER assignment):', JSON.parse(JSON.stringify(this.entries)));
-        console.log('📥 Detailed check:');
-        entries.forEach(e => {
-          console.log(`   - ID: ${e.id}, MS: ${e.microservice}, Changes: ${e.changes?.length || 0}`, e.changes);
-        });
-
-        // ⚠️ Toujours appeler applyFilters() après le chargement des entries
-        // Même si les microservices ne sont pas encore chargés (ils seront ajoutés après)
         this.applyFilters();
       },
       error: (error) => {
@@ -681,41 +726,25 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
   applyFilters(): void {
     if (!this.release) return;
 
-    console.log('🔍 applyFilters() called');
-    console.log(`   - this.entries (${this.entries.length}):`, this.entries);
-    console.log(`   - this.microservices (${this.microservices.length}):`, this.microservices);
-
-    // Start with all active microservices
+    // Fusionner les microservices actifs avec les entries existantes
     const allEntries: ReleaseNoteEntry[] = this.microservices.map(ms => {
-      // Find existing entry for this microservice
-      // We check both microserviceId match AND name match (legacy support)
       const existing = this.entries.find(e =>
         e.microserviceId === ms.id ||
         (e.microservice && e.microservice === ms.name)
       );
 
       if (existing) {
-        // Enforce solution and previousTag from microservice entity
-        const merged = {
+        // Fusionner les données du microservice (solution, previousTag) avec l'entrée existante
+        // ⚠️ IMPORTANT: Préserver tous les champs de l'entrée existante (dont changes !)
+        return {
           ...existing,
           solution: ms.solution,
-          previousTag: existing.previousTag || ms.previousTag
+          previousTag: existing.previousTag || ms.previousTag,
+          changes: existing.changes || [] // ✅ Préserver explicitement les changes
         };
-        console.log(`🔄 Merging entry for ${ms.name}:`, {
-          microserviceId: ms.id,
-          existingEntryId: existing.id,
-          existingMicroserviceId: existing.microserviceId,
-          existingMicroservice: existing.microservice,
-          changesCount: existing.changes?.length || 0,
-          changes: existing.changes,
-          mergedChanges: merged.changes
-        });
-        return merged;
-      } else {
-        console.log(`⚠️ No existing entry found for microservice ${ms.name} (ID: ${ms.id})`);
       }
 
-      // Create placeholder entry
+      // Créer une entrée placeholder pour les microservices sans entrée
       return {
         releaseId: this.release!.id!,
         microserviceId: ms.id,
@@ -728,11 +757,9 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
       } as ReleaseNoteEntry;
     });
 
-    // Also include entries that might not match any active microservice (e.g. deleted microservices or legacy text-only entries)
+    // Inclure les entrées orphelines (microservices supprimés ou legacy)
     const mappedIds = new Set(allEntries.map(e => e.id).filter(id => !!id));
     const orphans = this.entries.filter(e => e.id && !mappedIds.has(e.id));
-
-    // For orphans, we might not have the solution if the microservice is deleted, but we keep them as is.
 
     let filtered = [...allEntries, ...orphans];
 
@@ -755,65 +782,94 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
       filtered = filtered.filter(e => e.partEnMep);
     }
 
-    // Group by squad
-    const grouped = new Map<string, ReleaseNoteEntry[]>();
-    filtered.forEach(entry => {
-      if (!grouped.has(entry.squad)) {
-        grouped.set(entry.squad, []);
-      }
-      grouped.get(entry.squad)!.push(entry);
-    });
-
-    // Convert to array and sort
-    this.groupedEntries = Array.from(grouped.entries()).map(([squad, entries]) => ({
-      squad,
-      entries: entries.sort((a, b) => {
-        // Sort by deployOrder (nulls last), then by microservice name
-        if (a.deployOrder != null && b.deployOrder != null) {
-          return a.deployOrder - b.deployOrder;
-        }
-        if (a.deployOrder != null) return -1;
-        if (b.deployOrder != null) return 1;
-        return (a.microservice || '').localeCompare(b.microservice || '');
-      }),
-      isExpanded: true // All expanded by default
-    }));
-
-    // Sort squads
-    this.groupedEntries.sort((a, b) => a.squad.localeCompare(b.squad));
-
-    // New: Create flat filtered list sorted by deployOrder
+    // Trier les entrées selon la colonne et direction choisies
     this.filteredEntries = [...filtered].sort((a, b) => {
-      // Prioritize entries with deployOrder
-      if (a.deployOrder != null && b.deployOrder != null) {
-        return a.deployOrder - b.deployOrder;
+      let comparison = 0;
+
+      switch (this.sortColumn) {
+        case 'deployOrder':
+          // Tri numérique avec gestion des valeurs null/undefined
+          const aOrder = a.deployOrder ?? Infinity;
+          const bOrder = b.deployOrder ?? Infinity;
+          comparison = aOrder - bOrder;
+          break;
+
+        case 'squad':
+          comparison = (a.squad || '').localeCompare(b.squad || '');
+          break;
+
+        case 'microservice':
+          comparison = (a.microservice || '').localeCompare(b.microservice || '');
+          break;
+
+        case 'solution':
+          comparison = (a.solution || '').localeCompare(b.solution || '');
+          break;
+
+        case 'tag':
+          comparison = (a.tag || '').localeCompare(b.tag || '');
+          break;
+
+        case 'previousTag':
+          comparison = (a.previousTag || '').localeCompare(b.previousTag || '');
+          break;
+
+        case 'parentVersion':
+          comparison = (a.parentVersion || '').localeCompare(b.parentVersion || '');
+          break;
+
+        case 'partEnMep':
+          // Tri booléen (true avant false)
+          comparison = (a.partEnMep === b.partEnMep) ? 0 : (a.partEnMep ? -1 : 1);
+          break;
+
+        default:
+          // Tri par défaut: deployOrder puis squad puis microservice
+          const aDefaultOrder = a.deployOrder ?? Infinity;
+          const bDefaultOrder = b.deployOrder ?? Infinity;
+          comparison = aDefaultOrder - bDefaultOrder;
+          if (comparison === 0) {
+            comparison = (a.squad || '').localeCompare(b.squad || '');
+            if (comparison === 0) {
+              comparison = (a.microservice || '').localeCompare(b.microservice || '');
+            }
+          }
       }
-      if (a.deployOrder != null) return -1;
-      if (b.deployOrder != null) return 1;
-      // Then by squad
-      const squadCompare = (a.squad || '').localeCompare(b.squad || '');
-      if (squadCompare !== 0) return squadCompare;
-      // Finally by microservice name
-      return (a.microservice || '').localeCompare(b.microservice || '');
+
+      // Appliquer la direction du tri
+      return this.sortDirection === 'asc' ? comparison : -comparison;
     });
 
-    // TEMP: Override groupedEntries with a single group containing all entries
-    this.groupedEntries = [{
+    // Grouper pour l'affichage de l'empty state
+    this.groupedEntries = this.filteredEntries.length > 0 ? [{
       squad: 'Tous les microservices',
       entries: this.filteredEntries,
       isExpanded: true
-    }];
+    }] : [];
   }
 
   onFilterChange(): void {
     this.applyFilters();
   }
 
-  toggleSquad(squad: string): void {
-    const group = this.groupedEntries.find(g => g.squad === squad);
-    if (group) {
-      group.isExpanded = !group.isExpanded;
+  // Tri des colonnes
+  toggleSort(column: string): void {
+    if (this.sortColumn === column) {
+      // Toggle direction
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      // Nouvelle colonne
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
     }
+    this.applyFilters();
+  }
+
+  getSortIcon(column: string): string {
+    if (this.sortColumn !== column) {
+      return 'unfold_more'; // Icône par défaut (non trié)
+    }
+    return this.sortDirection === 'asc' ? 'expand_less' : 'expand_more';
   }
 
   getTotalEntriesCount(): number {
@@ -908,64 +964,6 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // Ancienne méthode (conservée pour compatibilité, mais non utilisée)
-  startEdit(entry: ReleaseNoteEntry, field: string): void {
-    if (!this.hasWriteAccess()) return;
-    this.editingEntryId = entry.id || 'NEW_' + entry.microserviceId;
-    this.editingEntry = { ...entry };
-    this.editingField = field;
-  }
-
-  saveEntry(): void {
-    if (!this.release) return;
-
-    const request: CreateReleaseNoteEntryRequest = {
-      microserviceId: this.editingEntry.microserviceId,
-      microservice: this.editingEntry.microservice, // Fallback name
-      squad: this.editingEntry.squad,
-      partEnMep: this.editingEntry.partEnMep,
-      deployOrder: this.editingEntry.deployOrder,
-      tag: this.editingEntry.tag,
-      previousTag: this.editingEntry.previousTag,
-      parentVersion: this.editingEntry.parentVersion,
-      changes: this.editingEntry.changes || [],
-      comment: this.editingEntry.comment
-    };
-
-    if (this.editingEntryId && !this.editingEntryId.startsWith('NEW_')) {
-      // Update existing
-      this.releaseNoteService.updateEntry(this.release.id!, this.editingEntryId, request).subscribe({
-        next: (updated) => {
-          this.updateLocalEntry(updated);
-          this.toastService.success('Mise à jour effectuée');
-          this.cancelEdit();
-        },
-        error: (error) => {
-          console.error('Error updating entry:', error);
-          this.toastService.error('Erreur lors de la mise à jour');
-        }
-      });
-    } else {
-      // Create new
-      this.releaseNoteService.createEntry(this.release.id!, request).subscribe({
-        next: (created) => {
-          this.updateLocalEntry(created);
-          this.toastService.success('Entrée créée');
-          this.cancelEdit();
-        },
-        error: (error) => {
-          console.error('Error creating entry:', error);
-          this.toastService.error('Erreur lors de la création');
-        }
-      });
-    }
-  }
-
-  cancelEdit(): void {
-    this.editingEntryId = null;
-    this.editingEntry = {};
-    this.editingField = '';
-  }
 
   togglePartEnMep(entry: ReleaseNoteEntry): void {
     if (!this.hasWriteAccess() || !this.release) return;
@@ -1025,31 +1023,6 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
       this.entries.push(updated);
     }
     this.applyFilters();
-  }
-
-  async deleteEntry(entry: ReleaseNoteEntry): Promise<void> {
-    if (!this.hasWriteAccess() || !this.release) return;
-
-    const confirmed = await this.confirmationService.confirm({
-      title: 'Supprimer ce microservice ?',
-      message: `Voulez-vous vraiment supprimer ${entry.microservice} ?`,
-      confirmText: 'Supprimer',
-      cancelText: 'Annuler'
-    });
-
-    if (confirmed && this.release) {
-      this.releaseNoteService.deleteEntry(this.release.id!, entry.id!).subscribe({
-        next: () => {
-          this.entries = this.entries.filter(e => e.id !== entry.id);
-          this.applyFilters();
-          this.toastService.success('Microservice supprimé');
-        },
-        error: (error) => {
-          console.error('Error deleting entry:', error);
-          this.toastService.error('Erreur lors de la suppression');
-        }
-      });
-    }
   }
 
   // Changes modal
@@ -1115,8 +1088,18 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
   }
 
   // Export
-  toggleExportDropdown(): void {
+  toggleExportDropdown(event?: MouseEvent): void {
     this.isExportDropdownOpen = !this.isExportDropdownOpen;
+
+    if (this.isExportDropdownOpen && event) {
+      // Calculate dropdown position relative to button
+      const button = event.currentTarget as HTMLElement;
+      const rect = button.getBoundingClientRect();
+
+      // Position dropdown below button, aligned to the right
+      this.exportDropdownTop = rect.bottom + 8; // 8px margin
+      this.exportDropdownRight = window.innerWidth - rect.right;
+    }
   }
 
   exportMarkdown(): void {
@@ -1155,5 +1138,49 @@ export class ReleaseNoteComponent implements OnInit, AfterViewInit {
     // TODO: Implement PNG export using html2canvas
     this.toastService.info('Export PNG à venir (utiliser html2canvas)');
     this.isExportDropdownOpen = false;
+  }
+
+  // Column visibility management
+  toggleColumnSelector(): void {
+    this.isColumnSelectorOpen = !this.isColumnSelectorOpen;
+  }
+
+  toggleColumnVisibility(column: ColumnConfig): void {
+    if (column.alwaysVisible) return;
+    column.visible = !column.visible;
+    this.saveColumnPreferences();
+  }
+
+  isColumnVisible(key: string): boolean {
+    const column = this.columns.find(c => c.key === key);
+    return column ? column.visible : true;
+  }
+
+  getVisibleColumnsCount(): number {
+    return this.columns.filter(c => c.visible).length;
+  }
+
+  private loadColumnPreferences(): void {
+    const saved = sessionStorage.getItem('release_note_columns');
+    if (saved) {
+      try {
+        const preferences = JSON.parse(saved);
+        this.columns.forEach(col => {
+          if (preferences[col.key] !== undefined && !col.alwaysVisible) {
+            col.visible = preferences[col.key];
+          }
+        });
+      } catch (e) {
+        console.error('Error loading column preferences:', e);
+      }
+    }
+  }
+
+  private saveColumnPreferences(): void {
+    const preferences: Record<string, boolean> = {};
+    this.columns.forEach(col => {
+      preferences[col.key] = col.visible;
+    });
+    sessionStorage.setItem('release_note_columns', JSON.stringify(preferences));
   }
 }

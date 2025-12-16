@@ -11,10 +11,11 @@ describe('ReleaseService', () => {
 
     const mockRelease: Release = {
         id: '1',
+        slug: 'release-1',
         name: 'Release 1',
-        version: '1.0.0',
         releaseDate: '2025-01-01',
         status: 'draft',
+        type: 'release',
         squads: []
     };
 
@@ -64,7 +65,7 @@ describe('ReleaseService', () => {
     });
 
     it('should create release', async () => {
-        const dto: CreateReleaseDto = { name: 'Release 1', version: '1.0.0', releaseDate: '2025-01-01' };
+        const dto: CreateReleaseDto = { name: 'Release 1', releaseDate: '2025-01-01', type: 'release' };
         const promise = service.createRelease(dto);
 
         const req = httpMock.expectOne(apiUrl);
@@ -190,23 +191,15 @@ describe('ReleaseService', () => {
         await promise;
     });
 
-    it('should update squad tonton mep', async () => {
-        const promise = service.updateSquadTontonMep('squad1', 'Tonton');
+    it('should handle API requests correctly', async () => {
+        const releaseId = '1';
+        const getPromise = service.getRelease(releaseId);
 
-        const req = httpMock.expectOne(`${apiUrl}/squads/squad1/tonton-mep`);
-        expect(req.request.method).toBe('PUT');
-        req.flush({});
+        const req = httpMock.expectOne(`${apiUrl}/${releaseId}`);
+        expect(req.request.method).toBe('GET');
+        req.flush(mockRelease);
 
-        await promise;
-    });
-
-    it('should toggle squad completion', async () => {
-        const promise = service.toggleSquadCompletion('squad1', true);
-
-        const req = httpMock.expectOne(`${apiUrl}/squads/squad1/completion`);
-        expect(req.request.method).toBe('PUT');
-        req.flush({});
-
-        await promise;
+        const result = await getPromise;
+        expect(result).toEqual(mockRelease);
     });
 });

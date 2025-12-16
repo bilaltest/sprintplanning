@@ -19,10 +19,11 @@ describe('ReleasesListComponent', () => {
     const mockReleases: Release[] = [
         {
             id: '1',
+            slug: 'release-1',
             name: 'Release 1',
-            version: '1.0.0',
             releaseDate: '2025-01-01',
             status: 'draft',
+            type: 'release',
             squads: []
         }
     ];
@@ -84,20 +85,18 @@ describe('ReleasesListComponent', () => {
         expect(releaseService.loadReleases).toHaveBeenCalled();
     });
 
-    it('should navigate to release details', () => {
-        component.viewRelease('1', '1.0.0');
-        expect(router.navigate).toHaveBeenCalledWith(['/releases', '1.0.0']);
-
-        component.viewRelease('1', undefined);
-        expect(router.navigate).toHaveBeenCalledWith(['/releases', '1']);
+    it('should navigate to release preparation', () => {
+        const mockEvent = new MouseEvent('click');
+        component.navigateToPreparation('release-1', mockEvent);
+        expect(router.navigate).toHaveBeenCalledWith(['/releases', 'release-1', 'preparation']);
     });
 
     it('should create release successfully', async () => {
         component.newRelease = {
             name: 'New Release',
-            version: '2.0.0',
             releaseDate: '2025-02-01',
-            description: 'Desc'
+            description: 'Desc',
+            type: 'release'
         } as any;
 
         const createdRelease = { ...mockReleases[0], id: '2', name: 'New Release' } as any;
@@ -143,32 +142,9 @@ describe('ReleasesListComponent', () => {
         expect(toastService.error).toHaveBeenCalled();
     });
 
-    it('should toggle export menu', () => {
-        component.toggleExportMenu('1');
-        expect(component.exportMenuOpen).toBe('1');
-        component.toggleExportMenu('1');
-        expect(component.exportMenuOpen).toBeNull();
-    });
-
-    it('should export release as markdown', () => {
-        const spy = jest.spyOn(document, 'createElement');
-        const linkMock = { click: jest.fn(), href: '', download: '', setAttribute: jest.fn() } as any;
-        spy.mockReturnValue(linkMock);
-        component.exportRelease(mockReleases[0], 'markdown');
-        expect(window.URL.createObjectURL).toHaveBeenCalled();
-        expect(linkMock.click).toHaveBeenCalled();
-        expect(linkMock.download).toContain('.md');
-        spy.mockRestore();
-    });
-
-    it('should export release as html', () => {
-        const spy = jest.spyOn(document, 'createElement');
-        const linkMock = { click: jest.fn(), href: '', download: '', setAttribute: jest.fn() } as any;
-        spy.mockReturnValue(linkMock);
-        component.exportRelease(mockReleases[0], 'html');
-        expect(window.URL.createObjectURL).toHaveBeenCalled();
-        expect(linkMock.click).toHaveBeenCalled();
-        expect(linkMock.download).toContain('.html');
-        spy.mockRestore();
+    it('should navigate to release note', () => {
+        const mockEvent = new MouseEvent('click');
+        component.navigateToReleaseNote('release-1', mockEvent);
+        expect(router.navigate).toHaveBeenCalledWith(['/releases', 'release-1', 'release-note']);
     });
 });

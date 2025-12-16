@@ -884,6 +884,60 @@ GET    /api/game/my-scores            # Mes scores (JWT required)
 GET    /api/health                    # Health check
 ```
 
+### Release Notes
+- **Navigation**: Accessible via kebab menu (3 points) sur les cartes release (routes: `/releases/:releaseId/release-note`)
+- **Table éditable**: Affichage plat (single table) de tous les microservices, triés par ordre de déploiement puis par squad
+- **Édition inline**: Double-clic ou saisie directe + bouton check pour les champs :
+  - Deploy Order (nombre, désactivé si partEnMep=false)
+  - Tag (maxlength 8)
+  - MB Lib / Parent Version (maxlength 8)
+  - Commentaire (textarea auto-resize, Ctrl+Enter pour valider)
+- **Gestion changes**: Modal compacte `ReleaseNoteEntryModalComponent` pour ajouter/modifier/supprimer les changements (Jira ID + description)
+  - Layout inline (Jira ID + description sur une ligne)
+  - Raccourcis clavier: Tab, Entrée, Ctrl+S
+  - Badges colorés pour visualisation rapide dans le tableau
+- **Colonne Tag N-1**: Affiche le tag en production (pré-chargé automatiquement depuis la release précédente via `getAllPreviousTags()`)
+- **Colonne Commentaire**: Champ texte libre éditable inline (remplace la colonne Actions/Suppression)
+- **Création rapide de microservices** :
+  - Bouton "Ajouter un microservice" depuis la page Release Note
+  - Formulaire ultra-simplifié: **3 champs uniquement** (nom, squad, solution - tous requis)
+  - **Ajout automatique au tableau** après création (double création: microservice + entrée release note)
+  - Les autres champs (tag, ordre déploiement, changes) se renseignent ensuite directement dans le tableau par édition inline
+  - **Workflow en 1 seule action** : plus besoin de modal intermédiaire
+  - Permissions: `RELEASES_WRITE` requis
+- **Filtres**: Par squad + recherche textuelle globale + "Concernés par la MEP"
+- **Vue tableau unique**: Tous les microservices affichés dans une seule table (tri par deploy order puis squad)
+- **Export**: Markdown (pour docs) et HTML (pour email) avec détails par squad
+- **Permissions**: Module RELEASES (READ pour voir, WRITE pour modifier)
+- **Stockage**: Table `release_note_entry` avec colonne JSON pour les changes
+- **Performance**: Chargement optimisé avec 1 seul appel API pour récupérer tous les tags N-1
+- **⚠️ Contrainte unique**: `UNIQUE (release_id, microservice_id)` empêche les doublons en base
+- **⚠️ Résolution slugs**: Le backend `ReleaseNoteService` résout automatiquement les slugs vers les IDs réels (ex: `lointaine-release` → `cmj63lpo299vrnp1y`)
+
+**Architecture slug/ID** :
+```typescript
+// Frontend utilise le slug ou l'ID dans l'URL
+/releases/lointaine-release/release-note
+
+// Backend résout automatiquement le slug vers l'ID
+public List<ReleaseNoteEntryDto> getAllEntries(String releaseIdentifier) {
+    Release release = releaseRepository.findBySlug(releaseIdentifier)
+            .or(() -> releaseRepository.findById(releaseIdentifier))
+            .orElseThrow();
+
+    return releaseNoteEntryRepository
+            .findByReleaseIdOrderBySquadAndDeployOrder(release.getId());
+}
+```
+
+**Workflow création microservice + release note** :
+1. Utilisateur clique "Ajouter un microservice"
+2. Modal s'ouvre avec 3 champs (nom, squad, solution)
+3. Validation → POST `/api/microservices` (création du microservice)
+4. Puis automatiquement POST `/api/releases/{releaseId}/release-notes` (création de l'entrée)
+5. Le microservice apparaît immédiatement dans le tableau
+6. L'utilisateur renseigne ensuite tag, ordre, changes directement dans le tableau (édition inline)
+
 ## Design System
 ### Palette & Classes
 - **Primary**: Vert émeraude (#10b981). **Alert**: Amber doux (#f59e0b). **Dark**: `bg-gray-800`.
@@ -1171,6 +1225,28 @@ spring.jpa.hibernate.ddl-auto=update
       - Affichage "-" si pas de commentaire
       - Troncature du texte avec tooltip au survol pour les longs commentaires
     - **Use case**: Permet d'ajouter des notes techniques, des remarques pour la MEP, ou des infos importantes sans structure rigide.
+  - **Fix Bug Changes Disparaissent + Nettoyage Code** (Dec 15):
+    - **Problème résolu**: Les changes ajoutés dans les Release Notes disparaissaient après rechargement de la page.
+    - **Cause racine**:
+      1. Doublons en base : 11 entrées pour "Service Budget" dans la même release (bug de création multiple)
+      2. URLs avec slugs : Frontend utilisait `/releases/lointaine-release/release-notes` au lieu de l'ID
+      3. Backend ne résolvait pas les slugs : `ReleaseNoteService` cherchait avec `release_id = "lointaine-release"` au lieu de l'ID réel
+    - **Solutions appliquées**:
+      1. **Nettoyage base de données** : Supprimé les doublons, gardé uniquement la dernière entrée par microservice
+      2. **Frontend** : Ajout vérification anti-doublon dans `openAddMicroserviceModal()`
+      3. **Backend** : Résolution automatique des slugs vers IDs dans toutes les méthodes de `ReleaseNoteService` :
+         ```java
+         Release release = releaseRepository.findBySlug(releaseIdentifier)
+                 .or(() -> releaseRepository.findById(releaseIdentifier))
+                 .orElseThrow();
+         ```
+      4. **Contrainte unique** : Ajout de `UNIQUE (release_id, microservice_id)` sur `release_note_entry`
+    - **Nettoyage du code** `ReleaseNoteComponent.ts` :
+      - Supprimé propriétés inutilisées : `editingEntryId`, `editingEntry`, `editingField`, `microservicesBySquad`
+      - Supprimé méthodes mortes : `groupMicroservicesBySquad()`, `openEditMicroserviceModal()`, `deleteMicroservice()`, `toggleSquad()`, `startEdit()`, `saveEntry()`, `cancelEdit()`, `deleteEntry()`
+      - Nettoyé logs de debug excessifs
+      - Simplifié `applyFilters()` en supprimant le code temporaire et les logs détaillés
+    - **Impact**: Amélioration de la maintenabilité et de la fiabilité du code, résolution définitive du bug des changes.
 - **Auth**: JWT token-based (remplace password "NMB"), admin par défaut (email: "admin", password: "admin").
 - **Version**: Incluse dans nom release.
 - **Cascade**: JPA cascade delete sur relations @OneToMany.

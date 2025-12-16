@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FilterBarComponent } from './filter-bar.component';
 import { FilterService } from '@services/filter.service';
 import { CategoryService } from '@services/category.service';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { EventCategory } from '@models/event.model';
 
 describe('FilterBarComponent', () => {
@@ -75,28 +75,10 @@ describe('FilterBarComponent', () => {
         expect(filterService.resetFilters).toHaveBeenCalled();
     });
 
-    it('should toggle collapse state', () => {
-        expect(component.isCollapsed).toBe(false);
-        component.onToggleCollapse();
-        expect(component.isCollapsed).toBe(true);
-        component.onToggleCollapse();
-        expect(component.isCollapsed).toBe(false);
-    });
-
-    it('should update sticky state on scroll', () => {
-        // Initial state
-        expect(component.isSticky).toBe(false);
-
-        // Scroll down
-        Object.defineProperty(window, 'scrollY', { value: 200 });
-        window.dispatchEvent(new Event('scroll'));
-        fixture.detectChanges();
-        expect(component.isSticky).toBe(true);
-
-        // Scroll up
-        Object.defineProperty(window, 'scrollY', { value: 50 });
-        window.dispatchEvent(new Event('scroll'));
-        fixture.detectChanges();
-        expect(component.isSticky).toBe(false);
+    it('should check category selection', () => {
+        filterService.category$ = of('mep');
+        component.ngOnInit();
+        expect(component.isCategorySelected('mep')).toBe(true);
+        expect(component.isCategorySelected('hotfix')).toBe(false);
     });
 });

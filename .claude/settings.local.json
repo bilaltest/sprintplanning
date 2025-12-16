@@ -115,7 +115,17 @@
       "Bash(bash:*)",
       "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" timeout 120 ./mvnw:*)",
       "Bash(/Users/bilal/Documents/Projets\\ perso/Claude/Planning/test-release-notes.sh:*)",
-      "Bash(/Users/bilal/Documents/Projets perso/Claude/Planning/test-api-response.sh)"
+      "Bash(/Users/bilal/Documents/Projets perso/Claude/Planning/test-api-response.sh)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjAwMSIsImVtYWlsIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiU3lzdMOobWUiLCJpYXQiOjE3NjU4MTk4NzAsImV4cCI6MTc2NTkwNjI3MH0.VgBvDxjLdhvVkGLCF_-JKXZ_NYHlWzGQNZc0Eei5xog\" curl -s http://localhost:3000/api/releases -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjAwMSIsImVtYWlsIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiU3lzdMOobWUiLCJpYXQiOjE3NjU4MTk4NzAsImV4cCI6MTc2NTkwNjI3MH0.VgBvDxjLdhvVkGLCF_-JKXZ_NYHlWzGQNZc0Eei5xog\" curl -s \"http://localhost:3000/api/releases/cmj63lpo299vrnp1y/release-notes\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjAwMSIsImVtYWlsIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiU3lzdMOobWUiLCJpYXQiOjE3NjU4MzYyMjUsImV4cCI6MTc2ODQyODIyNX0.MNZVoiWhHfjR28TLrwGPge5AFJl6DUuEsFRz9UR40xk\" curl -s \"http://localhost:3000/api/releases/cmj63lpo299vrnp1y/release-notes\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjAwMSIsImVtYWlsIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiU3lzdMOobWUiLCJpYXQiOjE3NjU4MzYyMjUsImV4cCI6MTc2ODQyODIyNX0.MNZVoiWhHfjR28TLrwGPge5AFJl6DUuEsFRz9UR40xk\" curl -s \"http://localhost:3000/api/releases/lointaine-release/release-notes\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjAwMSIsImVtYWlsIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiU3lzdMOobWUiLCJpYXQiOjE3NjU4MzYyMjUsImV4cCI6MTc2ODQyODIyNX0.MNZVoiWhHfjR28TLrwGPge5AFJl6DUuEsFRz9UR40xk\" curl -s -w \"\\nHTTP Status: %{http_code}\\n\" \"http://localhost:3000/api/releases/lointaine-release/release-notes\" -H \"Authorization: Bearer $TOKEN\")",
+      "Bash(timeout 5 npm start)",
+      "Bash(npx tsx:*)",
+      "Bash(tee:*)",
+      "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/node /Users/bilal/.nvm/versions/node/v24.11.1/bin/npx tsc:*)",
+      "Bash(TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjAwMSIsImVtYWlsIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiU3lzdMOobWUiLCJpYXQiOjE3NjU4MzYyMjUsImV4cCI6MTc2ODQyODIyNX0.MNZVoiWhHfjR28TLrwGPge5AFJl6DUuEsFRz9UR40xk)"
     ],
     "deny": [],
     "ask": []

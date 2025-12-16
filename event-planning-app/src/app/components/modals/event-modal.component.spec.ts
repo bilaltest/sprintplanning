@@ -107,8 +107,7 @@ describe('EventModalComponent', () => {
         component.formData = {
             title: 'New Event',
             date: '2025-01-01',
-            startTime: '',
-            endTime: '',
+            endDate: '',
             category: 'mep',
             color: '#000000',
             icon: 'icon',

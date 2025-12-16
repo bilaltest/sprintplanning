@@ -36,8 +36,8 @@ describe('ToastContainerComponent', () => {
 
     it('should display toasts', () => {
         const toasts: Toast[] = [
-            { id: '1', type: 'success', title: 'Success', message: 'Message' },
-            { id: '2', type: 'error', title: 'Error', message: 'Message' }
+            { id: '1', type: 'success', title: 'Success', message: 'Message', createdAt: Date.now() },
+            { id: '2', type: 'error', title: 'Error', message: 'Message', createdAt: Date.now() }
         ];
         toastsSubject.next(toasts);
         fixture.detectChanges();
@@ -47,7 +47,7 @@ describe('ToastContainerComponent', () => {
     });
 
     it('should close toast', () => {
-        const toasts: Toast[] = [{ id: '1', type: 'success', title: 'Success' }];
+        const toasts: Toast[] = [{ id: '1', type: 'success', title: 'Success', createdAt: Date.now() }];
         toastsSubject.next(toasts);
         fixture.detectChanges();
 
@@ -61,7 +61,8 @@ describe('ToastContainerComponent', () => {
             id: '1',
             type: 'info',
             title: 'Info',
-            action: { label: 'Action', handler }
+            action: { label: 'Action', handler },
+            createdAt: Date.now()
         };
 
         component.handleAction(toast);

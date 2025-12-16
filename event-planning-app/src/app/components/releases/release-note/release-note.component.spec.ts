@@ -25,6 +25,7 @@ describe('ReleaseNoteComponent', () => {
 
     const mockRelease: Release = {
         id: '1',
+        slug: 'release-1',
         name: 'Release 1',
         releaseDate: '2025-01-01',
         status: 'draft',
@@ -262,33 +263,30 @@ describe('ReleaseNoteComponent', () => {
         }));
     });
 
-    it('should create new entry on saveEntry for placeholder', () => {
-        const placeholderEntry: ReleaseNoteEntry = {
+    it('should update field via updateField method', () => {
+        const existingEntry: ReleaseNoteEntry = {
+            id: 'e1',
             releaseId: '1',
-            microserviceId: 'ms2',
-            microservice: 'Microservice 2',
+            microserviceId: 'ms1',
+            microservice: 'Microservice 1',
             squad: 'Squad A',
-            partEnMep: false,
+            partEnMep: true,
+            tag: 'v1.0',
             changes: []
         };
 
         component.release = mockRelease;
-        component.startEdit(placeholderEntry, 'tag');
 
-        // Edit tag
-        component.editingEntry.tag = 'v1.0';
-        component.editingEntry.partEnMep = true; // Assume user checked it or logic requires it
-
-        releaseNoteService.createEntry.mockReturnValue(of({
-            ...component.editingEntry,
-            id: 'new-id'
+        releaseNoteService.updateEntry.mockReturnValue(of({
+            ...existingEntry,
+            tag: 'v1.1'
         }));
 
-        component.saveEntry();
+        component.updateField(existingEntry, 'tag', 'v1.1');
 
-        expect(releaseNoteService.createEntry).toHaveBeenCalledWith('1', expect.objectContaining({
-            microserviceId: 'ms2',
-            tag: 'v1.0'
+        expect(releaseNoteService.updateEntry).toHaveBeenCalledWith('1', 'e1', expect.objectContaining({
+            microserviceId: 'ms1',
+            tag: 'v1.1'
         }));
     });
 });

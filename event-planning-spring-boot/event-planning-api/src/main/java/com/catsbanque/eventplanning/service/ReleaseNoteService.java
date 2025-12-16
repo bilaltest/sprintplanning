@@ -190,7 +190,7 @@ public class ReleaseNoteService {
     }
 
     /**
-     * Exporte la release note en Markdown
+     * Exporte la release note en Markdown (colonnes filtrées: microservice, solution, squad, changes)
      */
     public String exportMarkdown(String releaseIdentifier) {
         // Résoudre le slug vers l'ID réel (support slug OU ID)
@@ -201,8 +201,13 @@ public class ReleaseNoteService {
         List<ReleaseNoteEntry> entries = releaseNoteEntryRepository
                 .findByReleaseIdOrderBySquadAndDeployOrder(release.getId());
 
+        // Filtrer uniquement les entrées déployées (partEnMep=true)
+        List<ReleaseNoteEntry> deployed = entries.stream()
+                .filter(e -> e.getPartEnMep() != null && e.getPartEnMep())
+                .collect(Collectors.toList());
+
         // Grouper par squad
-        Map<String, List<ReleaseNoteEntry>> entriesBySquad = entries.stream()
+        Map<String, List<ReleaseNoteEntry>> entriesBySquad = deployed.stream()
                 .collect(Collectors.groupingBy(
                         ReleaseNoteEntry::getSquad,
                         LinkedHashMap::new,
@@ -219,73 +224,50 @@ public class ReleaseNoteService {
         }
         markdown.append("---\n\n");
 
-        // Contenu par squad
+        // Contenu par squad (uniquement colonnes: microservice, solution, squad, changes)
         for (Map.Entry<String, List<ReleaseNoteEntry>> squadEntry : entriesBySquad.entrySet()) {
             String squad = squadEntry.getKey();
             List<ReleaseNoteEntry> squadEntries = squadEntry.getValue();
 
             markdown.append("## ").append(squad).append("\n\n");
 
-            // Microservices déployés (partEnMep=true)
-            List<ReleaseNoteEntry> deployed = squadEntries.stream()
-                    .filter(e -> e.getPartEnMep() != null && e.getPartEnMep())
-                    .collect(Collectors.toList());
+            markdown.append("| Microservice | Solution | Changes |\n");
+            markdown.append("|-------------|----------|----------|\n");
 
-            if (!deployed.isEmpty()) {
-                markdown.append("### Microservices déployés\n\n");
-                markdown.append("| Ordre | Microservice | Tag | Parent | Changes |\n");
-                markdown.append("|-------|-------------|-----|--------|----------|\n");
-
-                for (ReleaseNoteEntry entry : deployed) {
-                    markdown.append("| ")
-                            .append(entry.getDeployOrder() != null ? entry.getDeployOrder() : "-")
-                            .append(" | ")
-                            .append(entry.getMicroservice())
-                            .append(" | ")
-                            .append(entry.getTag() != null ? entry.getTag() : "-")
-                            .append(" | ")
-                            .append(entry.getParentVersion() != null ? entry.getParentVersion() : "-")
-                            .append(" | ");
-
-                    // Changes
-                    List<ReleaseNoteEntryDto.ChangeItem> changes = parseChanges(entry.getChanges());
-                    if (changes.isEmpty()) {
-                        markdown.append("-");
-                    } else {
-                        markdown.append(changes.stream()
-                                .map(c -> "**" + c.getJiraId() + "**: " + c.getDescription())
-                                .collect(Collectors.joining("<br>")));
-                    }
-                    markdown.append(" |\n");
+            for (ReleaseNoteEntry entry : squadEntries) {
+                // Récupérer solution depuis le microservice
+                String solution = "-";
+                if (entry.getMicroserviceId() != null) {
+                    solution = microserviceRepository.findById(entry.getMicroserviceId())
+                            .map(Microservice::getSolution)
+                            .orElse("-");
                 }
-                markdown.append("\n");
-            }
 
-            // Microservices non déployés (partEnMep=false)
-            List<ReleaseNoteEntry> notDeployed = squadEntries.stream()
-                    .filter(e -> e.getPartEnMep() == null || !e.getPartEnMep())
-                    .collect(Collectors.toList());
+                markdown.append("| ")
+                        .append(entry.getMicroservice() != null ? entry.getMicroservice() : "-")
+                        .append(" | ")
+                        .append(solution)
+                        .append(" | ");
 
-            if (!notDeployed.isEmpty()) {
-                markdown.append("### Microservices non déployés\n\n");
-                for (ReleaseNoteEntry entry : notDeployed) {
-                    markdown.append("- **").append(entry.getMicroservice()).append("**");
-                    if (entry.getParentVersion() != null) {
-                        markdown.append(" (Parent: ").append(entry.getParentVersion()).append(")");
-                    }
-                    markdown.append("\n");
+                // Changes
+                List<ReleaseNoteEntryDto.ChangeItem> changes = parseChanges(entry.getChanges());
+                if (changes.isEmpty()) {
+                    markdown.append("-");
+                } else {
+                    markdown.append(changes.stream()
+                            .map(c -> "**" + c.getJiraId() + "**: " + c.getDescription())
+                            .collect(Collectors.joining("<br>")));
                 }
-                markdown.append("\n");
+                markdown.append(" |\n");
             }
-
-            markdown.append("---\n\n");
+            markdown.append("\n---\n\n");
         }
 
         return markdown.toString();
     }
 
     /**
-     * Exporte la release note en HTML
+     * Exporte la release note en HTML avec design "wow" (colonnes filtrées: microservice, solution, squad, changes)
      */
     public String exportHtml(String releaseIdentifier) {
         // Résoudre le slug vers l'ID réel (support slug OU ID)
@@ -296,8 +278,13 @@ public class ReleaseNoteService {
         List<ReleaseNoteEntry> entries = releaseNoteEntryRepository
                 .findByReleaseIdOrderBySquadAndDeployOrder(release.getId());
 
+        // Filtrer uniquement les entrées déployées (partEnMep=true)
+        List<ReleaseNoteEntry> deployed = entries.stream()
+                .filter(e -> e.getPartEnMep() != null && e.getPartEnMep())
+                .collect(Collectors.toList());
+
         // Grouper par squad
-        Map<String, List<ReleaseNoteEntry>> entriesBySquad = entries.stream()
+        Map<String, List<ReleaseNoteEntry>> entriesBySquad = deployed.stream()
                 .collect(Collectors.groupingBy(
                         ReleaseNoteEntry::getSquad,
                         LinkedHashMap::new,
@@ -306,132 +293,151 @@ public class ReleaseNoteService {
         StringBuilder html = new StringBuilder();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
 
-        // Header HTML
+        // Couleurs par squad
+        String[] squadColors = {
+            "#10b981", // Squad 1 - Emerald
+            "#3b82f6", // Squad 2 - Blue
+            "#8b5cf6", // Squad 3 - Purple
+            "#f59e0b", // Squad 4 - Amber
+            "#ef4444", // Squad 5 - Red
+            "#06b6d4"  // Squad 6 - Cyan
+        };
+
+        // Header HTML avec design moderne
         html.append("<!DOCTYPE html>\n");
         html.append("<html lang=\"fr\">\n");
         html.append("<head>\n");
         html.append("  <meta charset=\"UTF-8\">\n");
         html.append("  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n");
         html.append("  <title>Release Note - ").append(release.getName()).append("</title>\n");
+        html.append("  <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">\n");
         html.append("  <style>\n");
-        html.append(
-                "    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 1200px; margin: 0 auto; padding: 2rem; background: #f9fafb; }\n");
-        html.append(
-                "    .header { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; }\n");
-        html.append("    .header h1 { margin: 0 0 0.5rem 0; font-size: 2rem; }\n");
-        html.append("    .header .date { font-size: 1.1rem; opacity: 0.9; }\n");
-        html.append("    .header .description { margin-top: 1rem; font-size: 1rem; opacity: 0.95; }\n");
-        html.append(
-                "    .squad { background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }\n");
-        html.append(
-                "    .squad-header { background: #10b981; color: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 1.25rem; font-weight: 600; }\n");
-        html.append(
-                "    .section-title { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem 0; color: #374151; }\n");
-        html.append("    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }\n");
-        html.append(
-                "    th { background: #f3f4f6; padding: 0.75rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; }\n");
-        html.append("    td { padding: 0.75rem; border-bottom: 1px solid #e5e7eb; vertical-align: top; }\n");
-        html.append("    .change-item { margin: 0.25rem 0; }\n");
-        html.append("    .jira-id { font-weight: 600; color: #10b981; }\n");
-        html.append("    .not-deployed { list-style: none; padding: 0; }\n");
-        html.append("    .not-deployed li { padding: 0.5rem 0; color: #6b7280; }\n");
-        html.append("    .not-deployed strong { color: #374151; }\n");
+        html.append("    * { margin: 0; padding: 0; box-sizing: border-box; }\n");
+        html.append("    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 1.5rem 1rem; }\n");
+        html.append("    .container { max-width: 1600px; margin: 0 auto; }\n");
+        html.append("    .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem 2rem; border-radius: 16px; margin-bottom: 1.5rem; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3); position: relative; overflow: hidden; }\n");
+        html.append("    .header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.05\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E'); }\n");
+        html.append("    .header-content { position: relative; z-index: 1; }\n");
+        html.append("    .header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n");
+        html.append("    .header .date { font-size: 0.95rem; font-weight: 500; opacity: 0.95; display: inline-block; background: rgba(255,255,255,0.2); padding: 0.35rem 1rem; border-radius: 50px; backdrop-filter: blur(10px); }\n");
+        html.append("    .header .description { margin-top: 1rem; font-size: 0.95rem; opacity: 0.95; line-height: 1.6; max-width: 900px; }\n");
+        html.append("    .squads-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 1.5rem; }\n");
+        html.append("    @media (max-width: 1200px) { .squads-grid { grid-template-columns: 1fr; } }\n");
+        html.append("    .squad-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease; }\n");
+        html.append("    .squad-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }\n");
+        html.append("    .squad-header { padding: 0.75rem 1.25rem; font-size: 1.1rem; font-weight: 700; color: white; position: relative; overflow: hidden; }\n");
+        html.append("    .squad-header::before { content: ''; position: absolute; top: 0; right: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 100%); }\n");
+        html.append("    .squad-header-content { position: relative; z-index: 1; display: flex; align-items: center; gap: 0.75rem; }\n");
+        html.append("    .squad-icon { width: 28px; height: 28px; background: rgba(255,255,255,0.2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }\n");
+        html.append("    table { width: 100%; border-collapse: separate; border-spacing: 0; }\n");
+        html.append("    thead th { background: #f9fafb; padding: 0.75rem 1rem; text-align: left; font-weight: 600; color: #374151; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #e5e7eb; }\n");
+        html.append("    tbody tr { transition: background-color 0.2s ease; }\n");
+        html.append("    tbody tr:hover { background-color: #f9fafb; }\n");
+        html.append("    tbody td { padding: 1rem; border-bottom: 1px solid #f3f4f6; vertical-align: top; }\n");
+        html.append("    tbody tr:last-child td { border-bottom: none; }\n");
+        html.append("    .microservice-name { font-weight: 600; color: #1f2937; font-size: 0.9rem; }\n");
+        html.append("    .solution-name { color: #6b7280; font-size: 0.85rem; }\n");
+        html.append("    .change-item { margin: 0.4rem 0; padding: 0.6rem 0.75rem; background: #f9fafb; border-radius: 8px; display: flex; gap: 0.75rem; align-items: flex-start; }\n");
+        html.append("    .jira-badge { display: inline-flex; align-items: center; justify-content: center; background: var(--squad-color); color: white; font-weight: 700; font-size: 0.7rem; padding: 0.25rem 0.5rem; border-radius: 4px; min-width: 70px; flex-shrink: 0; }\n");
+        html.append("    .change-desc { color: #374151; line-height: 1.5; font-size: 0.85rem; flex: 1; }\n");
+        html.append("    .no-data { color: #9ca3af; font-style: italic; font-size: 0.85rem; }\n");
+        html.append("    .stats-bar { display: flex; gap: 1.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2); }\n");
+        html.append("    .stat { display: flex; flex-direction: column; gap: 0.15rem; }\n");
+        html.append("    .stat-label { font-size: 0.75rem; opacity: 0.8; }\n");
+        html.append("    .stat-value { font-size: 1.25rem; font-weight: 700; }\n");
         html.append("  </style>\n");
         html.append("</head>\n");
         html.append("<body>\n");
+        html.append("  <div class=\"container\">\n");
 
         // Header
-        html.append("  <div class=\"header\">\n");
-        html.append("    <h1>Release Note - ").append(release.getName()).append("</h1>\n");
-        html.append("    <div class=\"date\">Date de MEP: <strong>")
-                .append(release.getReleaseDate().format(dateFormatter)).append("</strong></div>\n");
+        html.append("    <div class=\"header\">\n");
+        html.append("      <div class=\"header-content\">\n");
+        html.append("        <h1>Release Note - ").append(release.getName()).append("</h1>\n");
+        html.append("        <div class=\"date\">📅 Date de MEP: ")
+                .append(release.getReleaseDate().format(dateFormatter)).append("</div>\n");
         if (release.getDescription() != null && !release.getDescription().isEmpty()) {
-            html.append("    <div class=\"description\">").append(release.getDescription()).append("</div>\n");
+            html.append("        <div class=\"description\">").append(release.getDescription()).append("</div>\n");
         }
-        html.append("  </div>\n\n");
 
-        // Contenu par squad
+        // Stats
+        int totalMicroservices = deployed.size();
+        int totalSquads = entriesBySquad.size();
+        html.append("        <div class=\"stats-bar\">\n");
+        html.append("          <div class=\"stat\"><div class=\"stat-label\">Squads</div><div class=\"stat-value\">").append(totalSquads).append("</div></div>\n");
+        html.append("          <div class=\"stat\"><div class=\"stat-label\">Microservices</div><div class=\"stat-value\">").append(totalMicroservices).append("</div></div>\n");
+        html.append("        </div>\n");
+        html.append("      </div>\n");
+        html.append("    </div>\n\n");
+
+        // Contenu par squad - Grille 2 colonnes
+        html.append("    <div class=\"squads-grid\">\n");
+
+        int squadIndex = 0;
         for (Map.Entry<String, List<ReleaseNoteEntry>> squadEntry : entriesBySquad.entrySet()) {
             String squad = squadEntry.getKey();
             List<ReleaseNoteEntry> squadEntries = squadEntry.getValue();
+            String squadColor = squadColors[squadIndex % squadColors.length];
 
-            html.append("  <div class=\"squad\">\n");
-            html.append("    <div class=\"squad-header\">").append(squad).append("</div>\n");
+            html.append("      <div class=\"squad-card\" style=\"--squad-color: ").append(squadColor).append(";\">\n");
+            html.append("        <div class=\"squad-header\" style=\"background: linear-gradient(135deg, ").append(squadColor).append(" 0%, ").append(squadColor).append("dd 100%);\">\n");
+            html.append("          <div class=\"squad-header-content\">\n");
+            html.append("            <div class=\"squad-icon\">👥</div>\n");
+            html.append("            <div>").append(squad).append(" <span style=\"opacity: 0.7; font-size: 0.85rem; font-weight: 400;\">(").append(squadEntries.size()).append(")</span></div>\n");
+            html.append("          </div>\n");
+            html.append("        </div>\n");
 
-            // Microservices déployés
-            List<ReleaseNoteEntry> deployed = squadEntries.stream()
-                    .filter(e -> e.getPartEnMep() != null && e.getPartEnMep())
-                    .collect(Collectors.toList());
+            html.append("        <table>\n");
+            html.append("          <thead>\n");
+            html.append("            <tr>\n");
+            html.append("              <th style=\"width: 25%;\">Microservice</th>\n");
+            html.append("              <th style=\"width: 20%;\">Solution</th>\n");
+            html.append("              <th style=\"width: 55%;\">Changes</th>\n");
+            html.append("            </tr>\n");
+            html.append("          </thead>\n");
+            html.append("          <tbody>\n");
 
-            if (!deployed.isEmpty()) {
-                html.append("    <div class=\"section-title\">Microservices déployés</div>\n");
-                html.append("    <table>\n");
-                html.append("      <thead>\n");
-                html.append("        <tr>\n");
-                html.append("          <th>Ordre</th>\n");
-                html.append("          <th>Microservice</th>\n");
-                html.append("          <th>Tag</th>\n");
-                html.append("          <th>MaBanque Librairie</th>\n");
-                html.append("          <th>Changes</th>\n");
-                html.append("        </tr>\n");
-                html.append("      </thead>\n");
-                html.append("      <tbody>\n");
-
-                for (ReleaseNoteEntry entry : deployed) {
-                    html.append("        <tr>\n");
-                    html.append("          <td>")
-                            .append(entry.getDeployOrder() != null ? entry.getDeployOrder().toString() : "-")
-                            .append("</td>\n");
-                    html.append("          <td><strong>").append(entry.getMicroservice()).append("</strong></td>\n");
-                    html.append("          <td>").append(entry.getTag() != null ? entry.getTag() : "-")
-                            .append("</td>\n");
-                    html.append("          <td>")
-                            .append(entry.getParentVersion() != null ? entry.getParentVersion() : "-")
-                            .append("</td>\n");
-                    html.append("          <td>\n");
-
-                    // Changes
-                    List<ReleaseNoteEntryDto.ChangeItem> changes = parseChanges(entry.getChanges());
-                    if (changes.isEmpty()) {
-                        html.append("            -\n");
-                    } else {
-                        for (ReleaseNoteEntryDto.ChangeItem change : changes) {
-                            html.append("            <div class=\"change-item\"><span class=\"jira-id\">")
-                                    .append(change.getJiraId())
-                                    .append("</span>: ")
-                                    .append(change.getDescription())
-                                    .append("</div>\n");
-                        }
-                    }
-                    html.append("          </td>\n");
-                    html.append("        </tr>\n");
+            for (ReleaseNoteEntry entry : squadEntries) {
+                // Récupérer solution depuis le microservice
+                String solution = "-";
+                if (entry.getMicroserviceId() != null) {
+                    solution = microserviceRepository.findById(entry.getMicroserviceId())
+                            .map(Microservice::getSolution)
+                            .orElse("-");
                 }
 
-                html.append("      </tbody>\n");
-                html.append("    </table>\n");
-            }
+                html.append("            <tr>\n");
+                html.append("              <td><div class=\"microservice-name\">")
+                        .append(entry.getMicroservice() != null ? entry.getMicroservice() : "-")
+                        .append("</div></td>\n");
+                html.append("              <td><div class=\"solution-name\">").append(solution).append("</div></td>\n");
+                html.append("              <td>\n");
 
-            // Microservices non déployés
-            List<ReleaseNoteEntry> notDeployed = squadEntries.stream()
-                    .filter(e -> e.getPartEnMep() == null || !e.getPartEnMep())
-                    .collect(Collectors.toList());
-
-            if (!notDeployed.isEmpty()) {
-                html.append("    <div class=\"section-title\">Microservices non déployés</div>\n");
-                html.append("    <ul class=\"not-deployed\">\n");
-                for (ReleaseNoteEntry entry : notDeployed) {
-                    html.append("      <li><strong>").append(entry.getMicroservice()).append("</strong>");
-                    if (entry.getParentVersion() != null) {
-                        html.append(" (Parent: ").append(entry.getParentVersion()).append(")");
+                // Changes avec nouveau design (badge + description)
+                List<ReleaseNoteEntryDto.ChangeItem> changes = parseChanges(entry.getChanges());
+                if (changes.isEmpty()) {
+                    html.append("                <span class=\"no-data\">Aucun changement</span>\n");
+                } else {
+                    for (ReleaseNoteEntryDto.ChangeItem change : changes) {
+                        html.append("                <div class=\"change-item\">\n");
+                        html.append("                  <span class=\"jira-badge\">").append(change.getJiraId()).append("</span>\n");
+                        html.append("                  <span class=\"change-desc\">").append(change.getDescription()).append("</span>\n");
+                        html.append("                </div>\n");
                     }
-                    html.append("</li>\n");
                 }
-                html.append("    </ul>\n");
+                html.append("              </td>\n");
+                html.append("            </tr>\n");
             }
 
-            html.append("  </div>\n\n");
+            html.append("          </tbody>\n");
+            html.append("        </table>\n");
+            html.append("      </div>\n\n");
+
+            squadIndex++;
         }
 
+        html.append("    </div>\n");
+        html.append("  </div>\n");
         html.append("</body>\n");
         html.append("</html>\n");
 

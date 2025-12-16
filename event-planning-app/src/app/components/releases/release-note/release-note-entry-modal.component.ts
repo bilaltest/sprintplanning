@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChangeItem } from '@models/release-note.model';
@@ -128,7 +128,7 @@ import { ChangeItem } from '@models/release-note.model';
     }
   `]
 })
-export class ReleaseNoteEntryModalComponent implements OnInit {
+export class ReleaseNoteEntryModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
   @Input() microservice = '';
   @Input() initialChanges: ChangeItem[] = [];
@@ -138,21 +138,28 @@ export class ReleaseNoteEntryModalComponent implements OnInit {
   changes: ChangeItem[] = [];
 
   ngOnInit() {
-    // Clone les changes pour éviter de modifier l'original tant qu'on n'a pas sauvegardé
-    this.changes = JSON.parse(JSON.stringify(this.initialChanges || []));
-
-    // Si vide, ajouter un change par défaut
-    if (this.changes.length === 0) {
-      this.addChange();
-    }
-
-    // Focus sur le premier champ Jira ID après un court délai
-    setTimeout(() => {
-      this.focusJiraId(0);
-    }, 100);
-
     // Écouter Ctrl+S pour sauvegarder
     this.setupKeyboardShortcuts();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    // ✅ Réagir aux changements de initialChanges ET isOpen
+    if (changes['initialChanges'] || (changes['isOpen'] && this.isOpen)) {
+      // Clone les changes pour éviter de modifier l'original tant qu'on n'a pas sauvegardé
+      this.changes = JSON.parse(JSON.stringify(this.initialChanges || []));
+
+      // Si vide, ajouter un change par défaut
+      if (this.changes.length === 0) {
+        this.addChange();
+      }
+
+      // Focus sur le premier champ Jira ID après un court délai (seulement si la modal s'ouvre)
+      if (this.isOpen) {
+        setTimeout(() => {
+          this.focusJiraId(0);
+        }, 100);
+      }
+    }
   }
 
   setupKeyboardShortcuts(): void {
