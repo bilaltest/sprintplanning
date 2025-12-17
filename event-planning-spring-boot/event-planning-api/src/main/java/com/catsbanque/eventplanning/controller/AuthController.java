@@ -62,7 +62,8 @@ public class AuthController {
     public ResponseEntity<CurrentUserResponse> getCurrentUser(Authentication authentication) {
         log.info("GET /api/auth/me");
 
-        // L'userId est déjà extrait du JWT par JwtAuthenticationFilter et stocké dans Authentication.principal
+        // L'userId est déjà extrait du JWT par JwtAuthenticationFilter et stocké dans
+        // Authentication.principal
         String userId = (String) authentication.getPrincipal();
 
         // Récupérer l'utilisateur avec ses permissions
@@ -84,8 +85,7 @@ public class AuthController {
     @PutMapping("/preferences")
     public ResponseEntity<UpdatePreferencesResponse> updatePreferences(
             @Valid @RequestBody UpdatePreferencesRequest request,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         log.info("PUT /api/auth/preferences - theme: {}", request.getThemePreference());
 
         // L'userId est déjà extrait du JWT par JwtAuthenticationFilter
@@ -117,8 +117,7 @@ public class AuthController {
     @PutMapping("/widget-order")
     public ResponseEntity<UpdatePreferencesResponse> updateWidgetOrder(
             @Valid @RequestBody UpdateWidgetOrderRequest request,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         log.info("PUT /api/auth/widget-order - widgets: {}", request.getWidgetOrder());
 
         // L'userId est déjà extrait du JWT par JwtAuthenticationFilter

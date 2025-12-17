@@ -10,7 +10,8 @@ import { TimelineView } from '@models/timeline.model';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Event } from '@models/event.model';
-import { CalendarViewComponent } from './calendar-view.component';
+
+import { SemesterViewComponent } from './semester-view.component';
 import { NowViewComponent } from './now-view.component';
 import { FilterBarComponent } from '../filters/filter-bar.component';
 import { EventModalComponent } from '../modals/event-modal.component';
@@ -20,7 +21,8 @@ import { EventModalComponent } from '../modals/event-modal.component';
   standalone: true,
   imports: [
     CommonModule,
-    CalendarViewComponent,
+
+    SemesterViewComponent,
     NowViewComponent,
     FilterBarComponent,
     EventModalComponent
@@ -143,13 +145,14 @@ import { EventModalComponent } from '../modals/event-modal.component';
           (deleteEventClick)="handleDeleteEvent($event)"
         ></app-now-view>
 
-        <app-calendar-view
-          *ngIf="(currentView$ | async) === 'quarter'"
+        <app-semester-view
+          *ngIf="(currentView$ | async) === 'semester'"
           [events]="filteredEvents$ | async"
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
-          (deleteEventClick)="handleDeleteEvent($event)"
-        ></app-calendar-view>
+        ></app-semester-view>
+
+
       </div>
 
     </div>
@@ -170,7 +173,8 @@ import { EventModalComponent } from '../modals/event-modal.component';
 })
 export class TimelineContainerComponent implements OnInit {
   views = [
-    { value: 'quarter' as TimelineView, label: 'Calendrier', icon: 'calendar_view_month' },
+
+    { value: 'semester' as TimelineView, label: 'Semestre', icon: 'table_view' },
     { value: 'now' as TimelineView, label: 'Timeline', icon: 'timeline' }
   ];
 

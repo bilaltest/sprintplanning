@@ -7,9 +7,8 @@ import { ReleaseService } from '@services/release.service';
 import { AuthService } from '@services/auth.service';
 import { Event } from '@models/event.model';
 import { Release } from '@models/release.model';
-import { format, isThisWeek, isFuture, differenceInDays } from 'date-fns';
+import { format, isFuture, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { ProgressRingComponent } from '../shared/progress-ring.component';
 import { interval, Subscription } from 'rxjs';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
@@ -21,7 +20,7 @@ interface Widget {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, ProgressRingComponent, DragDropModule],
+  imports: [CommonModule, DragDropModule],
   template: `
     <div class="space-y-8">
           <!-- Applications Section -->
@@ -140,7 +139,7 @@ interface Widget {
                   </div>
 
                   <!-- Events Next 7 Days Widget -->
-                  <div *ngIf="widget.type === 'events7days' && eventsNext7Days.length > 0"
+                  <div *ngIf="widget.type === 'events7days' && eventsNext15Days.length > 0"
                        class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col cursor-move"
                        (click)="handleWidgetClick($event, 'calendar')">
                     <div class="flex items-center justify-between mb-3">
@@ -150,15 +149,15 @@ interface Widget {
                         </div>
                         <div class="flex-1 min-w-0">
                           <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">Événements</h2>
-                          <p class="text-xs text-gray-600 dark:text-gray-400">7 jours</p>
+                          <p class="text-xs text-gray-600 dark:text-gray-400">15 jours</p>
                         </div>
                       </div>
                       <div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                        {{ eventsNext7Days.length }}
+                        {{ eventsNext15Days.length }}
                       </div>
                     </div>
                     <div class="space-y-1 flex-1 overflow-y-auto custom-scrollbar-thin">
-                      <div *ngFor="let event of eventsNext7Days.slice(0, 3)"
+                      <div *ngFor="let event of eventsNext15Days.slice(0, 3)"
                            class="flex items-center space-x-2 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
                            (click)="navigateToEvent(event, $event)">
                         <div class="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" [style.background-color]="event.color"></div>
@@ -167,19 +166,19 @@ interface Widget {
                           <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ event.title }}</p>
                         </div>
                       </div>
-                      <div *ngIf="eventsNext7Days.length > 3"
+                      <div *ngIf="eventsNext15Days.length > 3"
                            class="text-xs text-center text-gray-500 dark:text-gray-400 pt-1">
-                        +{{ eventsNext7Days.length - 3 }} autres
+                        +{{ eventsNext15Days.length - 3 }} autres
                       </div>
                     </div>
                   </div>
 
                   <!-- Empty state Events -->
-                  <div *ngIf="widget.type === 'events7days' && eventsNext7Days.length === 0"
+                  <div *ngIf="widget.type === 'events7days' && eventsNext15Days.length === 0"
                        class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col items-center justify-center cursor-move">
                     <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">event_available</span>
                     <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucun événement</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-500 text-center">7 prochains jours</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-500 text-center">15 prochains jours</p>
                   </div>
 
                   <!-- Next MEP Widget -->
@@ -193,7 +192,7 @@ interface Widget {
                             <span class="material-icons text-sm text-emerald-600 dark:text-emerald-400">rocket_launch</span>
                           </div>
                           <div class="flex-1 min-w-0">
-                            <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">MEP</h2>
+                            <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">Prochaine MEP</h2>
                           </div>
                         </div>
                         <span class="px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0"
@@ -209,19 +208,23 @@ interface Widget {
                         </span>
                       </div>
 
-                      <div class="flex-1 flex flex-col items-center justify-center min-h-0">
-                        <app-progress-ring
-                          [percentage]="getNextMepProgress()"
-                          [size]="56"
-                          [strokeWidth]="5"
-                          [color]="getNextMepProgress() === 100 ? 'success' : 'warning'"
-                        ></app-progress-ring>
-                        <p class="text-xs font-semibold text-gray-900 dark:text-white mt-2 text-center truncate w-full px-1">
+                      <div class="flex-1 flex flex-col items-center justify-center text-center min-h-0 space-y-2">
+                        <div class="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mb-1">
+                           <span class="material-icons text-3xl text-emerald-500 dark:text-emerald-400">event</span>
+                        </div>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white truncate w-full px-2" [title]="nextMep.name">
                           {{ nextMep.name }}
-                        </p>
-                        <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                          {{ getCompletedSquadsCount() }}/{{ getTotalSquadsCount() }} squads
-                        </p>
+                        </h3>
+                        <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                          <span class="material-icons text-[14px] mr-1">schedule</span>
+                          {{ formatDate(nextMep.releaseDate) }}
+                        </div>
+                      </div>
+                      
+                      <div class="mt-auto pt-2 border-t border-gray-100 dark:border-gray-700 w-full">
+                        <button class="w-full py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded transition-colors flex items-center justify-center">
+                          Voir le détail <span class="material-icons text-[14px] ml-1">arrow_forward</span>
+                        </button>
                       </div>
                     </div>
 
@@ -277,7 +280,7 @@ interface Widget {
 })
 export class HomeComponent implements OnInit, OnDestroy {
   nextMep: Release | null = null;
-  eventsNext7Days: Event[] = [];
+  eventsNext15Days: Event[] = [];
   orderedWidgets: Widget[] = [];
 
   // Stats pour compteurs animés
@@ -379,17 +382,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   private loadStatistics(): void {
     // Load events
     this.eventService.events$.subscribe(events => {
-      // Events in the next 7 days
+      // Events in the next 15 days
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const sevenDaysFromNow = new Date(today);
-      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+      const fifteenDaysFromNow = new Date(today);
+      fifteenDaysFromNow.setDate(fifteenDaysFromNow.getDate() + 15);
 
-      this.eventsNext7Days = events
+      this.eventsNext15Days = events
         .filter(event => {
           const eventDate = new Date(event.date);
           eventDate.setHours(0, 0, 0, 0);
-          return eventDate >= today && eventDate <= sevenDaysFromNow;
+          return eventDate >= today && eventDate <= fifteenDaysFromNow;
         })
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 5);
@@ -495,28 +498,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  getNextMepProgress(): number {
-    if (!this.nextMep || this.nextMep.squads.length === 0) {
-      return 0;
-    }
-    const completedSquads = this.nextMep.squads.filter(s => s.isCompleted).length;
-    return Math.round((completedSquads / this.nextMep.squads.length) * 100);
-  }
-
-  getCompletedSquadsCount(): number {
-    if (!this.nextMep) {
-      return 0;
-    }
-    return this.nextMep.squads.filter(s => s.isCompleted).length;
-  }
-
-  getTotalSquadsCount(): number {
-    if (!this.nextMep) {
-      return 0;
-    }
-    return this.nextMep.squads.length;
-  }
-
   formatDate(dateString: string): string {
     return format(new Date(dateString), 'dd MMMM yyyy', { locale: fr });
   }
@@ -545,7 +526,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   navigateToRelease(release: Release): void {
     // Utiliser l'ID pour l'URL
     const routeParam = release.id;
-    this.router.navigate(['/releases', routeParam]);
+    this.router.navigate(['/releases', routeParam, 'preparation']);
   }
 
   toggleTheme(): void {

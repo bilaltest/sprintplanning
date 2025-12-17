@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChildren, QueryList, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ReleaseNoteEntry, ChangeItem } from '@models/release-note.model';
+import { ReleaseNoteEntry, ChangeItem, DeploymentStatus } from '@models/release-note.model';
 import { PermissionService } from '@services/permission.service';
 
 export interface ColumnConfig {
@@ -54,6 +54,12 @@ export interface ColumnConfig {
                 <button (click)="onSort('partEnMep')" class="flex items-center justify-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors w-full">
                   <span>MEP</span>
                   <span class="material-icons text-sm">{{ getSortIcon('partEnMep') }}</span>
+                </button>
+              </th>
+              <th *ngIf="isColumnVisible('status')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-36">
+                <button (click)="onSort('status')" class="flex items-center space-x-1 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                  <span>Avancement</span>
+                  <span class="material-icons text-sm">{{ getSortIcon('status') }}</span>
                 </button>
               </th>
               <th *ngIf="isColumnVisible('tag')" class="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider w-[110px]">
@@ -152,6 +158,71 @@ export interface ColumnConfig {
                 />
               </td>
 
+              <!-- Status -->
+              <td *ngIf="isColumnVisible('status')" class="px-3 py-2">
+                <div class="flex items-center space-x-1">
+                  <!-- HOM2 -->
+                  <button
+                    (click)="onToggleStatus(entry, 'HOM2')"
+                    [disabled]="!entry.partEnMep || !hasWriteAccess()"
+                    class="w-6 h-6 rounded-full flex items-center justify-center transition-all border disabled:opacity-50 disabled:cursor-not-allowed"
+                    [ngClass]="{
+                      'bg-gray-200 border-gray-300 text-gray-500': entry.status === 'HOM2',
+                      'bg-white border-gray-200 text-gray-300 hover:border-gray-300': entry.status !== 'HOM2',
+                      'ring-2 ring-offset-1 ring-gray-400': entry.status === 'HOM2'
+                    }"
+                    title="HOM2"
+                  >
+                    <div class="w-2 h-2 rounded-full bg-current"></div>
+                  </button>
+
+                  <!-- IN_PROGRESS_PROD -->
+                  <button
+                    (click)="onToggleStatus(entry, 'IN_PROGRESS_PROD')"
+                    [disabled]="!entry.partEnMep || !hasWriteAccess()"
+                    class="w-6 h-6 rounded-full flex items-center justify-center transition-all border disabled:opacity-50 disabled:cursor-not-allowed"
+                    [ngClass]="{
+                      'bg-amber-100 border-amber-200 text-amber-600': entry.status === 'IN_PROGRESS_PROD',
+                      'bg-white border-gray-200 text-gray-300 hover:border-amber-200 hover:text-amber-300': entry.status !== 'IN_PROGRESS_PROD',
+                      'ring-2 ring-offset-1 ring-amber-400': entry.status === 'IN_PROGRESS_PROD'
+                    }"
+                    title="En cours Prod"
+                  >
+                    <div class="w-2 h-2 rounded-full bg-current"></div>
+                  </button>
+
+                  <!-- DEPLOYED_PROD -->
+                  <button
+                    (click)="onToggleStatus(entry, 'DEPLOYED_PROD')"
+                    [disabled]="!entry.partEnMep || !hasWriteAccess()"
+                    class="w-6 h-6 rounded-full flex items-center justify-center transition-all border disabled:opacity-50 disabled:cursor-not-allowed"
+                    [ngClass]="{
+                      'bg-green-100 border-green-200 text-green-600': entry.status === 'DEPLOYED_PROD',
+                      'bg-white border-gray-200 text-gray-300 hover:border-green-200 hover:text-green-300': entry.status !== 'DEPLOYED_PROD',
+                      'ring-2 ring-offset-1 ring-green-400': entry.status === 'DEPLOYED_PROD'
+                    }"
+                    title="Prod OK"
+                  >
+                    <div class="w-2 h-2 rounded-full bg-current"></div>
+                  </button>
+
+                  <!-- ROLLBACK -->
+                  <button
+                    (click)="onToggleStatus(entry, 'ROLLBACK')"
+                    [disabled]="!entry.partEnMep || !hasWriteAccess()"
+                    class="w-6 h-6 rounded-full flex items-center justify-center transition-all border disabled:opacity-50 disabled:cursor-not-allowed"
+                    [ngClass]="{
+                      'bg-red-100 border-red-200 text-red-600': entry.status === 'ROLLBACK',
+                      'bg-white border-gray-200 text-gray-300 hover:border-red-200 hover:text-red-300': entry.status !== 'ROLLBACK',
+                      'ring-2 ring-offset-1 ring-red-400': entry.status === 'ROLLBACK'
+                    }"
+                    title="Rollback"
+                  >
+                    <div class="w-2 h-2 rounded-full bg-current"></div>
+                  </button>
+                </div>
+              </td>
+
               <!-- Tag -->
               <td *ngIf="isColumnVisible('tag')" class="px-3 py-2">
                 <div class="flex items-center space-x-1 bg-gray-50 dark:bg-gray-900/50 rounded px-2 py-1 border border-gray-200 dark:border-gray-700 focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-200 transition-all max-w-[110px]">
@@ -163,7 +234,7 @@ export interface ColumnConfig {
                     (keyup.enter)="onFieldUpdate(entry, 'tag', tagInput.value)"
                     [disabled]="!entry.partEnMep || !hasWriteAccess()"
                     placeholder="-"
-                    class="w-16 bg-transparent text-xs font-mono text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-full bg-transparent text-xs font-mono text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     *ngIf="hasWriteAccess() && entry.partEnMep"
@@ -199,7 +270,7 @@ export interface ColumnConfig {
                     (keyup.enter)="onFieldUpdate(entry, 'parentVersion', parentVersionInput.value)"
                     [disabled]="!hasWriteAccess()"
                     placeholder="-"
-                    class="w-16 bg-transparent text-xs font-mono text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="w-full bg-transparent text-xs font-mono text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <button
                     *ngIf="hasWriteAccess()"
@@ -288,7 +359,7 @@ export class MicroservicesTableComponent implements AfterViewInit {
 
   @ViewChildren('commentInput') commentInputs!: QueryList<ElementRef<HTMLTextAreaElement>>;
 
-  constructor(private permissionService: PermissionService) {}
+  constructor(private permissionService: PermissionService) { }
 
   ngAfterViewInit(): void {
     this.resizeAllCommentTextareas();
@@ -306,12 +377,17 @@ export class MicroservicesTableComponent implements AfterViewInit {
     return column ? column.visible : true;
   }
 
-  onFieldUpdate(entry: ReleaseNoteEntry, field: string, value: string): void {
+  onFieldUpdate(entry: ReleaseNoteEntry, field: string, value: any): void {
     this.fieldUpdate.emit({ entry, field, value });
   }
 
   onPartEnMepToggle(entry: ReleaseNoteEntry): void {
     this.partEnMepToggle.emit(entry);
+  }
+
+  onToggleStatus(entry: ReleaseNoteEntry, status: string): void {
+    const newStatus = entry.status === status ? null : status;
+    this.onFieldUpdate(entry, 'status', newStatus);
   }
 
   onOpenChangesModal(entry: ReleaseNoteEntry): void {

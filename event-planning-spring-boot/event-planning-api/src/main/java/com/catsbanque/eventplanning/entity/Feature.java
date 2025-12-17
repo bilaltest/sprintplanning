@@ -14,7 +14,7 @@ import java.util.Random;
 
 @Entity
 @Table(name = "feature", indexes = {
-    @Index(name = "idx_feature_squad_id", columnList = "squad_id")
+        @Index(name = "idx_feature_squad_id", columnList = "squad_id")
 })
 @Data
 @NoArgsConstructor
@@ -33,6 +33,9 @@ public class Feature {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(nullable = false, length = 50)
+    private String type;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

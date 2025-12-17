@@ -1,6 +1,7 @@
 import { Component, OnInit, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { timer } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HistoryService } from '@services/history.service';
 import { EventService } from '@services/event.service';
@@ -27,6 +28,13 @@ import { fr } from 'date-fns/locale';
         </button>
         <span class="material-icons text-3xl text-primary-600 dark:text-primary-400">history</span>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Historique</h1>
+        <button
+          (click)="refresh()"
+          class="btn btn-secondary p-2 ml-auto"
+          title="Actualiser la liste"
+        >
+          <span class="material-icons">refresh</span>
+        </button>
       </div>
 
       <div class="card p-6">
@@ -265,7 +273,7 @@ export class HistoryComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private toastService: ToastService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Subscription avec cleanup automatique
@@ -274,6 +282,8 @@ export class HistoryComponent implements OnInit {
       .subscribe(entries => {
         this.history = entries;
       });
+
+
   }
 
   getActionIcon(action: string): string {
@@ -394,5 +404,9 @@ export class HistoryComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/calendar']);
+  }
+
+  refresh(): void {
+    this.historyService.refresh();
   }
 }

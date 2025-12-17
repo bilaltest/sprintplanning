@@ -86,8 +86,6 @@ export interface Squad {
   tontonMep?: string; // Nom du Tonton MEP responsable de la squad
   isCompleted: boolean; // Indique si le squad est Complété
   featuresEmptyConfirmed?: boolean;
-  preMepEmptyConfirmed?: boolean;
-  postMepEmptyConfirmed?: boolean;
   features: Feature[];
   actions: Action[];
   createdAt?: string;

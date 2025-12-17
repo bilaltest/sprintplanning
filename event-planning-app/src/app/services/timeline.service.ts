@@ -7,7 +7,7 @@ import { TimelineView, TimelineState } from '@models/timeline.model';
 })
 export class TimelineService {
   private stateSubject = new BehaviorSubject<TimelineState>({
-    view: 'quarter',
+    view: 'semester',
     currentDate: new Date()
   });
 

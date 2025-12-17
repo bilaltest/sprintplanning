@@ -226,8 +226,6 @@ export class ReleaseService {
     tontonMep?: string;
     isCompleted?: boolean;
     featuresEmptyConfirmed?: boolean;
-    preMepEmptyConfirmed?: boolean;
-    postMepEmptyConfirmed?: boolean;
   }): Promise<void> {
     try {
       await firstValueFrom(

@@ -1,3 +1,5 @@
+export type DeploymentStatus = 'HOM2' | 'IN_PROGRESS_PROD' | 'DEPLOYED_PROD' | 'ROLLBACK';
+
 export interface ReleaseNoteEntry {
   id?: string;
   releaseId: string;
@@ -16,6 +18,7 @@ export interface ReleaseNoteEntry {
   parentVersion?: string;
   changes: ChangeItem[];
   comment?: string; // Commentaire libre
+  status?: DeploymentStatus;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -40,6 +43,7 @@ export interface CreateReleaseNoteEntryRequest {
   parentVersion?: string;
   changes: ChangeItem[];
   comment?: string; // Commentaire libre
+  status?: DeploymentStatus;
 }
 
 // Interface pour le groupement par squad dans l'UI

@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.catsbanque.eventplanning.entity.DeploymentStatus;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,4 +34,5 @@ public class CreateReleaseNoteEntryRequest {
     private String parentVersion;
     private List<ReleaseNoteEntryDto.ChangeItem> changes = new ArrayList<>();
     private String comment; // Commentaire libre
+    private DeploymentStatus status;
 }

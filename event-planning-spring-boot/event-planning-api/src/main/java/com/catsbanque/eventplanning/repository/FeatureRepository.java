@@ -18,4 +18,7 @@ public interface FeatureRepository extends JpaRepository<Feature, String> {
      * Count features for a squad
      */
     long countBySquadId(String squadId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT f FROM Feature f JOIN f.squad s WHERE s.release.id = :releaseId AND f.type = :type")
+    List<Feature> findByReleaseIdAndType(String releaseId, String type);
 }

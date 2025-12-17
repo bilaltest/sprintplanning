@@ -1,5 +1,6 @@
 package com.catsbanque.eventplanning.dto;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -19,10 +20,7 @@ public class UpdateSettingsRequest {
      * Thème de l'application (light ou dark)
      */
     @NotNull(message = "Le thème est requis")
-    @Pattern(
-        regexp = "^(light|dark)$",
-        message = "Le thème doit être 'light' ou 'dark'"
-    )
+    @Pattern(regexp = "^(light|dark)$", message = "Le thème doit être 'light' ou 'dark'")
     private String theme;
 
     /**
@@ -30,5 +28,5 @@ public class UpdateSettingsRequest {
      * Format attendu: JSON array string (ex: "[]" ou "[{...}]")
      * La validation JSON détaillée est faite côté service
      */
-    private String customCategories;
+    private JsonNode customCategories;
 }

@@ -1,4 +1,4 @@
-export type TimelineView = 'quarter' | 'now';
+export type TimelineView = 'semester' | 'now';
 
 export interface TimelineState {
   view: TimelineView;

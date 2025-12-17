@@ -3,13 +3,12 @@ package com.catsbanque.eventplanning.service;
 import com.catsbanque.eventplanning.dto.CreateEventRequest;
 import com.catsbanque.eventplanning.dto.EventDto;
 import com.catsbanque.eventplanning.entity.Event;
-import com.catsbanque.eventplanning.entity.History;
+import com.catsbanque.eventplanning.entity.Event;
 import com.catsbanque.eventplanning.entity.User;
 import com.catsbanque.eventplanning.exception.ResourceNotFoundException;
 import com.catsbanque.eventplanning.repository.EventRepository;
-import com.catsbanque.eventplanning.repository.HistoryRepository;
 import com.catsbanque.eventplanning.repository.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 public class EventService {
 
     private final EventRepository eventRepository;
-    private final HistoryRepository historyRepository;
+    private final HistoryService historyService;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
 
@@ -38,7 +37,8 @@ public class EventService {
      * Récupérer tous les événements avec filtres optionnels
      * Référence: event.controller.js:32-75
      *
-     * Note: L'archivage automatique a été déplacé vers ArchiveScheduler (tâche planifiée à 3h)
+     * Note: L'archivage automatique a été déplacé vers ArchiveScheduler (tâche
+     * planifiée à 3h)
      * pour éviter de bloquer les requêtes GET avec des DELETE synchrones
      */
     @Transactional(readOnly = true)
@@ -104,7 +104,8 @@ public class EventService {
         Event saved = eventRepository.save(event);
 
         // Enregistrer dans l'historique
-        createHistoryEntry("create", saved, null, userId);
+        // Enregistrer dans l'historique
+        historyService.createEntry("create", saved, null, userId);
 
         log.info("Event created: {}", saved.getId());
         return EventDto.fromEntity(saved);
@@ -136,7 +137,8 @@ public class EventService {
         Event updated = eventRepository.save(event);
 
         // Enregistrer dans l'historique
-        createHistoryEntry("update", updated, oldEvent, userId);
+        // Enregistrer dans l'historique
+        historyService.createEntry("update", updated, oldEvent, userId);
 
         log.info("Event updated: {}", updated.getId());
         return EventDto.fromEntity(updated);
@@ -154,7 +156,8 @@ public class EventService {
         eventRepository.delete(event);
 
         // Enregistrer dans l'historique
-        createHistoryEntry("delete", null, event, userId);
+        // Enregistrer dans l'historique
+        historyService.createEntry("delete", null, event, userId);
 
         log.info("Event deleted: {}", id);
     }
@@ -203,36 +206,6 @@ public class EventService {
      * Créer une entrée d'historique
      * Référence: event.controller.js:131-140, 192-201, 234-243
      */
-    private void createHistoryEntry(String action, Event newEvent, Event oldEvent, String userId) {
-        try {
-            History history = new History();
-            history.setAction(action);
-
-            if (newEvent != null) {
-                history.setEventId(newEvent.getId());
-                history.setEventData(objectMapper.writeValueAsString(EventDto.fromEntity(newEvent)));
-            } else if (oldEvent != null) {
-                history.setEventId(oldEvent.getId());
-                history.setEventData("null");
-            }
-
-            if (oldEvent != null) {
-                history.setPreviousData(objectMapper.writeValueAsString(EventDto.fromEntity(oldEvent)));
-            }
-
-            if (userId != null) {
-                history.setUserId(userId);
-                userRepository.findById(userId).ifPresent(user -> {
-                    String displayName = user.getFirstName() + " " + user.getLastName();
-                    history.setUserDisplayName(displayName);
-                });
-            }
-
-            historyRepository.save(history);
-        } catch (JsonProcessingException e) {
-            log.error("Failed to create history entry", e);
-        }
-    }
 
     /**
      * Cloner un événement pour l'historique

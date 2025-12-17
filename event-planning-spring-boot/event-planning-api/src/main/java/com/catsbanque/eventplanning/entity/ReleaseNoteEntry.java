@@ -13,9 +13,9 @@ import java.util.Random;
 
 @Entity
 @Table(name = "release_note_entry", indexes = {
-    @Index(name = "idx_release_note_release_id", columnList = "release_id"),
-    @Index(name = "idx_release_note_squad", columnList = "squad"),
-    @Index(name = "idx_release_note_deploy_order", columnList = "deploy_order")
+        @Index(name = "idx_release_note_release_id", columnList = "release_id"),
+        @Index(name = "idx_release_note_squad", columnList = "squad"),
+        @Index(name = "idx_release_note_deploy_order", columnList = "deploy_order")
 })
 @Data
 @NoArgsConstructor
@@ -67,6 +67,10 @@ public class ReleaseNoteEntry {
 
     @Column(columnDefinition = "TEXT")
     private String comment; // Commentaire libre sur l'entrée
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 30)
+    private DeploymentStatus status = DeploymentStatus.HOM2; // Default to HOM2
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

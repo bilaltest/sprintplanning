@@ -43,12 +43,12 @@ public class SettingsController {
      */
     @PutMapping
     @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.eventplanning.entity.PermissionModule).CALENDAR)")
-    public ResponseEntity<SettingsDto> updateSettings(@Valid @RequestBody UpdateSettingsRequest request, org.springframework.security.core.Authentication authentication) {
+    public ResponseEntity<SettingsDto> updateSettings(@Valid @RequestBody UpdateSettingsRequest request,
+            org.springframework.security.core.Authentication authentication) {
         log.info("PUT /api/settings - theme: {}", request.getTheme());
         SettingsDto settings = settingsService.updateSettings(
-            request.getTheme(),
-            request.getCustomCategories()
-        );
+                request.getTheme(),
+                request.getCustomCategories() != null ? request.getCustomCategories().toString() : "[]");
         return ResponseEntity.ok(settings);
     }
 }

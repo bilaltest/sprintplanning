@@ -6,6 +6,7 @@ import com.catsbanque.eventplanning.entity.History;
 import com.catsbanque.eventplanning.exception.ResourceNotFoundException;
 import com.catsbanque.eventplanning.repository.EventRepository;
 import com.catsbanque.eventplanning.repository.HistoryRepository;
+import com.catsbanque.eventplanning.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +30,11 @@ public class HistoryService {
 
     private final HistoryRepository historyRepository;
     private final EventRepository eventRepository;
+    private final UserRepository userRepository; // Added injection
     private final ObjectMapper objectMapper;
 
     /**
      * Archivage automatique : supprimer les entrées au-delà de 30
-     * Référence: history.controller.js:3-35
      */
     public void archiveHistory() {
         try {
@@ -55,14 +56,54 @@ public class HistoryService {
     }
 
     /**
+     * Créer une entrée d'historique
+     * Centralise la logique de création et déclenche l'archivage
+     */
+    @Transactional
+    public void createEntry(String action, Event newEvent, Event oldEvent, String userId) {
+        try {
+            History history = new History();
+            history.setAction(action);
+
+            if (newEvent != null) {
+                history.setEventId(newEvent.getId());
+                history.setEventData(objectMapper
+                        .writeValueAsString(com.catsbanque.eventplanning.dto.EventDto.fromEntity(newEvent)));
+            } else if (oldEvent != null) {
+                history.setEventId(oldEvent.getId());
+                history.setEventData("null");
+            }
+
+            if (oldEvent != null) {
+                history.setPreviousData(objectMapper
+                        .writeValueAsString(com.catsbanque.eventplanning.dto.EventDto.fromEntity(oldEvent)));
+            }
+
+            if (userId != null) {
+                history.setUserId(userId);
+                userRepository.findById(userId).ifPresent(user -> {
+                    String displayName = user.getFirstName() + " " + user.getLastName();
+                    history.setUserDisplayName(displayName);
+                });
+            }
+
+            historyRepository.save(history);
+
+            // Nettoyer l'historique après ajout
+            archiveHistory();
+
+        } catch (JsonProcessingException e) {
+            log.error("Failed to create history entry", e);
+        }
+    }
+
+    /**
      * Récupérer l'historique (30 derniers)
-     * Référence: history.controller.js:37-59
+     * Note: Ne fait plus d'archivage à la lecture (évite les boucles
+     * transactionnelles)
      */
     @Transactional(readOnly = true)
     public List<HistoryDto> getHistory() {
-        // Archivage automatique
-        archiveHistory();
-
         List<History> history = historyRepository.findLast30Entries();
 
         return history.stream()

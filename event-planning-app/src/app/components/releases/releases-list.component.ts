@@ -22,12 +22,12 @@ import {
 } from '@models/release.model';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { ProgressRingComponent } from '../shared/progress-ring.component';
+
 
 @Component({
   selector: 'app-releases-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProgressRingComponent, CanAccessDirective],
+  imports: [CommonModule, FormsModule, CanAccessDirective],
   template: `
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- Header -->
@@ -143,26 +143,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             {{ release.description }}
           </p>
 
-          <!-- Progress Ring & Stats -->
-          <div class="flex items-center justify-between mb-4" *ngIf="release.squads.length > 0">
-            <div class="flex-1">
-              <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
-                <span class="font-bold">{{ getCompletedSquads(release) }}/{{ release.squads.length }} squads</span>
-              </div>
-            </div>
 
-            <!-- Progress Ring -->
-            <div class="ml-4">
-              <app-progress-ring
-                [percentage]="getProgressPercentage(release)"
-                [size]="72"
-                [strokeWidth]="6"
-                [color]="getProgressPercentage(release) === 100 ? 'success' : (getProgressPercentage(release) >= 70 ? 'primary' : 'warning')"
-                [customColor]="release.type === 'hotfix' ? '#ef4444' : undefined"
-                [textClass]="getReleaseTypeColors(release.type).text"
-              ></app-progress-ring>
-            </div>
-          </div>
 
           <!-- Footer - Main Actions -->
           <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
@@ -281,26 +262,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
               {{ release.description }}
             </p>
 
-            <!-- Progress Ring & Stats -->
-            <div class="flex items-center justify-between mb-4" *ngIf="release.squads.length > 0">
-              <div class="flex-1">
-                <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
-                  <span class="font-bold">{{ getCompletedSquads(release) }}/{{ release.squads.length }} squads</span>
-                </div>
-              </div>
 
-              <!-- Progress Ring -->
-              <div class="ml-4">
-                <app-progress-ring
-                  [percentage]="getProgressPercentage(release)"
-                  [size]="72"
-                  [strokeWidth]="6"
-                  [color]="getProgressPercentage(release) === 100 ? 'success' : (getProgressPercentage(release) >= 70 ? 'primary' : 'warning')"
-                  [customColor]="release.type === 'hotfix' ? '#ef4444' : undefined"
-                  [textClass]="getReleaseTypeColors(release.type).text"
-                ></app-progress-ring>
-              </div>
-            </div>
 
             <!-- Footer - Main Actions -->
             <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">

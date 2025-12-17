@@ -93,6 +93,8 @@ public class PermissionService {
 
     /**
      * Crée les permissions par défaut pour un nouvel utilisateur.
+     * Cette méthode est idempotente : elle vérifie si la permission existe avant de
+     * la créer.
      *
      * Permissions par défaut (WRITE pour tous les modules):
      * - CALENDAR: WRITE
@@ -103,34 +105,40 @@ public class PermissionService {
      */
     @Transactional
     public void createDefaultPermissions(User user) {
-        // CALENDAR
-        UserPermission calendarPerm = new UserPermission();
-        calendarPerm.setUser(user);
-        calendarPerm.setModule(PermissionModule.CALENDAR);
-        calendarPerm.setPermissionLevel(PermissionLevel.WRITE);
-        permissionRepository.save(calendarPerm);
+        createOrUpdatePermission(user, PermissionModule.CALENDAR, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.RELEASES, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.ADMIN, PermissionLevel.WRITE);
 
-        // RELEASES
-        UserPermission releasesPerm = new UserPermission();
-        releasesPerm.setUser(user);
-        releasesPerm.setModule(PermissionModule.RELEASES);
-        releasesPerm.setPermissionLevel(PermissionLevel.WRITE);
-        permissionRepository.save(releasesPerm);
+        log.info("Permissions par défaut vérifiées/créées pour l'utilisateur {}", user.getEmail());
+    }
 
-        // ADMIN - WRITE pour tous les utilisateurs par défaut
-        UserPermission adminPerm = new UserPermission();
-        adminPerm.setUser(user);
-        adminPerm.setModule(PermissionModule.ADMIN);
-        adminPerm.setPermissionLevel(PermissionLevel.WRITE);
-        permissionRepository.save(adminPerm);
-
-        log.info("Permissions par défaut créées pour l'utilisateur {} - Tous droits WRITE", user.getEmail());
+    /**
+     * Helper pour créer ou mettre à jour une permission spécifique
+     */
+    private void createOrUpdatePermission(User user, PermissionModule module, PermissionLevel level) {
+        permissionRepository.findByUserIdAndModule(user.getId(), module)
+                .ifPresentOrElse(
+                        perm -> {
+                            if (perm.getPermissionLevel() != level) {
+                                perm.setPermissionLevel(level);
+                                permissionRepository.save(perm);
+                                log.debug("Permission {} mise à jour pour {}", module, user.getEmail());
+                            }
+                        },
+                        () -> {
+                            UserPermission newPerm = new UserPermission();
+                            newPerm.setUser(user);
+                            newPerm.setModule(module);
+                            newPerm.setPermissionLevel(level);
+                            permissionRepository.save(newPerm);
+                            log.debug("Permission {} créée pour {}", module, user.getEmail());
+                        });
     }
 
     /**
      * Met à jour les permissions d'un utilisateur.
      *
-     * @param userId l'ID de l'utilisateur
+     * @param userId         l'ID de l'utilisateur
      * @param newPermissions Map des nouvelles permissions
      */
     @Transactional

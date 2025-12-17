@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import com.catsbanque.eventplanning.entity.DeploymentStatus;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +19,9 @@ public class ReleaseNoteEntryDto {
 
     // Microservice info
     private String microserviceId; // Preferred: ID reference to microservice table
-    private String microservice;   // Legacy: Free text or fallback display name
+    private String microservice; // Legacy: Free text or fallback display name
     private String microserviceName; // Display name from microservice entity
-    private String solution;      // Solution from microservice entity
+    private String solution; // Solution from microservice entity
 
     private String squad;
     private Boolean partEnMep;
@@ -29,6 +31,7 @@ public class ReleaseNoteEntryDto {
     private String parentVersion;
     private List<ChangeItem> changes = new ArrayList<>();
     private String comment; // Commentaire libre
+    private DeploymentStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

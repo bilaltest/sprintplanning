@@ -34,7 +34,7 @@ import { fr } from 'date-fns/locale';
     <div class="max-w-7xl mx-auto space-y-6" *ngIf="release">
 
       <!-- Header avec gradient -->
-      <div class="relative overflow-visible bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-900 rounded-2xl shadow-xl p-8">
+      <div class="relative overflow-visible bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-900 rounded-2xl shadow-xl p-8">
         <div class="absolute inset-0 opacity-10">
           <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
         </div>
@@ -224,6 +224,7 @@ export class ReleaseNoteComponent implements OnInit {
     { key: 'microservice', label: 'Microservice', visible: true, alwaysVisible: true },
     { key: 'solution', label: 'Solution', visible: true },
     { key: 'partEnMep', label: 'MEP', visible: true },
+    { key: 'status', label: 'Avancement', visible: true },
     { key: 'tag', label: 'Tag', visible: true },
     { key: 'previousTag', label: 'Tag N-1', visible: true },
     { key: 'parentVersion', label: 'MB Lib', visible: true },
@@ -457,6 +458,7 @@ export class ReleaseNoteComponent implements OnInit {
       previousTag: entry.previousTag,
       parentVersion: field === 'parentVersion' ? value : entry.parentVersion,
       comment: field === 'comment' ? value : entry.comment,
+      status: field === 'status' ? (value as any) : entry.status,
       changes: entry.changes || []
     };
 

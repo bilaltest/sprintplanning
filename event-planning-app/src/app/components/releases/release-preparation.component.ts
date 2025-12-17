@@ -30,16 +30,16 @@ import {
 } from '@models/release.model';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { ProgressRingComponent } from '../shared/progress-ring.component';
+
 
 @Component({
   selector: 'app-release-preparation',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ProgressRingComponent, CanAccessDirective],
+  imports: [CommonModule, FormsModule, RouterLink, CanAccessDirective],
   template: `
     <div class="max-w-7xl mx-auto space-y-6" *ngIf="release">
       <!-- Header avec gradient -->
-      <div class="relative overflow-hidden bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-600 dark:to-primary-900 rounded-2xl shadow-xl p-8">
+      <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-blue-800 dark:to-indigo-950 rounded-2xl shadow-xl p-8">
         <!-- Decorative background pattern -->
         <div class="absolute inset-0 opacity-10">
           <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
@@ -114,17 +114,7 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                 </div>
               </div>
 
-              <!-- Progress global -->
-              <div class="flex flex-col items-center bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                <div class="text-white/80 text-sm font-medium mb-2">Progression globale</div>
-                <app-progress-ring
-                  [percentage]="getGlobalProgress()"
-                  [size]="80"
-                  [strokeWidth]="6"
-                  color="success"
-                  [showPercentage]="true"
-                ></app-progress-ring>
-              </div>
+
             </div>
           </div>
 
@@ -139,10 +129,10 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
         <!-- 1. Tontons MEP Table -->
         <div class="card overflow-hidden">
-          <div class="p-4 border-b bg-gradient-to-r from-primary-50 to-transparent dark:from-primary-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-primary-100 dark:hover:from-primary-900/30 transition-all duration-200" (click)="toggleSection('tontons')">
+          <div class="p-4 border-b bg-gradient-to-r from-indigo-50 to-transparent dark:from-indigo-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-indigo-100 dark:hover:from-indigo-900/30 transition-all duration-200" (click)="toggleSection('tontons')">
             <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/50 rounded-xl flex items-center justify-center">
-                <span class="material-icons text-xl text-primary-600 dark:text-primary-400">group</span>
+              <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center">
+                <span class="material-icons text-xl text-indigo-600 dark:text-indigo-400">group</span>
               </div>
               <h2 class="text-lg font-bold text-gray-900 dark:text-white">Tontons MEP</h2>
             </div>
@@ -151,34 +141,28 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </span>
           </div>
           <div *ngIf="expandedSections.has('tontons')" class="p-6 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900/30">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div *ngFor="let squad of release.squads" class="group relative bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg transition-all duration-300">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div *ngFor="let squad of release.squads" class="group relative bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-lg transition-all duration-300">
                 <!-- Gradient top border -->
-                <div class="h-1 bg-gradient-to-r from-primary-400 to-primary-600"></div>
+                <div class="h-1 bg-gradient-to-r from-blue-400 to-indigo-600"></div>
 
                 <div class="p-4 space-y-4">
                   <!-- Header with squad number and progress -->
                   <div class="flex justify-between items-center">
                     <div class="flex items-center space-x-2">
-                      <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
+                      <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
                         <span class="text-white font-bold text-sm">{{ squad.squadNumber }}</span>
                       </div>
                       <span class="font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</span>
                     </div>
-                    <app-progress-ring
-                      [percentage]="getSquadProgress(squad)"
-                      [size]="52"
-                      [strokeWidth]="5"
-                      [color]="getSquadProgress(squad) === 100 ? 'success' : (getSquadProgress(squad) >= 70 ? 'primary' : 'warning')"
-                      [showPercentage]="true"
-                    ></app-progress-ring>
+
                   </div>
 
                   <!-- Tonton MEP input -->
                   <div class="space-y-2">
                     <label class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">Responsable MEP</label>
-                    <div class="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg p-2 border border-gray-200 dark:border-gray-700 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-200 dark:focus-within:ring-primary-800/50 transition-all">
-                      <span class="material-icons text-lg text-primary-500 dark:text-primary-400">person</span>
+                    <div class="flex items-center space-x-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg p-2 border border-gray-200 dark:border-gray-700 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-200 dark:focus-within:ring-indigo-800/50 transition-all">
+                      <span class="material-icons text-lg text-indigo-500 dark:text-indigo-400">person</span>
                       <input
                         #tontonInput
                         type="text"
@@ -212,10 +196,10 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
 
         <!-- 2. Actions Pré-MEP -->
         <div class="card overflow-hidden">
-          <div class="p-4 border-b bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-green-100 dark:hover:from-green-900/30 transition-all duration-200" (click)="toggleSection('pre_mep')">
+          <div class="p-4 border-b bg-gradient-to-r from-indigo-50 to-transparent dark:from-indigo-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-indigo-100 dark:hover:from-indigo-900/30 transition-all duration-200" (click)="toggleSection('pre_mep')">
             <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center">
-                <span class="material-icons text-xl text-green-600 dark:text-green-400">start</span>
+              <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center">
+                <span class="material-icons text-xl text-indigo-600 dark:text-indigo-400">arrow_back</span>
               </div>
               <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Pré-MEP</h2>
             </div>
@@ -224,35 +208,43 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </span>
           </div>
           <div *ngIf="expandedSections.has('pre_mep')" class="p-6 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900/30">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm h-full">
-              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-3 mb-3">
-                <div class="flex items-center space-x-2">
-                  <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
-                    <span class="text-white font-bold text-sm">{{ squad.squadNumber }}</span>
-                  </div>
-                  <h3 class="text-base font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h3>
-                </div>
-                <button
-                  appCanAccess="RELEASES"
-                  accessLevel="write"
-                  (click)="startAddingAction(squad, 'pre_mep')"
-                  class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
-                >
-                  <span class="material-icons text-sm">add</span>
-                  <span>Ajouter</span>
-                </button>
-              </div>
+            <!-- Global Actions View -->
+            <!-- Add Action Button -->
+            <div class="mb-6 flex justify-end">
+              <button
+                appCanAccess="RELEASES"
+                accessLevel="write"
+                (click)="startAddingAction('pre_mep')"
+                class="flex items-center space-x-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <span class="material-icons text-sm">add</span>
+                <span>Ajouter une action</span>
+              </button>
+            </div>
 
-              <!-- Add Action Form -->
-              <div *ngIf="addingActionToSquad?.id === squad.id && addingActionPhase === 'pre_mep'"
-                   class="mb-3 form-inline-glass">
-                <form (submit)="addAction(squad.id!, 'pre_mep', $event)" class="space-y-3">
-                  <div class="flex items-center justify-between mb-2">
-                    <h4 class="font-medium text-gray-900 dark:text-white">
-                      {{ editingActionId ? "Modifier l'action" : "Nouvelle action" }}
-                    </h4>
+            <!-- Add Action Form -->
+            <div *ngIf="isAddingAction && currentActionPhase === 'pre_mep'" class="mb-6 form-inline-glass">
+              <form (submit)="addAction('pre_mep', $event)" class="space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <h4 class="font-medium text-gray-900 dark:text-white">
+                    {{ editingActionId ? "Modifier l'action" : "Nouvelle action" }}
+                  </h4>
+                  <button type="button" (click)="cancelAddAction()" class="text-gray-400 hover:text-gray-500">
+                    <span class="material-icons text-sm">close</span>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Squad Selection -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Squad <span class="text-red-500">*</span></label>
+                    <select [(ngModel)]="newAction.squadId" name="squadId" required class="input text-sm w-full">
+                      <option value="">Sélectionner une squad</option>
+                      <option *ngFor="let squad of release?.squads" [value]="squad.id">Squad {{ squad.squadNumber }}</option>
+                    </select>
                   </div>
+
+                  <!-- Type Selection -->
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action <span class="text-red-500">*</span></label>
                     <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm w-full">
@@ -262,49 +254,38 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                       <option value="other">{{ ACTION_TYPE_LABELS['other'] }}</option>
                     </select>
                   </div>
+                </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description <span class="text-red-500">*</span></label>
-                    <textarea
-                      [(ngModel)]="newAction.description"
-                      name="description"
-                      placeholder="Description de l'action"
-                      rows="2"
-                      required
-                      class="input text-sm w-full"
-                    ></textarea>
-                  </div>
+                <!-- Description -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description <span class="text-red-500">*</span></label>
+                  <textarea
+                    [(ngModel)]="newAction.description"
+                    name="description"
+                    placeholder="Description de l'action"
+                    rows="2"
+                    required
+                    class="input text-sm w-full"
+                  ></textarea>
+                </div>
 
-                  <!-- Feature Flipping / Memory Flipping Form -->
-                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-600">
-                    <h4 class="font-medium text-gray-900 dark:text-white text-sm">Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}</h4>
+                <!-- Feature/Memory Flipping Config -->
+                <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-4 p-4 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <h4 class="font-medium text-gray-900 dark:text-white text-sm border-b border-gray-200 dark:border-gray-700 pb-2">
+                    Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}
+                  </h4>
 
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {{ newAction.type === 'feature_flipping' ? 'Nom du FF' : 'Nom du MF' }} <span class="text-red-500">*</span>
                       </label>
-                      <input
-                        type="text"
-                        [(ngModel)]="newAction.flipping.ruleName"
-                        name="ruleName"
-                        required
-                        class="input text-sm w-full"
-                        placeholder="Ex: FEATURE_NEW_DASHBOARD"
-                      />
+                      <input type="text" [(ngModel)]="newAction.flipping.ruleName" name="ruleName" required class="input text-sm w-full" placeholder="Ex: FEATURE_NEW_DASHBOARD" />
                     </div>
-
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Thème <span class="text-red-500">*</span></label>
-                      <input
-                        type="text"
-                        [(ngModel)]="newAction.flipping.theme"
-                        name="theme"
-                        required
-                        class="input text-sm w-full"
-                        placeholder="Ex: Authentification, Navigation, Paiement"
-                      />
+                      <input type="text" [(ngModel)]="newAction.flipping.theme" name="theme" required class="input text-sm w-full" placeholder="Ex: Authentification" />
                     </div>
-
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action <span class="text-red-500">*</span></label>
                       <select [(ngModel)]="newAction.flipping.ruleAction" name="ruleAction" required class="input text-sm w-full">
@@ -315,177 +296,134 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                         <option value="enable_rule">{{ getDynamicRuleActionLabel('enable_rule') }}</option>
                       </select>
                     </div>
+                  </div>
 
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Clients (CAELs)</label>
                       <div class="space-y-2">
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            [(ngModel)]="flippingTargetsAll"
-                            name="targetsAll"
-                            (change)="toggleAllClients()"
-                            class="rounded"
-                          />
-                          <span class="text-sm text-gray-700 dark:text-gray-300">Tous les clients</span>
+                          <input type="checkbox" [(ngModel)]="flippingTargetsAll" name="targetsAll" (change)="toggleAllClients()" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                          <span class="text-sm text-gray-700 dark:text-gray-300">Tous</span>
                         </label>
-                        <input
-                          *ngIf="!flippingTargetsAll"
-                          type="text"
-                          [(ngModel)]="flippingClientsInput"
-                          name="clients"
-                          placeholder="Ex: 89123456789"
-                          class="input text-sm w-full"
-                        />
+                        <input *ngIf="!flippingTargetsAll" type="text" [(ngModel)]="flippingClientsInput" name="clients" placeholder="Ex: 89123456789" class="input text-sm w-full" />
                       </div>
                     </div>
-
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Caisses</label>
                       <div class="space-y-2">
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            [(ngModel)]="flippingTargetsAllCaisses"
-                            name="targetsAllCaisses"
-                            (change)="toggleAllCaisses()"
-                            class="rounded"
-                          />
-                          <span class="text-sm text-gray-700 dark:text-gray-300">Toutes les caisses</span>
+                          <input type="checkbox" [(ngModel)]="flippingTargetsAllCaisses" name="targetsAllCaisses" (change)="toggleAllCaisses()" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                          <span class="text-sm text-gray-700 dark:text-gray-300">Toutes</span>
                         </label>
-                        <input
-                          *ngIf="!flippingTargetsAllCaisses"
-                          type="text"
-                          [(ngModel)]="flippingCaissesInput"
-                          name="caisses"
-                          placeholder="Ex: Caisse 1, Caisse 2"
-                          class="input text-sm w-full"
-                        />
+                        <input *ngIf="!flippingTargetsAllCaisses" type="text" [(ngModel)]="flippingCaissesInput" name="caisses" placeholder="Ex: Caisse 1" class="input text-sm w-full" />
                       </div>
                     </div>
-
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">OS ciblés</label>
-                      <div class="flex space-x-4">
+                      <div class="space-y-2">
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            value="ios"
-                            [(ngModel)]="flippingOSiOS"
-                            name="osIOS"
-                            class="rounded"
-                          />
+                          <input type="checkbox" value="ios" [(ngModel)]="flippingOSiOS" name="osIOS" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                           <span class="text-sm text-gray-700 dark:text-gray-300">iOS</span>
                         </label>
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            value="android"
-                            [(ngModel)]="flippingOSAndroid"
-                            name="osAndroid"
-                            class="rounded"
-                          />
+                          <input type="checkbox" value="android" [(ngModel)]="flippingOSAndroid" name="osAndroid" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                           <span class="text-sm text-gray-700 dark:text-gray-300">Android</span>
                         </label>
                       </div>
                     </div>
-
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Versions ciblées</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Versions</label>
                       <div class="space-y-2">
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            [(ngModel)]="flippingTargetsAllVersions"
-                            name="targetsAllVersions"
-                            (change)="toggleAllVersions()"
-                            class="rounded"
-                          />
-                          <span class="text-sm text-gray-700 dark:text-gray-300">Toutes les versions</span>
+                          <input type="checkbox" [(ngModel)]="flippingTargetsAllVersions" name="targetsAllVersions" (change)="toggleAllVersions()" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                          <span class="text-sm text-gray-700 dark:text-gray-300">Toutes</span>
                         </label>
-                        <input
-                          *ngIf="!flippingTargetsAllVersions"
-                          type="text"
-                          [(ngModel)]="flippingVersionsInput"
-                          name="versions"
-                          placeholder="Ex: >= 38.5, < 40.0"
-                          class="input text-sm w-full"
-                        />
+                        <input *ngIf="!flippingTargetsAllVersions" type="text" [(ngModel)]="flippingVersionsInput" name="versions" placeholder="Ex: >= 38.5" class="input text-sm w-full" />
                       </div>
                     </div>
                   </div>
-
-                  <div class="flex space-x-2 pt-2">
-                    <button appCanAccess="RELEASES" accessLevel="write" type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
-                    <button type="button" (click)="cancelAddAction()" class="btn btn-secondary btn-sm">Annuler</button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- Actions List -->
-              <div class="space-y-6">
-                <!-- Non-flipping actions -->
-                <div *ngIf="getNonFlippingActions(squad, 'pre_mep').length > 0">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Actions Standard</h4>
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-                        <table class="min-w-full text-sm">
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-                                <tr *ngFor="let action of getNonFlippingActions(squad, 'pre_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td class="px-4 py-3">
-                                        <div class="flex items-center space-x-3">
-                                            <span class="material-icons text-sm text-blue-500">start</span>
-                                            <span class="px-2 py-0.5 text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                                                {{ getActionTypeLabel(action.type) }}
-                                            </span>
-                                            <span class="text-gray-900 dark:text-white">{{ action.description }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-3 text-right w-24">
-                                        <div class="flex items-center justify-end space-x-2">
-                                            <button appCanAccess="RELEASES" accessLevel="write" (click)="startEditingAction(squad, 'pre_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
-                                            <button appCanAccess="RELEASES" accessLevel="write" (click)="deleteAction(squad.id!, action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
 
-                <!-- Flipping actions grouped by type in tables -->
-                <div *ngFor="let entry of getFlippingActionsByType(squad, 'pre_mep') | keyvalue" class="overflow-x-auto">
-                  <div class="flex items-center space-x-3 mb-3 p-3 rounded-lg bg-gradient-to-r from-green-50 to-green-100/30 dark:from-green-900/20 dark:to-green-900/10">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-green-100 dark:bg-green-900/50">
-                      <span class="material-icons text-base text-green-600 dark:text-green-400">
-                        rule_settings
-                      </span>
-                    </div>
-                    <h4 class="text-sm font-bold uppercase tracking-wide text-green-700 dark:text-green-300">{{ getActionTypeLabel(entry.key) }}</h4>
-                  </div>
-                  <div class="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <table class="min-w-full text-xs">
-                        <thead class="bg-gradient-to-r from-green-100/50 to-green-50/30 dark:from-green-900/30 dark:to-green-900/10">
-                        <tr>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Thème</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Action</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Clients</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Caisses</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">OS</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Versions</th>
-                            <th class="px-4 py-3"></th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                        <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                            <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">
-                              {{ action.flipping?.ruleName }}
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
-                              <span class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded">{{ action.flipping?.theme }}</span>
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">
-                              <span class="px-2 py-0.5 text-xs font-medium rounded"
+                <div class="flex space-x-3 pt-2">
+                  <button appCanAccess="RELEASES" accessLevel="write" type="submit" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium">Enregistrer</button>
+                  <button type="button" (click)="cancelAddAction()" class="btn btn-secondary btn-sm px-4">Annuler</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Global Actions List -->
+            <div class="space-y-8">
+              
+              <!-- Standard Actions -->
+              <div *ngIf="getGlobalNonFlippingActions('pre_mep').length > 0">
+                <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide flex items-center">
+                  <span class="material-icons text-base mr-2">description</span>
+                  Actions Standard
+                </h4>
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm">
+                  <table class="min-w-full text-sm">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300 w-32">Squad</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Description</th>
+                        <th class="px-4 py-3 w-24"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                      <tr *ngFor="let action of getGlobalNonFlippingActions('pre_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 text-xs font-semibold px-2.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">
+                                    Squad {{ getSquadNumber(action.squadId) }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-gray-900 dark:text-gray-100">{{ action.description }}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end space-x-2">
+                            <button (click)="startEditingAction(getSquad(action.squadId)!, 'pre_mep', action)" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"><span class="material-icons text-sm">edit</span></button>
+                            <button (click)="deleteAction(action.squadId!, action.id!)" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"><span class="material-icons text-sm">delete</span></button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Feature Flipping -->
+              <div *ngIf="getGlobalFeatureFlippingActions('pre_mep').length > 0">
+                <h4 class="text-sm font-bold text-indigo-700 dark:text-indigo-300 mb-3 uppercase tracking-wide flex items-center">
+                  <span class="material-icons text-base mr-2">toggle_on</span>
+                  Feature Flipping
+                </h4>
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm">
+                  <table class="min-w-full text-xs">
+                    <thead class="bg-indigo-50 dark:bg-indigo-900/20 border-b border-gray-200 dark:border-gray-600">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300 w-24">Squad</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Nom du FF</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Thème</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Action</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Clients</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Caisses</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">OS</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Versions</th>
+                        <th class="px-4 py-3 w-20"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                      <tr *ngFor="let action of getGlobalFeatureFlippingActions('pre_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="px-4 py-3">
+                            <span class="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 text-xs font-semibold px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
+                                S{{ getSquadNumber(action.squadId) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-gray-600 dark:text-gray-300">{{ action.flipping?.ruleName }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
+                        <td class="px-4 py-3">
+                             <span class="px-2 py-0.5 text-xs font-medium rounded"
                                     [class.bg-green-100]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
                                     [class.text-green-800]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
                                     [class.dark:bg-green-900]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
@@ -496,67 +434,98 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                                     [class.dark:text-red-200]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'">
                                 {{ getRuleActionLabel(action.flipping?.ruleAction || '') }}
                               </span>
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">
-                              {{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
-                              {{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
-                              {{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}
-                            </td>
-                            <td class="px-3 py-2 text-right">
-                            <div class="flex items-center justify-end space-x-2">
-                                <button
-                                (click)="startEditingAction(squad, 'pre_mep', action)"
-                                class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
-                                >
-                                <span class="material-icons text-sm">edit</span>
-                                </button>
-                                <button
-                                (click)="deleteAction(squad.id!, action.id!)"
-                                class="text-red-600 dark:text-red-400 hover:text-red-700"
-                                >
-                                <span class="material-icons text-sm">delete</span>
-                                </button>
-                            </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div *ngIf="getActionsByPhase(squad, 'pre_mep').length === 0" class="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 transition-all hover:border-gray-400 dark:hover:border-gray-500">
-                  <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
-                    <span class="material-icons text-3xl text-green-400 dark:text-green-500">fact_check</span>
-                  </div>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">Aucune action pré-MEP</p>
-                  <label class="relative inline-flex items-center cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      [checked]="squad.preMepEmptyConfirmed"
-                      (change)="toggleEmptyStatus(squad, 'pre_mep')"
-                      class="sr-only peer"
-                    >
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary-600 shadow-inner"></div>
-                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Rien à signaler (Néant)</span>
-                  </label>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">
+                            {{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end space-x-2">
+                             <button (click)="startEditingAction(getSquad(action.squadId)!, 'pre_mep', action)" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"><span class="material-icons text-sm">edit</span></button>
+                             <button (click)="deleteAction(action.squadId!, action.id!)" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"><span class="material-icons text-sm">delete</span></button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
+
+               <!-- Memory Flipping -->
+              <div *ngIf="getGlobalMemoryFlippingActions('pre_mep').length > 0">
+                <h4 class="text-sm font-bold text-purple-700 dark:text-purple-300 mb-3 uppercase tracking-wide flex items-center">
+                  <span class="material-icons text-base mr-2">memory</span>
+                  Memory Flipping
+                </h4>
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm">
+                  <table class="min-w-full text-xs">
+                    <thead class="bg-purple-50 dark:bg-purple-900/20 border-b border-gray-200 dark:border-gray-600">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300 w-24">Squad</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Nom du MF</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Thème</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Action</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Clients</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Caisses</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">OS</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Versions</th>
+                        <th class="px-4 py-3 w-20"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                      <tr *ngFor="let action of getGlobalMemoryFlippingActions('pre_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="px-4 py-3">
+                            <span class="bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 text-xs font-semibold px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
+                                S{{ getSquadNumber(action.squadId) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-gray-600 dark:text-gray-300">{{ action.flipping?.ruleName }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
+                        <td class="px-4 py-3">
+                             <span class="px-2 py-0.5 text-xs font-medium rounded"
+                                    [class.bg-green-100]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.text-green-800]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.dark:bg-green-900]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.dark:text-green-200]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.bg-red-100]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.text-red-800]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.dark:bg-red-900]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.dark:text-red-200]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'">
+                                {{ getRuleActionLabel(action.flipping?.ruleAction || '') }}
+                              </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">
+                            {{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end space-x-2">
+                             <button (click)="startEditingAction(getSquad(action.squadId)!, 'pre_mep', action)" class="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"><span class="material-icons text-sm">edit</span></button>
+                             <button (click)="deleteAction(action.squadId!, action.id!)" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"><span class="material-icons text-sm">delete</span></button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
-            </div>
+
+
           </div>
         </div>
 
         <!-- 3. Actions Post-MEP -->
         <div class="card overflow-hidden">
-          <div class="p-4 border-b bg-gradient-to-r from-green-50 to-transparent dark:from-green-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-green-100 dark:hover:from-green-900/30 transition-all duration-200" (click)="toggleSection('post_mep')">
+          <div class="p-4 border-b bg-gradient-to-r from-indigo-50 to-transparent dark:from-indigo-900/20 dark:to-transparent flex justify-between items-center cursor-pointer hover:from-indigo-100 dark:hover:from-indigo-900/30 transition-all duration-200" (click)="toggleSection('post_mep')">
             <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-xl flex items-center justify-center">
-                <span class="material-icons text-xl text-green-600 dark:text-green-400">check_circle</span>
+              <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl flex items-center justify-center">
+                <span class="material-icons text-xl text-indigo-600 dark:text-indigo-400">arrow_forward</span>
               </div>
               <h2 class="text-lg font-bold text-gray-900 dark:text-white">Actions Post-MEP</h2>
             </div>
@@ -565,35 +534,43 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
             </span>
           </div>
           <div *ngIf="expandedSections.has('post_mep')" class="p-6 bg-gradient-to-br from-gray-50/50 to-white dark:from-gray-800/50 dark:to-gray-900/30">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div *ngFor="let squad of release.squads" class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm h-full">
-              <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-3 mb-3">
-                <div class="flex items-center space-x-2">
-                  <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center shadow-sm">
-                    <span class="text-white font-bold text-sm">{{ squad.squadNumber }}</span>
-                  </div>
-                  <h3 class="text-base font-bold text-gray-900 dark:text-white">Squad {{ squad.squadNumber }}</h3>
-                </div>
-                <button
-                  appCanAccess="RELEASES"
-                  accessLevel="write"
-                  (click)="startAddingAction(squad, 'post_mep')"
-                  class="btn btn-sm btn-ghost flex items-center space-x-1 text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20"
-                >
-                  <span class="material-icons text-sm">add</span>
-                  <span>Ajouter</span>
-                </button>
-              </div>
+            <!-- Global Actions View -->
+            <!-- Add Action Button -->
+            <div class="mb-6 flex justify-end">
+              <button
+                appCanAccess="RELEASES"
+                accessLevel="write"
+                (click)="startAddingAction('post_mep')"
+                class="flex items-center space-x-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+              >
+                <span class="material-icons text-sm">add</span>
+                <span>Ajouter une action</span>
+              </button>
+            </div>
 
-              <!-- Add Action Form -->
-              <div *ngIf="addingActionToSquad?.id === squad.id && addingActionPhase === 'post_mep'"
-                   class="mb-3 form-inline-glass">
-                <form (submit)="addAction(squad.id!, 'post_mep', $event)" class="space-y-3">
-                  <div class="flex items-center justify-between mb-2">
-                    <h4 class="font-medium text-gray-900 dark:text-white">
-                      {{ editingActionId ? "Modifier l'action" : "Nouvelle action" }}
-                    </h4>
+            <!-- Add Action Form -->
+            <div *ngIf="isAddingAction && currentActionPhase === 'post_mep'" class="mb-6 form-inline-glass">
+              <form (submit)="addAction('post_mep', $event)" class="space-y-4">
+                <div class="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+                  <h4 class="font-medium text-gray-900 dark:text-white">
+                    {{ editingActionId ? "Modifier l'action" : "Nouvelle action" }}
+                  </h4>
+                  <button type="button" (click)="cancelAddAction()" class="text-gray-400 hover:text-gray-500">
+                    <span class="material-icons text-sm">close</span>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <!-- Squad Selection -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Squad <span class="text-red-500">*</span></label>
+                    <select [(ngModel)]="newAction.squadId" name="squadId" required class="input text-sm w-full">
+                      <option value="">Sélectionner une squad</option>
+                      <option *ngFor="let squad of release?.squads" [value]="squad.id">Squad {{ squad.squadNumber }}</option>
+                    </select>
                   </div>
+
+                  <!-- Type Selection -->
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type d'action <span class="text-red-500">*</span></label>
                     <select [(ngModel)]="newAction.type" name="type" (change)="onActionTypeChange()" required class="input text-sm w-full">
@@ -603,49 +580,38 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                       <option value="other">{{ ACTION_TYPE_LABELS['other'] }}</option>
                     </select>
                   </div>
+                </div>
 
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description <span class="text-red-500">*</span></label>
-                    <textarea
-                      [(ngModel)]="newAction.description"
-                      name="description"
-                      placeholder="Description de l'action"
-                      rows="2"
-                      required
-                      class="input text-sm w-full"
-                    ></textarea>
-                  </div>
+                <!-- Description -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description <span class="text-red-500">*</span></label>
+                  <textarea
+                    [(ngModel)]="newAction.description"
+                    name="description"
+                    placeholder="Description de l'action"
+                    rows="2"
+                    required
+                    class="input text-sm w-full"
+                  ></textarea>
+                </div>
 
-                  <!-- Feature Flipping / Memory Flipping Form -->
-                  <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-3 p-3 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-600">
-                    <h4 class="font-medium text-gray-900 dark:text-white text-sm">Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}</h4>
+                <!-- Feature/Memory Flipping Config -->
+                <div *ngIf="newAction.type === 'feature_flipping' || newAction.type === 'memory_flipping'" class="space-y-4 p-4 rounded-lg bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
+                  <h4 class="font-medium text-gray-900 dark:text-white text-sm border-b border-gray-200 dark:border-gray-700 pb-2">
+                    Configuration {{ newAction.type === 'feature_flipping' ? 'Feature Flipping' : 'Memory Flipping' }}
+                  </h4>
 
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {{ newAction.type === 'feature_flipping' ? 'Nom du FF' : 'Nom du MF' }} <span class="text-red-500">*</span>
                       </label>
-                      <input
-                        type="text"
-                        [(ngModel)]="newAction.flipping.ruleName"
-                        name="ruleName"
-                        required
-                        class="input text-sm w-full"
-                        placeholder="Ex: FEATURE_NEW_DASHBOARD"
-                      />
+                      <input type="text" [(ngModel)]="newAction.flipping.ruleName" name="ruleName" required class="input text-sm w-full" placeholder="Ex: FEATURE_NEW_DASHBOARD" />
                     </div>
-
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Thème <span class="text-red-500">*</span></label>
-                      <input
-                        type="text"
-                        [(ngModel)]="newAction.flipping.theme"
-                        name="theme"
-                        required
-                        class="input text-sm w-full"
-                        placeholder="Ex: Authentification, Navigation, Paiement"
-                      />
+                      <input type="text" [(ngModel)]="newAction.flipping.theme" name="theme" required class="input text-sm w-full" placeholder="Ex: Authentification" />
                     </div>
-
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action <span class="text-red-500">*</span></label>
                       <select [(ngModel)]="newAction.flipping.ruleAction" name="ruleAction" required class="input text-sm w-full">
@@ -656,177 +622,134 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                         <option value="enable_rule">{{ getDynamicRuleActionLabel('enable_rule') }}</option>
                       </select>
                     </div>
+                  </div>
 
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Clients (CAELs)</label>
                       <div class="space-y-2">
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            [(ngModel)]="flippingTargetsAll"
-                            name="targetsAll"
-                            (change)="toggleAllClients()"
-                            class="rounded"
-                          />
-                          <span class="text-sm text-gray-700 dark:text-gray-300">Tous les clients</span>
+                          <input type="checkbox" [(ngModel)]="flippingTargetsAll" name="targetsAll" (change)="toggleAllClients()" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                          <span class="text-sm text-gray-700 dark:text-gray-300">Tous</span>
                         </label>
-                        <input
-                          *ngIf="!flippingTargetsAll"
-                          type="text"
-                          [(ngModel)]="flippingClientsInput"
-                          name="clients"
-                          placeholder="Ex: 89123456789"
-                          class="input text-sm w-full"
-                        />
+                        <input *ngIf="!flippingTargetsAll" type="text" [(ngModel)]="flippingClientsInput" name="clients" placeholder="Ex: 89123456789" class="input text-sm w-full" />
                       </div>
                     </div>
-
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Caisses</label>
                       <div class="space-y-2">
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            [(ngModel)]="flippingTargetsAllCaisses"
-                            name="targetsAllCaisses"
-                            (change)="toggleAllCaisses()"
-                            class="rounded"
-                          />
-                          <span class="text-sm text-gray-700 dark:text-gray-300">Toutes les caisses</span>
+                          <input type="checkbox" [(ngModel)]="flippingTargetsAllCaisses" name="targetsAllCaisses" (change)="toggleAllCaisses()" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                          <span class="text-sm text-gray-700 dark:text-gray-300">Toutes</span>
                         </label>
-                        <input
-                          *ngIf="!flippingTargetsAllCaisses"
-                          type="text"
-                          [(ngModel)]="flippingCaissesInput"
-                          name="caisses"
-                          placeholder="Ex: Caisse 1, Caisse 2"
-                          class="input text-sm w-full"
-                        />
+                        <input *ngIf="!flippingTargetsAllCaisses" type="text" [(ngModel)]="flippingCaissesInput" name="caisses" placeholder="Ex: Caisse 1" class="input text-sm w-full" />
                       </div>
                     </div>
-
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">OS ciblés</label>
-                      <div class="flex space-x-4">
+                      <div class="space-y-2">
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            value="ios"
-                            [(ngModel)]="flippingOSiOS"
-                            name="osIOS"
-                            class="rounded"
-                          />
+                          <input type="checkbox" value="ios" [(ngModel)]="flippingOSiOS" name="osIOS" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                           <span class="text-sm text-gray-700 dark:text-gray-300">iOS</span>
                         </label>
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            value="android"
-                            [(ngModel)]="flippingOSAndroid"
-                            name="osAndroid"
-                            class="rounded"
-                          />
+                          <input type="checkbox" value="android" [(ngModel)]="flippingOSAndroid" name="osAndroid" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
                           <span class="text-sm text-gray-700 dark:text-gray-300">Android</span>
                         </label>
                       </div>
                     </div>
-
                     <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Versions ciblées</label>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Versions</label>
                       <div class="space-y-2">
                         <label class="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            [(ngModel)]="flippingTargetsAllVersions"
-                            name="targetsAllVersions"
-                            (change)="toggleAllVersions()"
-                            class="rounded"
-                          />
-                          <span class="text-sm text-gray-700 dark:text-gray-300">Toutes les versions</span>
+                          <input type="checkbox" [(ngModel)]="flippingTargetsAllVersions" name="targetsAllVersions" (change)="toggleAllVersions()" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                          <span class="text-sm text-gray-700 dark:text-gray-300">Toutes</span>
                         </label>
-                        <input
-                          *ngIf="!flippingTargetsAllVersions"
-                          type="text"
-                          [(ngModel)]="flippingVersionsInput"
-                          name="versions"
-                          placeholder="Ex: >= 38.5, < 40.0"
-                          class="input text-sm w-full"
-                        />
+                        <input *ngIf="!flippingTargetsAllVersions" type="text" [(ngModel)]="flippingVersionsInput" name="versions" placeholder="Ex: >= 38.5" class="input text-sm w-full" />
                       </div>
                     </div>
                   </div>
-
-                  <div class="flex space-x-2 pt-2">
-                    <button appCanAccess="RELEASES" accessLevel="write" type="submit" class="btn btn-primary btn-sm">Enregistrer</button>
-                    <button type="button" (click)="cancelAddAction()" class="btn btn-secondary btn-sm">Annuler</button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- Actions List -->
-              <div class="space-y-6">
-                <!-- Non-flipping actions -->
-                <div *ngIf="getNonFlippingActions(squad, 'post_mep').length > 0">
-                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 uppercase tracking-wide">Actions Standard</h4>
-                    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-                        <table class="min-w-full text-sm">
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-                                <tr *ngFor="let action of getNonFlippingActions(squad, 'post_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td class="px-4 py-3">
-                                        <div class="flex items-center space-x-3">
-                                            <span class="material-icons text-sm text-green-500">end</span>
-                                            <span class="px-2 py-0.5 text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded">
-                                                {{ getActionTypeLabel(action.type) }}
-                                            </span>
-                                            <span class="text-gray-900 dark:text-white">{{ action.description }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-4 py-3 text-right w-24">
-                                        <div class="flex items-center justify-end space-x-2">
-                                            <button appCanAccess="RELEASES" accessLevel="write" (click)="startEditingAction(squad, 'post_mep', action)" class="text-blue-600 hover:text-blue-800"><span class="material-icons text-sm">edit</span></button>
-                                            <button appCanAccess="RELEASES" accessLevel="write" (click)="deleteAction(squad.id!, action.id!)" class="text-red-600 hover:text-red-800"><span class="material-icons text-sm">delete</span></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
 
-                <!-- Flipping actions grouped by type in tables -->
-                <div *ngFor="let entry of getFlippingActionsByType(squad, 'post_mep') | keyvalue" class="overflow-x-auto">
-                  <div class="flex items-center space-x-3 mb-3 p-3 rounded-lg bg-gradient-to-r from-green-50 to-green-100/30 dark:from-green-900/20 dark:to-green-900/10">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-green-100 dark:bg-green-900/50">
-                      <span class="material-icons text-base text-green-600 dark:text-green-400">
-                        rule_settings
-                      </span>
-                    </div>
-                    <h4 class="text-sm font-bold uppercase tracking-wide text-green-700 dark:text-green-300">{{ getActionTypeLabel(entry.key) }}</h4>
-                  </div>
-                  <div class="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <table class="min-w-full text-xs">
-                        <thead class="bg-gradient-to-r from-green-100/50 to-green-50/30 dark:from-green-900/30 dark:to-green-900/10">
-                        <tr>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">{{ getFlippingRuleColumnLabel(entry.key) }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Thème</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Action</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Clients</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Caisses</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">OS</th>
-                            <th class="px-4 py-3 text-left font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider">Versions</th>
-                            <th class="px-4 py-3"></th>
-                        </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-                        <tr *ngFor="let action of entry.value" class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                            <td class="px-3 py-2 font-mono text-gray-600 dark:text-gray-300" [class.line-through]="action.status === 'completed'">
-                              {{ action.flipping?.ruleName }}
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
-                              <span class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded">{{ action.flipping?.theme }}</span>
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400" [class.line-through]="action.status === 'completed'">
-                              <span class="px-2 py-0.5 text-xs font-medium rounded"
+                <div class="flex space-x-3 pt-2">
+                  <button appCanAccess="RELEASES" accessLevel="write" type="submit" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-sm font-medium">Enregistrer</button>
+                  <button type="button" (click)="cancelAddAction()" class="btn btn-secondary btn-sm px-4">Annuler</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Global Actions List -->
+            <div class="space-y-8">
+              
+              <!-- Standard Actions -->
+              <div *ngIf="getGlobalNonFlippingActions('post_mep').length > 0">
+                <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide flex items-center">
+                  <span class="material-icons text-base mr-2">description</span>
+                  Actions Standard
+                </h4>
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm">
+                  <table class="min-w-full text-sm">
+                    <thead class="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300 w-32">Squad</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Description</th>
+                        <th class="px-4 py-3 w-24"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                      <tr *ngFor="let action of getGlobalNonFlippingActions('post_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="px-4 py-3">
+                            <div class="flex items-center">
+                                <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 text-xs font-semibold px-2.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">
+                                    Squad {{ getSquadNumber(action.squadId) }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-gray-900 dark:text-gray-100">{{ action.description }}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end space-x-2">
+                            <button (click)="startEditingAction(getSquad(action.squadId)!, 'post_mep', action)" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"><span class="material-icons text-sm">edit</span></button>
+                            <button (click)="deleteAction(action.squadId!, action.id!)" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"><span class="material-icons text-sm">delete</span></button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Feature Flipping -->
+              <div *ngIf="getGlobalFeatureFlippingActions('post_mep').length > 0">
+                <h4 class="text-sm font-bold text-indigo-700 dark:text-indigo-300 mb-3 uppercase tracking-wide flex items-center">
+                  <span class="material-icons text-base mr-2">toggle_on</span>
+                  Feature Flipping
+                </h4>
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm">
+                  <table class="min-w-full text-xs">
+                    <thead class="bg-indigo-50 dark:bg-indigo-900/20 border-b border-gray-200 dark:border-gray-600">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300 w-24">Squad</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Nom du FF</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Thème</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Action</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Clients</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Caisses</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">OS</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Versions</th>
+                        <th class="px-4 py-3 w-20"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                      <tr *ngFor="let action of getGlobalFeatureFlippingActions('post_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="px-4 py-3">
+                            <span class="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 text-xs font-semibold px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
+                                S{{ getSquadNumber(action.squadId) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-gray-600 dark:text-gray-300">{{ action.flipping?.ruleName }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
+                        <td class="px-4 py-3">
+                             <span class="px-2 py-0.5 text-xs font-medium rounded"
                                     [class.bg-green-100]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
                                     [class.text-green-800]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
                                     [class.dark:bg-green-900]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
@@ -837,58 +760,89 @@ import { ProgressRingComponent } from '../shared/progress-ring.component';
                                     [class.dark:text-red-200]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'">
                                 {{ getRuleActionLabel(action.flipping?.ruleAction || '') }}
                               </span>
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400 max-w-xs truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">
-                              {{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
-                              {{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}
-                            </td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
-                            <td class="px-3 py-2 text-gray-600 dark:text-gray-400">
-                              {{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}
-                            </td>
-                            <td class="px-3 py-2 text-right">
-                            <div class="flex items-center justify-end space-x-2">
-                                <button
-                                (click)="startEditingAction(squad, 'post_mep', action)"
-                                class="text-blue-600 dark:text-blue-400 hover:text-blue-700"
-                                >
-                                <span class="material-icons text-sm">edit</span>
-                                </button>
-                                <button
-                                (click)="deleteAction(squad.id!, action.id!)"
-                                class="text-red-600 dark:text-red-400 hover:text-red-700"
-                                >
-                                <span class="material-icons text-sm">delete</span>
-                                </button>
-                            </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div *ngIf="getActionsByPhase(squad, 'post_mep').length === 0" class="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800/50 dark:to-gray-900/30 transition-all hover:border-gray-400 dark:hover:border-gray-500">
-                  <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
-                    <span class="material-icons text-3xl text-green-400 dark:text-green-500">task_alt</span>
-                  </div>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 font-medium">Aucune action post-MEP</p>
-                  <label class="relative inline-flex items-center cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      [checked]="squad.postMepEmptyConfirmed"
-                      (change)="toggleEmptyStatus(squad, 'post_mep')"
-                      class="sr-only peer"
-                    >
-                    <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary-600 shadow-inner"></div>
-                    <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">Rien à signaler (Néant)</span>
-                  </label>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">
+                            {{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end space-x-2">
+                             <button (click)="startEditingAction(getSquad(action.squadId)!, 'post_mep', action)" class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"><span class="material-icons text-sm">edit</span></button>
+                             <button (click)="deleteAction(action.squadId!, action.id!)" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"><span class="material-icons text-sm">delete</span></button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
+
+               <!-- Memory Flipping -->
+              <div *ngIf="getGlobalMemoryFlippingActions('post_mep').length > 0">
+                <h4 class="text-sm font-bold text-purple-700 dark:text-purple-300 mb-3 uppercase tracking-wide flex items-center">
+                  <span class="material-icons text-base mr-2">memory</span>
+                  Memory Flipping
+                </h4>
+                <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shadow-sm">
+                  <table class="min-w-full text-xs">
+                    <thead class="bg-purple-50 dark:bg-purple-900/20 border-b border-gray-200 dark:border-gray-600">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300 w-24">Squad</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Nom du MF</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Thème</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Action</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Clients</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Caisses</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">OS</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-600 dark:text-gray-300">Versions</th>
+                        <th class="px-4 py-3 w-20"></th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+                      <tr *ngFor="let action of getGlobalMemoryFlippingActions('post_mep')" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="px-4 py-3">
+                            <span class="bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300 text-xs font-semibold px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
+                                S{{ getSquadNumber(action.squadId) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-gray-600 dark:text-gray-300">{{ action.flipping?.ruleName }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ action.flipping?.theme }}</td>
+                        <td class="px-4 py-3">
+                             <span class="px-2 py-0.5 text-xs font-medium rounded"
+                                    [class.bg-green-100]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.text-green-800]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.dark:bg-green-900]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.dark:text-green-200]="action.flipping?.ruleAction === 'create_rule' || action.flipping?.ruleAction === 'enable_rule'"
+                                    [class.bg-red-100]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.text-red-800]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.dark:bg-red-900]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'"
+                                    [class.dark:text-red-200]="action.flipping?.ruleAction === 'obsolete_rule' || action.flipping?.ruleAction === 'disable_rule'">
+                                {{ getRuleActionLabel(action.flipping?.ruleAction || '') }}
+                              </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title="{{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}">
+                            {{ getFlippingClientsDisplay(action.flipping?.targetClients || []) }}
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingCaissesDisplay(action.flipping?.targetCaisses) }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingOSDisplay(action.flipping?.targetOS || []) }}</td>
+                        <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ getFlippingVersionsDisplay(action.flipping?.targetVersions || []) }}</td>
+                        <td class="px-4 py-3 text-right">
+                          <div class="flex items-center justify-end space-x-2">
+                             <button (click)="startEditingAction(getSquad(action.squadId)!, 'post_mep', action)" class="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"><span class="material-icons text-sm">edit</span></button>
+                             <button (click)="deleteAction(action.squadId!, action.id!)" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"><span class="material-icons text-sm">delete</span></button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
-            </div>
+
+
           </div>
         </div>
 
@@ -959,21 +913,28 @@ export class ReleasePreparationComponent implements OnInit {
   exportMenuOpen = false;
 
   // Action form
+  editingActionId: string | null = null;
+  // Deprecated in favor of global add
   addingActionToSquad: Squad | null = null;
   addingActionPhase: ActionPhase | null = null;
-  editingActionId: string | null = null;
+
+  // New state for global action addition
+  isAddingAction = false;
+  currentActionPhase: ActionPhase | null = null;
+
   newAction: any = {
+    squadId: '',
     type: '',
     description: '',
     flipping: {
-      flippingType: '',
       ruleName: '',
       theme: '',
       ruleAction: '',
-      ruleState: '',
       targetClients: [],
+      targetCaisses: '',
       targetOS: [],
-      targetVersions: []
+      targetVersions: [],
+      ruleState: 'enabled'
     }
   };
 
@@ -1004,14 +965,9 @@ export class ReleasePreparationComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      try {
-        this.release = await this.releaseService.getRelease(id);
-      } catch (error) {
-        console.error('Error loading release:', error);
-        this.router.navigate(['/releases']);
-      }
+    await this.loadRelease();
+    if (!this.release) {
+      this.router.navigate(['/releases']);
     }
   }
 
@@ -1020,6 +976,9 @@ export class ReleasePreparationComponent implements OnInit {
     if (id) {
       try {
         this.release = await this.releaseService.getRelease(id);
+        if (this.release && this.release.squads) {
+          this.release.squads.sort((a, b) => a.squadNumber - b.squadNumber);
+        }
       } catch (error) {
         console.error('Error loading release:', error);
       }
@@ -1046,155 +1005,115 @@ export class ReleasePreparationComponent implements OnInit {
     return squad.actions.filter(a => a.phase === phase);
   }
 
-  // Regrouper les actions avec flipping par type
-  getFlippingActionsByType(squad: Squad, phase: ActionPhase): Map<ActionType, Action[]> {
-    const actions = squad.actions.filter(a =>
-      a.phase === phase &&
-      a.flipping &&
-      (a.type === 'feature_flipping' || a.type === 'memory_flipping')
-    );
+  // --- Helpers for Global Views ---
 
-    const grouped = new Map<ActionType, Action[]>();
-    actions.forEach(action => {
-      if (!grouped.has(action.type)) {
-        grouped.set(action.type, []);
-      }
-      grouped.get(action.type)!.push(action);
+  getSquad(squadId: string): Squad | undefined {
+    return this.release?.squads.find(s => s.id === squadId);
+  }
+
+  getSquadNumber(squadId: string): number {
+    return this.getSquad(squadId)?.squadNumber || 0;
+  }
+
+  getGlobalActions(phase: ActionPhase): Action[] {
+    if (!this.release) return [];
+    const allActions: Action[] = [];
+    this.release.squads.forEach(squad => {
+      const squadActions = squad.actions.filter(a => a.phase === phase);
+      // Ensure actions have squadId populated if not already
+      squadActions.forEach(a => { if (!a.squadId) a.squadId = squad.id!; });
+      allActions.push(...squadActions);
     });
-
-    return grouped;
+    // Sort by Squad Number then CreatedAt/Order
+    return allActions.sort((a, b) => {
+      const squadNumA = this.getSquadNumber(a.squadId);
+      const squadNumB = this.getSquadNumber(b.squadId);
+      if (squadNumA !== squadNumB) return squadNumA - squadNumB;
+      // Then by order or createdAt
+      return (a.order || 0) - (b.order || 0);
+    });
   }
 
-  // Obtenir les actions sans flipping
-  getNonFlippingActions(squad: Squad, phase: ActionPhase): Action[] {
-    return squad.actions.filter(a =>
-      a.phase === phase &&
-      (!a.flipping || (a.type !== 'feature_flipping' && a.type !== 'memory_flipping'))
-    );
+  getGlobalNonFlippingActions(phase: ActionPhase): Action[] {
+    return this.getGlobalActions(phase).filter(a => a.type === 'other');
   }
 
-  // Action methods
-  startAddingAction(squad: Squad, phase: ActionPhase): void {
-    this.addingActionToSquad = squad;
-    this.addingActionPhase = phase;
+  getGlobalFeatureFlippingActions(phase: ActionPhase): Action[] {
+    return this.getGlobalActions(phase).filter(a => a.type === 'feature_flipping');
+  }
+
+  getGlobalMemoryFlippingActions(phase: ActionPhase): Action[] {
+    return this.getGlobalActions(phase).filter(a => a.type === 'memory_flipping');
+  }
+
+  // --- Action Management ---
+
+  startAddingAction(phase: ActionPhase) {
+    this.isAddingAction = true;
+    this.currentActionPhase = phase;
     this.editingActionId = null;
-    this.resetActionForm();
+    this.resetNewAction();
+
+    // Pre-select first squad if available
+    if (this.release && this.release.squads.length > 0) {
+      this.newAction.squadId = this.release.squads[0].id;
+    }
   }
 
-  startEditingAction(squad: Squad, phase: ActionPhase, action: Action): void {
-    this.addingActionToSquad = squad;
-    this.addingActionPhase = phase;
+  cancelAddAction() {
+    this.isAddingAction = false;
+    this.currentActionPhase = null;
+    this.editingActionId = null;
+    this.resetNewAction();
+  }
+
+  startEditingAction(squad: Squad, phase: ActionPhase, action: Action) {
+    this.isAddingAction = true;
+    this.currentActionPhase = phase;
     this.editingActionId = action.id!;
 
-    // Populate form
     this.newAction = {
+      squadId: squad.id,
       type: action.type,
-      description: action.description || '',
-      flipping: {
-        flippingType: '',
+      description: action.description,
+      flipping: action.flipping ? { ...action.flipping } : {
         ruleName: '',
         theme: '',
         ruleAction: '',
-        ruleState: '',
         targetClients: [],
+        targetCaisses: '',
         targetOS: [],
-        targetVersions: []
+        targetVersions: [],
+        ruleState: 'enabled'
       }
     };
 
+    // Initialize flipping specialized fields
     if (action.flipping) {
-      this.newAction.flipping = {
-        flippingType: action.flipping.flippingType,
-        ruleName: action.flipping.ruleName,
-        theme: action.flipping.theme,
-        ruleAction: action.flipping.ruleAction,
-        ruleState: action.flipping.ruleState,
-        targetClients: [], // Will be set below
-        targetOS: [], // Will be set below
-        targetVersions: [] // Will be set below
-      };
+      this.flippingTargetsAll = action.flipping.targetClients?.includes('all') || false;
+      this.flippingClientsInput = this.flippingTargetsAll ? '' : (action.flipping.targetClients || []).join(', ');
 
-      // Handle Clients
-      const clients = this.getFlippingTargets(action.flipping.targetClients);
-      if (clients.includes('all')) {
-        this.flippingTargetsAll = true;
-        this.flippingClientsInput = '';
-      } else {
-        this.flippingTargetsAll = false;
-        this.flippingClientsInput = clients.join(', ');
-      }
+      this.flippingTargetsAllCaisses = action.flipping.targetCaisses === 'Toutes' || !action.flipping.targetCaisses;
+      this.flippingCaissesInput = this.flippingTargetsAllCaisses ? '' : (action.flipping.targetCaisses || '');
 
-      // Handle Caisses
-      if (!action.flipping.targetCaisses) {
-        this.flippingTargetsAllCaisses = true;
-        this.flippingCaissesInput = '';
-      } else {
-        this.flippingTargetsAllCaisses = false;
-        this.flippingCaissesInput = action.flipping.targetCaisses;
-      }
+      this.flippingTargetsAllVersions = false;
+      this.flippingVersionsInput = (action.flipping.targetVersions || []).map(v => `${v.operator} ${v.version}`).join(', ');
 
-      // Handle OS
-      const osList = this.getFlippingTargets(action.flipping.targetOS);
-      this.flippingOSiOS = osList.length === 0 || osList.includes('ios');
-      this.flippingOSAndroid = osList.length === 0 || osList.includes('android');
-
-      // Handle Versions
-      const versions = this.getFlippingVersions(action.flipping.targetVersions);
-      if (versions === 'ALL' || !versions) {
-        this.flippingTargetsAllVersions = true;
-        this.flippingVersionsInput = '';
-      } else {
-        this.flippingTargetsAllVersions = false;
-        this.flippingVersionsInput = versions;
-      }
-    } else {
-      // Reset flipping helpers if not a flipping action
-      this.flippingTargetsAll = true;
-      this.flippingClientsInput = '';
-      this.flippingTargetsAllCaisses = true;
-      this.flippingCaissesInput = '';
-      this.flippingOSiOS = true;
-      this.flippingOSAndroid = true;
-      this.flippingTargetsAllVersions = true;
-      this.flippingVersionsInput = '';
+      this.flippingOSiOS = action.flipping.targetOS?.includes('ios') || false;
+      this.flippingOSAndroid = action.flipping.targetOS?.includes('android') || false;
     }
   }
 
-  resetActionForm(): void {
-    this.newAction = {
-      type: '',
-      description: '',
-      flipping: {
-        flippingType: '',
-        ruleName: '',
-        theme: '',
-        ruleAction: '',
-        ruleState: '',
-        targetClients: [],
-        targetOS: [],
-        targetVersions: []
-      }
-    };
-    this.flippingTargetsAll = true;
-    this.flippingClientsInput = '';
-    this.flippingTargetsAllCaisses = true;
-    this.flippingCaissesInput = '';
-    this.flippingOSiOS = true;
-    this.flippingOSAndroid = true;
-    this.flippingTargetsAllVersions = true;
-    this.flippingVersionsInput = '';
-  }
-
-  onActionTypeChange(): void {
-    if (this.newAction.type === 'feature_flipping') {
-      this.newAction.flipping.flippingType = 'feature_flipping';
-    } else if (this.newAction.type === 'memory_flipping') {
-      this.newAction.flipping.flippingType = 'memory_flipping';
-    }
-  }
-
-  async addAction(squadId: string, phase: ActionPhase, event: Event): Promise<void> {
+  async addAction(phase: ActionPhase, event: Event): Promise<void> {
     event.preventDefault();
+    if (!this.release) return;
+
+    if (!this.newAction.squadId) {
+      this.toastService.error('Erreur', 'Veuillez sélectionner une squad');
+      return;
+    }
+
+    const squadId = this.newAction.squadId;
 
     if (!this.newAction.type || !this.newAction.description?.trim()) {
       this.toastService.warning(
@@ -1221,7 +1140,7 @@ export class ReleasePreparationComponent implements OnInit {
       const actionDto: CreateActionDto = {
         phase,
         type: this.newAction.type as ActionType,
-        title: this.newAction.description, // Le titre est la description
+        title: this.newAction.description.substring(0, 50),
         description: this.newAction.description
       };
 
@@ -1232,7 +1151,7 @@ export class ReleasePreparationComponent implements OnInit {
           : this.flippingClientsInput.split(',').map(c => c.trim()).filter(c => c);
 
         const targetCaisses = this.flippingTargetsAllCaisses
-          ? undefined
+          ? 'Toutes'
           : this.flippingCaissesInput.trim() || undefined;
 
         const targetOS: OSType[] = [];
@@ -1246,7 +1165,7 @@ export class ReleasePreparationComponent implements OnInit {
             : [];
 
         actionDto.flipping = {
-          flippingType: this.newAction.flipping.flippingType as FlippingType,
+          flippingType: this.newAction.type as FlippingType,
           ruleName: this.newAction.flipping.ruleName,
           theme: this.newAction.flipping.theme,
           ruleAction: this.newAction.flipping.ruleAction as RuleAction,
@@ -1280,13 +1199,6 @@ export class ReleasePreparationComponent implements OnInit {
     }
   }
 
-  cancelAddAction(): void {
-    this.addingActionToSquad = null;
-    this.addingActionPhase = null;
-    this.editingActionId = null;
-    this.resetActionForm();
-  }
-
   async deleteAction(squadId: string, actionId: string): Promise<void> {
     const confirmed = await this.confirmationService.confirm({
       title: 'Supprimer l\'action',
@@ -1314,6 +1226,36 @@ export class ReleasePreparationComponent implements OnInit {
         'Impossible de supprimer l\'action. Veuillez réessayer.'
       );
     }
+  }
+
+  resetNewAction() {
+    this.newAction = {
+      squadId: this.newAction.squadId, // Keep selected squad
+      type: '',
+      description: '',
+      flipping: {
+        ruleName: '',
+        theme: '',
+        ruleAction: '',
+        targetClients: [],
+        targetCaisses: '',
+        targetOS: [],
+        targetVersions: [],
+        ruleState: 'enabled'
+      }
+    };
+    this.flippingTargetsAll = true;
+    this.flippingClientsInput = '';
+    this.flippingTargetsAllCaisses = true;
+    this.flippingCaissesInput = '';
+    this.flippingOSiOS = true;
+    this.flippingOSAndroid = true;
+    this.flippingTargetsAllVersions = true;
+    this.flippingVersionsInput = '';
+  }
+
+  onActionTypeChange(): void {
+    // Optional: reset flipping fields if type changes
   }
 
 
@@ -1385,7 +1327,7 @@ export class ReleasePreparationComponent implements OnInit {
   }
 
   getFlippingCaissesDisplay(targetCaisses?: string | null): string {
-    if (!targetCaisses) {
+    if (!targetCaisses || targetCaisses === 'Toutes') {
       return 'ALL';
     }
     return targetCaisses;
@@ -1511,20 +1453,20 @@ export class ReleasePreparationComponent implements OnInit {
     const preMepActions = this.getActionsByPhase(squad, 'pre_mep');
     const completedPreMepActions = preMepActions.filter(a => a.status === 'completed').length;
 
-    if (preMepActions.length === 0 && squad.preMepEmptyConfirmed) {
-      progress += 50; // Pre-MEP confirmé comme vide
-    } else if (preMepActions.length > 0) {
+    if (preMepActions.length > 0) {
       progress += (completedPreMepActions / preMepActions.length) * 50;
+    } else {
+      progress += 50; // Considéré comme complet si pas d'actions (simplification)
     }
 
     // Post-MEP: 50%
     const postMepActions = this.getActionsByPhase(squad, 'post_mep');
     const completedPostMepActions = postMepActions.filter(a => a.status === 'completed').length;
 
-    if (postMepActions.length === 0 && squad.postMepEmptyConfirmed) {
-      progress += 50; // Post-MEP confirmé comme vide
-    } else if (postMepActions.length > 0) {
+    if (postMepActions.length > 0) {
       progress += (completedPostMepActions / postMepActions.length) * 50;
+    } else {
+      progress += 50; // Considéré comme complet si pas d'actions (simplification)
     }
 
     return Math.round(progress);
@@ -1550,8 +1492,6 @@ export class ReleasePreparationComponent implements OnInit {
 
     if (preMepActions.length > 0 && completedPreMepActions < preMepActions.length) {
       missing.push(`Pré-MEP (${completedPreMepActions}/${preMepActions.length})`);
-    } else if (preMepActions.length === 0 && !squad.preMepEmptyConfirmed) {
-      missing.push('Actions Pré-MEP');
     }
 
     const postMepActions = this.getActionsByPhase(squad, 'post_mep');
@@ -1559,8 +1499,6 @@ export class ReleasePreparationComponent implements OnInit {
 
     if (postMepActions.length > 0 && completedPostMepActions < postMepActions.length) {
       missing.push(`Post-MEP (${completedPostMepActions}/${postMepActions.length})`);
-    } else if (postMepActions.length === 0 && !squad.postMepEmptyConfirmed) {
-      missing.push('Actions Post-MEP');
     }
 
     if (missing.length === 0) {
@@ -1570,26 +1508,7 @@ export class ReleasePreparationComponent implements OnInit {
     return 'Manquant : ' + missing.join(', ');
   }
 
-  async toggleEmptyStatus(squad: Squad, section: 'pre_mep' | 'post_mep'): Promise<void> {
-    const updateData: any = {};
-    if (section === 'pre_mep') {
-      updateData.preMepEmptyConfirmed = !squad.preMepEmptyConfirmed;
-    } else if (section === 'post_mep') {
-      updateData.postMepEmptyConfirmed = !squad.postMepEmptyConfirmed;
-    }
 
-    try {
-      await this.releaseService.updateSquad(squad.id!, updateData);
-      await this.loadRelease();
-
-      // Check and update completion status
-      await this.checkAndUpdateCompletion(squad.id!);
-
-    } catch (error) {
-      console.error('Error updating empty status:', error);
-      this.toastService.error('Erreur', 'Impossible de mettre à jour le statut.');
-    }
-  }
 
   async checkAndUpdateCompletion(squadId: string): Promise<void> {
     if (!this.release) return;
@@ -1661,44 +1580,42 @@ export class ReleasePreparationComponent implements OnInit {
 
     // 2. Actions Pré-MEP
     md += `## Actions Pré-MEP\n\n`;
-    release.squads.forEach(squad => {
-      md += `### Squad ${squad.squadNumber}\n\n`;
-      const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
-      if (preMepActions.length > 0) {
-        md += this.generateActionsMarkdown(preMepActions);
-      } else if (squad.preMepEmptyConfirmed) {
-        md += '_Néant_\n\n';
-      } else {
-        md += '_Non renseigné_\n\n';
-      }
-    });
+    const preMepActions = this.getGlobalActions('pre_mep');
+    if (preMepActions.length > 0) {
+      md += this.generateGlobalActionsMarkdown(preMepActions);
+    }
+
+    // Néant validation section
+    if (preMepActions.length === 0) {
+      md += '_Aucune action renseignée_\n\n';
+    }
+
 
     // 3. Actions Post-MEP
     md += `## Actions Post-MEP\n\n`;
-    release.squads.forEach(squad => {
-      md += `### Squad ${squad.squadNumber}\n\n`;
-      const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
-      if (postMepActions.length > 0) {
-        md += this.generateActionsMarkdown(postMepActions);
-      } else if (squad.postMepEmptyConfirmed) {
-        md += '_Néant_\n\n';
-      } else {
-        md += '_Non renseigné_\n\n';
-      }
-    });
+    const postMepActions = this.getGlobalActions('post_mep');
+    if (postMepActions.length > 0) {
+      md += this.generateGlobalActionsMarkdown(postMepActions);
+    }
+
+    // Néant validation section
+    if (postMepActions.length === 0) {
+      md += '_Aucune action renseignée_\n\n';
+    }
 
     return md;
   }
 
-  private generateActionsMarkdown(actions: Action[]): string {
+  private generateGlobalActionsMarkdown(actions: Action[]): string {
     let md = '';
     const grouped = this.groupActionsByType(actions);
 
     // Memory Flipping
     if (grouped.memory_flipping.length > 0) {
       md += `#### Memory Flipping\n\n`;
-      const headers = ['Nom du MF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const headers = ['Squad', 'Nom du MF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.memory_flipping.map(a => [
+        `S${this.getSquadNumber(a.squadId)}`,
         a.flipping?.ruleName || '',
         a.description || '',
         a.flipping?.theme || '',
@@ -1715,8 +1632,9 @@ export class ReleasePreparationComponent implements OnInit {
     // Feature Flipping
     if (grouped.feature_flipping.length > 0) {
       md += `#### Feature Flipping\n\n`;
-      const headers = ['Nom du FF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const headers = ['Squad', 'Nom du FF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.feature_flipping.map(a => [
+        `S${this.getSquadNumber(a.squadId)}`,
         a.flipping?.ruleName || '',
         a.description || '',
         a.flipping?.theme || '',
@@ -1733,8 +1651,11 @@ export class ReleasePreparationComponent implements OnInit {
     // Other Actions
     if (grouped.other.length > 0) {
       md += `#### Autres Actions\n\n`;
-      const headers = ['Description'];
-      const rows = grouped.other.map(a => [a.description]);
+      const headers = ['Squad', 'Description'];
+      const rows = grouped.other.map(a => [
+        `S${this.getSquadNumber(a.squadId)}`,
+        a.description
+      ]);
       md += this.generateMarkdownTable(headers, rows);
       md += '\n';
     }
@@ -1805,45 +1726,42 @@ export class ReleasePreparationComponent implements OnInit {
 
     // 2. Actions Pré-MEP
     html += `<h2>Actions Pré-MEP</h2>`;
-    release.squads.forEach(squad => {
-      html += `<h3>Squad ${squad.squadNumber}</h3>`;
-      const preMepActions = squad.actions.filter(a => a.phase === 'pre_mep');
-      if (preMepActions.length > 0) {
-        html += this.generateActionsHTML(preMepActions);
-      } else if (squad.preMepEmptyConfirmed) {
-        html += `<p class="empty-section">Néant</p>`;
-      } else {
-        html += `<p class="empty-section" style="color: #ef4444;">Non renseigné</p>`;
-      }
-    });
+    const preMepActions = this.getGlobalActions('pre_mep');
+    if (preMepActions.length > 0) {
+      html += this.generateGlobalActionsHTML(preMepActions);
+    }
+
+    // Néant validation section
+    if (preMepActions.length === 0) {
+      html += `<p class="empty-section">Aucune action renseignée</p>`;
+    }
 
     // 3. Actions Post-MEP
     html += `<h2>Actions Post-MEP</h2>`;
-    release.squads.forEach(squad => {
-      html += `<h3>Squad ${squad.squadNumber}</h3>`;
-      const postMepActions = squad.actions.filter(a => a.phase === 'post_mep');
-      if (postMepActions.length > 0) {
-        html += this.generateActionsHTML(postMepActions);
-      } else if (squad.postMepEmptyConfirmed) {
-        html += `<p class="empty-section">Néant</p>`;
-      } else {
-        html += `<p class="empty-section" style="color: #ef4444;">Non renseigné</p>`;
-      }
-    });
+    const postMepActions = this.getGlobalActions('post_mep');
+    if (postMepActions.length > 0) {
+      html += this.generateGlobalActionsHTML(postMepActions);
+    }
+
+    // Néant validation section
+    if (postMepActions.length === 0) {
+      html += `<p class="empty-section">Aucune action renseignée</p>`;
+    }
 
     html += '</body></html>';
     return html;
   }
 
-  private generateActionsHTML(actions: Action[]): string {
+  private generateGlobalActionsHTML(actions: Action[]): string {
     let html = '';
     const grouped = this.groupActionsByType(actions);
 
     // Memory Flipping
     if (grouped.memory_flipping.length > 0) {
       html += `<h4>Memory Flipping</h4>`;
-      const headers = ['Nom du MF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const headers = ['Squad', 'Nom du MF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.memory_flipping.map(a => [
+        `S${this.getSquadNumber(a.squadId)}`,
         a.flipping?.ruleName || '',
         a.description || '',
         a.flipping?.theme || '',
@@ -1859,8 +1777,9 @@ export class ReleasePreparationComponent implements OnInit {
     // Feature Flipping
     if (grouped.feature_flipping.length > 0) {
       html += `<h4>Feature Flipping</h4>`;
-      const headers = ['Nom du FF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
+      const headers = ['Squad', 'Nom du FF', 'Description', 'Thème', 'Action', 'Clients', 'Caisses', 'OS', 'Versions'];
       const rows = grouped.feature_flipping.map(a => [
+        `S${this.getSquadNumber(a.squadId)}`,
         a.flipping?.ruleName || '',
         a.description || '',
         a.flipping?.theme || '',
@@ -1876,8 +1795,11 @@ export class ReleasePreparationComponent implements OnInit {
     // Other Actions
     if (grouped.other.length > 0) {
       html += `<h4>Autres Actions</h4>`;
-      const headers = ['Description'];
-      const rows = grouped.other.map(a => [a.description]);
+      const headers = ['Squad', 'Description'];
+      const rows = grouped.other.map(a => [
+        `S${this.getSquadNumber(a.squadId)}`,
+        a.description
+      ]);
       html += this.generateHTMLTable(headers, rows);
     }
 
