@@ -32,7 +32,10 @@ public class MicroserviceService {
     /**
      * Initialize default microservices on application startup
      */
-    @PostConstruct
+    /**
+     * Initialize default microservices on application startup
+     * Called by DataInitializer
+     */
     public void initDefaultMicroservices() {
         if (microserviceRepository.count() > 0) {
             return; // Already initialized

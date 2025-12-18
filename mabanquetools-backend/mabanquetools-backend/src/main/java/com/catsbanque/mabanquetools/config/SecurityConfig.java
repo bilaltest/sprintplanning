@@ -23,22 +23,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configure(http)) // Active CORS avec la config par défaut
-            .csrf(csrf -> csrf.disable()) // Désactivé pour compatibilité Angular
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT = stateless
-            )
-            .authorizeHttpRequests(auth -> auth
-                // Endpoints publics (authentification)
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/health").permitAll()
-                .requestMatchers("/actuator/health").permitAll()
+                .cors(cors -> cors.configure(http)) // Active CORS avec la config par défaut
+                .csrf(csrf -> csrf.disable()) // Désactivé pour compatibilité Angular
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT = stateless
+                )
+                .authorizeHttpRequests(auth -> auth
+                        // Endpoints publics (authentification)
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/health").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll() // H2 Console
 
-                // Tous les autres endpoints nécessitent une authentification
-                .anyRequest().authenticated()
-            )
-            // Ajouter le filtre JWT avant UsernamePasswordAuthenticationFilter
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        // Tous les autres endpoints nécessitent une authentification
+                        .anyRequest().authenticated())
+                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // Autoriser les frames pour H2
+                                                                                    // Console
+                // Ajouter le filtre JWT avant UsernamePasswordAuthenticationFilter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

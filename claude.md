@@ -6,7 +6,7 @@ Application Angular 20 + Spring Boot pour la DSI d'une banque.
 
 ## Stack Technique
 - **Frontend**: Angular 20 standalone, Tailwind CSS, Material Icons, date-fns, RxJS. Port: :4200
-- **Backend**: Java 25, Spring Boot 3.5.0, Spring Data JPA, MySQL. Port: :3000
+- **Backend**: Java 21, Spring Boot 3.5.0, Spring Data JPA, MySQL. Port: :3000
 
 ## Architecture Rapide
 ### Composants Clés
@@ -53,7 +53,7 @@ services/
 
 ### Backend (Spring Boot)
 ```
-event-planning-spring-boot/event-planning-api/src/main/java/com/catsbanque/eventplanning/
+mabanquetools-backend/mabanquetools-backend/src/main/java/com/catsbanque/mabanquetools/
 ├── MaBanqueToolsApiApplication.java       # Point d'entrée Spring Boot
 ├── config/
 │   ├── CorsConfig.java                    # Configuration CORS

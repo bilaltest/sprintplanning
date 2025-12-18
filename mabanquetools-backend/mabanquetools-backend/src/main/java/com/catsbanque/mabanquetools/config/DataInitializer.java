@@ -21,11 +21,15 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final com.catsbanque.mabanquetools.service.PermissionService permissionService;
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    private final com.catsbanque.mabanquetools.service.MicroserviceService microserviceService;
+    private final com.catsbanque.mabanquetools.service.ReleaseService releaseService;
 
     @Override
     public void run(String... args) {
         cleanUpObsoletePermissions();
         createDefaultAdminUser();
+        microserviceService.initDefaultMicroservices();
+        releaseService.migrateSlugs();
     }
 
     private void createDefaultAdminUser() {

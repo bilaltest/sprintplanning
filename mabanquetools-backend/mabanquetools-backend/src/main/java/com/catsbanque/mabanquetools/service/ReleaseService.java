@@ -37,7 +37,10 @@ public class ReleaseService {
      * Migration automatique des slugs pour les releases existantes
      * Exécuté au démarrage de l'application
      */
-    @PostConstruct
+    /**
+     * Migration automatique des slugs pour les releases existantes
+     * Exécuté au démarrage de l'application par DataInitializer
+     */
     @Transactional
     public void migrateSlugs() {
         List<Release> releasesWithoutSlug = releaseRepository.findAll().stream()
