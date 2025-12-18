@@ -17,14 +17,17 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReleaseServiceTest {
@@ -88,9 +91,9 @@ class ReleaseServiceTest {
         pastRelease.setSquads(new ArrayList<>());
 
         when(releaseRepository.findByReleaseDateAfter(any(LocalDateTime.class)))
-                .thenReturn(Arrays.asList(futureRelease));
+                .thenReturn(List.of(futureRelease));
         when(releaseRepository.findTop20ByReleaseDateBeforeOrderByReleaseDateDesc(any(LocalDateTime.class)))
-                .thenReturn(Arrays.asList(pastRelease));
+                .thenReturn(List.of(pastRelease));
 
         // When
         List<ReleaseDto> result = releaseService.getAllReleases();
@@ -347,7 +350,7 @@ class ReleaseServiceTest {
         releaseWithoutSlug.setName("No Slug Release");
         releaseWithoutSlug.setSlug(null);
 
-        when(releaseRepository.findAll()).thenReturn(Arrays.asList(releaseWithoutSlug));
+        when(releaseRepository.findAll()).thenReturn(List.of(releaseWithoutSlug));
         when(releaseRepository.save(any(Release.class))).thenReturn(releaseWithoutSlug);
 
         // When
@@ -363,7 +366,7 @@ class ReleaseServiceTest {
     @Test
     void migrateSlugs_WithAllReleasesHavingSlugs_ShouldNotMigrate() {
         // Given
-        when(releaseRepository.findAll()).thenReturn(Arrays.asList(testRelease));
+        when(releaseRepository.findAll()).thenReturn(Collections.singletonList(testRelease));
 
         // When
         releaseService.migrateSlugs();

@@ -19,13 +19,22 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReleaseNoteServiceTest {
@@ -94,7 +103,7 @@ class ReleaseNoteServiceTest {
         ReleaseNoteEntryDto.ChangeItem change = new ReleaseNoteEntryDto.ChangeItem();
         change.setJiraId("JIRA-123");
         change.setDescription("Fix bug");
-        createRequest.setChanges(Arrays.asList(change));
+        createRequest.setChanges(List.of(change));
     }
 
     @Test
@@ -103,7 +112,7 @@ class ReleaseNoteServiceTest {
         when(releaseRepository.findBySlug("release123")).thenReturn(Optional.empty());
         when(releaseRepository.findById("release123")).thenReturn(Optional.of(testRelease));
         when(releaseNoteEntryRepository.findByReleaseIdOrderBySquadAndDeployOrder("release123"))
-                .thenReturn(Arrays.asList(testEntry));
+                .thenReturn(Collections.singletonList(testEntry));
         when(microserviceRepository.findById("ms123")).thenReturn(Optional.of(testMicroservice));
 
         List<ReleaseNoteEntryDto.ChangeItem> changes = new ArrayList<>();
@@ -127,7 +136,7 @@ class ReleaseNoteServiceTest {
         // Given
         when(releaseRepository.findBySlug("release-v1-0")).thenReturn(Optional.of(testRelease));
         when(releaseNoteEntryRepository.findByReleaseIdOrderBySquadAndDeployOrder("release123"))
-                .thenReturn(Arrays.asList(testEntry));
+                .thenReturn(Collections.singletonList(testEntry));
         when(microserviceRepository.findById("ms123")).thenReturn(Optional.of(testMicroservice));
 
         List<ReleaseNoteEntryDto.ChangeItem> changes = new ArrayList<>();
@@ -161,7 +170,8 @@ class ReleaseNoteServiceTest {
         when(releaseRepository.findById("release123")).thenReturn(Optional.of(testRelease));
         when(microserviceRepository.findById("ms123")).thenReturn(Optional.of(testMicroservice));
         when(releaseNoteEntryRepository.save(any(ReleaseNoteEntry.class))).thenReturn(testEntry);
-        when(objectMapper.writeValueAsString(anyList())).thenReturn("[{\"jiraId\":\"JIRA-123\",\"description\":\"Fix bug\"}]");
+        when(objectMapper.writeValueAsString(anyList()))
+                .thenReturn("[{\"jiraId\":\"JIRA-123\",\"description\":\"Fix bug\"}]");
 
         List<ReleaseNoteEntryDto.ChangeItem> changes = new ArrayList<>();
         when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(changes);
@@ -207,7 +217,8 @@ class ReleaseNoteServiceTest {
         when(releaseRepository.findBySlug("release123")).thenReturn(Optional.empty());
         when(releaseRepository.findById("release123")).thenReturn(Optional.of(testRelease));
         when(microserviceRepository.findById("ms123")).thenReturn(Optional.of(testMicroservice));
-        when(objectMapper.writeValueAsString(anyList())).thenThrow(new JsonProcessingException("Error") {});
+        when(objectMapper.writeValueAsString(anyList())).thenThrow(new JsonProcessingException("Error") {
+        });
         when(releaseNoteEntryRepository.save(any(ReleaseNoteEntry.class))).thenReturn(testEntry);
 
         // When
@@ -352,7 +363,7 @@ class ReleaseNoteServiceTest {
         when(releaseRepository.findBySlug("release123")).thenReturn(Optional.empty());
         when(releaseRepository.findById("release123")).thenReturn(Optional.of(testRelease));
         when(releaseNoteEntryRepository.findByReleaseIdOrderBySquadAndDeployOrder("release123"))
-                .thenReturn(Arrays.asList(testEntry));
+                .thenReturn(Collections.singletonList(testEntry));
         when(microserviceRepository.findById("ms123")).thenReturn(Optional.of(testMicroservice));
 
         List<ReleaseNoteEntryDto.ChangeItem> changes = new ArrayList<>();
@@ -405,7 +416,7 @@ class ReleaseNoteServiceTest {
         when(releaseRepository.findBySlug("release123")).thenReturn(Optional.empty());
         when(releaseRepository.findById("release123")).thenReturn(Optional.of(testRelease));
         when(releaseNoteEntryRepository.findByReleaseIdOrderBySquadAndDeployOrder("release123"))
-                .thenReturn(Arrays.asList(testEntry));
+                .thenReturn(Collections.singletonList(testEntry));
         when(microserviceRepository.findById("ms123")).thenReturn(Optional.of(testMicroservice));
 
         List<ReleaseNoteEntryDto.ChangeItem> changes = new ArrayList<>();

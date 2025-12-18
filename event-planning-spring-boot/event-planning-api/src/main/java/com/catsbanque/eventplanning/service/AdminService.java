@@ -1,11 +1,37 @@
 package com.catsbanque.eventplanning.service;
 
-import com.catsbanque.eventplanning.dto.*;
-import com.catsbanque.eventplanning.entity.*;
+import com.catsbanque.eventplanning.dto.AdminStats;
+import com.catsbanque.eventplanning.dto.AdminStatsResponse;
+import com.catsbanque.eventplanning.dto.AdminUserDto;
+import com.catsbanque.eventplanning.dto.AdminUsersResponse;
+import com.catsbanque.eventplanning.dto.DatabaseExportDto;
+import com.catsbanque.eventplanning.dto.DatabaseImportRequest;
+import com.catsbanque.eventplanning.dto.DeletedUserInfo;
+import com.catsbanque.eventplanning.dto.DeletedUserResponse;
+import com.catsbanque.eventplanning.dto.ExportData;
+import com.catsbanque.eventplanning.dto.ExportMetadata;
+import com.catsbanque.eventplanning.dto.ImportDatabaseResponse;
+import com.catsbanque.eventplanning.dto.TotalRecords;
+import com.catsbanque.eventplanning.entity.Event;
+import com.catsbanque.eventplanning.entity.History;
+import com.catsbanque.eventplanning.entity.PermissionLevel;
+import com.catsbanque.eventplanning.entity.PermissionModule;
+import com.catsbanque.eventplanning.entity.Release;
+import com.catsbanque.eventplanning.entity.ReleaseHistory;
+import com.catsbanque.eventplanning.entity.Settings;
+import com.catsbanque.eventplanning.entity.User;
 import com.catsbanque.eventplanning.exception.BadRequestException;
 import com.catsbanque.eventplanning.exception.ResourceNotFoundException;
-import com.catsbanque.eventplanning.repository.*;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.catsbanque.eventplanning.repository.ActionRepository;
+import com.catsbanque.eventplanning.repository.EventRepository;
+import com.catsbanque.eventplanning.repository.FeatureFlippingRepository;
+import com.catsbanque.eventplanning.repository.FeatureRepository;
+import com.catsbanque.eventplanning.repository.HistoryRepository;
+import com.catsbanque.eventplanning.repository.ReleaseHistoryRepository;
+import com.catsbanque.eventplanning.repository.ReleaseRepository;
+import com.catsbanque.eventplanning.repository.SettingsRepository;
+import com.catsbanque.eventplanning.repository.SquadRepository;
+import com.catsbanque.eventplanning.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,8 +39,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -54,7 +80,8 @@ public class AdminService {
                     long historyCount = historyRepository.findByUserIdOrderByTimestampDesc(user.getId()).size();
 
                     // Get permissions
-                    Map<PermissionModule, PermissionLevel> permissions = permissionService.getUserPermissions(user.getId());
+                    Map<PermissionModule, PermissionLevel> permissions = permissionService
+                            .getUserPermissions(user.getId());
 
                     return AdminUserDto.builder()
                             .id(user.getId())
@@ -82,7 +109,8 @@ public class AdminService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
 
-        // Mettre à jour les entrées d'historique pour remplacer le nom par "Deleted User"
+        // Mettre à jour les entrées d'historique pour remplacer le nom par "Deleted
+        // User"
         List<History> histories = historyRepository.findByUserIdOrderByTimestampDesc(id);
         histories.forEach(h -> h.setUserDisplayName("Deleted User"));
         historyRepository.saveAll(histories);
@@ -100,8 +128,7 @@ public class AdminService {
                 user.getId(),
                 user.getEmail(),
                 user.getFirstName(),
-                user.getLastName()
-        );
+                user.getLastName());
 
         return new DeletedUserResponse("Utilisateur supprimé avec succès", deletedUser);
     }
@@ -162,7 +189,8 @@ public class AdminService {
         export.setMetadata(metadata);
         export.setData(exportData);
 
-        log.info("Database exported with {} total records", totalRecords.getUsers() + totalRecords.getEvents() + totalRecords.getReleases());
+        log.info("Database exported with {} total records",
+                totalRecords.getUsers() + totalRecords.getEvents() + totalRecords.getReleases());
 
         return export;
     }
@@ -183,7 +211,8 @@ public class AdminService {
         }
 
         try {
-            // 1. Supprimer toutes les données existantes (dans l'ordre pour respecter les contraintes)
+            // 1. Supprimer toutes les données existantes (dans l'ordre pour respecter les
+            // contraintes)
             historyRepository.deleteAll();
             releaseHistoryRepository.deleteAll();
             featureFlippingRepository.deleteAll();
@@ -197,7 +226,8 @@ public class AdminService {
 
             log.info("All existing data deleted");
 
-            // 2. Importer les nouvelles données (dans l'ordre pour respecter les contraintes)
+            // 2. Importer les nouvelles données (dans l'ordre pour respecter les
+            // contraintes)
 
             // Users
             if (request.getData().getUsers() != null && !request.getData().getUsers().isEmpty()) {
@@ -262,8 +292,7 @@ public class AdminService {
 
             return new ImportDatabaseResponse(
                     "Base de données importée avec succès",
-                    request.getMetadata().getTotalRecords()
-            );
+                    request.getMetadata().getTotalRecords());
 
         } catch (Exception e) {
             log.error("Error importing database", e);

@@ -1,6 +1,10 @@
 package com.catsbanque.eventplanning.service;
 
-import com.catsbanque.eventplanning.dto.*;
+import com.catsbanque.eventplanning.dto.LeaderboardEntry;
+import com.catsbanque.eventplanning.dto.LeaderboardUser;
+import com.catsbanque.eventplanning.dto.MyScoresResponse;
+import com.catsbanque.eventplanning.dto.SubmitScoreRequest;
+import com.catsbanque.eventplanning.dto.SubmitScoreResponse;
 import com.catsbanque.eventplanning.entity.Game;
 import com.catsbanque.eventplanning.entity.GameScore;
 import com.catsbanque.eventplanning.entity.User;
@@ -18,9 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Service de gestion des jeux
@@ -274,22 +279,22 @@ public class GameService {
         );
 
         for (GameInitData data : gamesData) {
-            Optional<Game> existingGame = gameRepository.findBySlug(data.getSlug());
+            Optional<Game> existingGame = gameRepository.findBySlug(data.slug());
 
             if (existingGame.isPresent()) {
                 // Update
                 Game game = existingGame.get();
-                game.setName(data.getName());
-                game.setDescription(data.getDescription());
-                game.setIcon(data.getIcon());
+                game.setName(data.name());
+                game.setDescription(data.description());
+                game.setIcon(data.icon());
                 gameRepository.save(game);
             } else {
                 // Create
                 Game game = new Game();
-                game.setSlug(data.getSlug());
-                game.setName(data.getName());
-                game.setDescription(data.getDescription());
-                game.setIcon(data.getIcon());
+                game.setSlug(data.slug());
+                game.setName(data.name());
+                game.setDescription(data.description());
+                game.setIcon(data.icon());
                 game.setIsActive(true);
                 gameRepository.save(game);
             }
@@ -301,35 +306,8 @@ public class GameService {
     }
 
     /**
-     * Inner class for game initialization data
-     */
-    private static class GameInitData {
-        private final String slug;
-        private final String name;
-        private final String description;
-        private final String icon;
-
-        public GameInitData(String slug, String name, String description, String icon) {
-            this.slug = slug;
-            this.name = name;
-            this.description = description;
-            this.icon = icon;
-        }
-
-        public String getSlug() {
-            return slug;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public String getIcon() {
-            return icon;
-        }
+         * Inner class for game initialization data
+         */
+        private record GameInitData(String slug, String name, String description, String icon) {
     }
 }

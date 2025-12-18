@@ -1,6 +1,9 @@
 package com.catsbanque.eventplanning.service;
 
-import com.catsbanque.eventplanning.dto.*;
+import com.catsbanque.eventplanning.dto.LeaderboardEntry;
+import com.catsbanque.eventplanning.dto.MyScoresResponse;
+import com.catsbanque.eventplanning.dto.SubmitScoreRequest;
+import com.catsbanque.eventplanning.dto.SubmitScoreResponse;
 import com.catsbanque.eventplanning.entity.Game;
 import com.catsbanque.eventplanning.entity.GameScore;
 import com.catsbanque.eventplanning.entity.User;
@@ -22,12 +25,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GameServiceTest {
@@ -84,7 +93,7 @@ class GameServiceTest {
     void getAllGames_ShouldReturnActiveGames() {
         // Given
         when(gameRepository.findByIsActiveTrueOrderByCreatedAtAsc())
-                .thenReturn(Arrays.asList(testGame));
+                .thenReturn(Collections.singletonList(testGame));
 
         // When
         List<Game> result = gameService.getAllGames();
@@ -261,7 +270,7 @@ class GameServiceTest {
         // Given
         when(gameRepository.findBySlug("typing-fr")).thenReturn(Optional.of(testGame));
         when(gameScoreRepository.findTop10ByGameIdAndUserIdOrderByCreatedAtDesc("game123", "user123"))
-                .thenReturn(Arrays.asList(testScore));
+                .thenReturn(Collections.singletonList(testScore));
         when(gameScoreRepository.findFirstByGameIdAndUserIdOrderByScoreDesc("game123", "user123"))
                 .thenReturn(Optional.of(testScore));
 
@@ -317,7 +326,7 @@ class GameServiceTest {
         // Given
         when(gameRepository.findBySlug(anyString())).thenReturn(Optional.empty());
         when(gameRepository.save(any(Game.class))).thenReturn(testGame);
-        when(gameRepository.findAll()).thenReturn(Arrays.asList(testGame));
+        when(gameRepository.findAll()).thenReturn(Collections.singletonList(testGame));
 
         // When
         List<Game> result = gameService.initGames();
@@ -332,7 +341,7 @@ class GameServiceTest {
         // Given
         when(gameRepository.findBySlug("typing-fr")).thenReturn(Optional.of(testGame));
         when(gameRepository.save(any(Game.class))).thenReturn(testGame);
-        when(gameRepository.findAll()).thenReturn(Arrays.asList(testGame));
+        when(gameRepository.findAll()).thenReturn(Collections.singletonList(testGame));
 
         // When
         List<Game> result = gameService.initGames();

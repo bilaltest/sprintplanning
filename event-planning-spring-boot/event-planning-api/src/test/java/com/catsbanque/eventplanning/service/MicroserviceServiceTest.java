@@ -12,13 +12,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MicroserviceServiceTest {
@@ -68,7 +77,7 @@ class MicroserviceServiceTest {
     void getAllActive_WithoutReleaseId_ShouldReturnActiveMicroservices() {
         // Given
         when(microserviceRepository.findAllActive())
-                .thenReturn(Arrays.asList(testMicroservice));
+                .thenReturn(Collections.singletonList(testMicroservice));
 
         // When
         List<MicroserviceDto> result = microserviceService.getAllActive(null);
@@ -87,7 +96,7 @@ class MicroserviceServiceTest {
         previousTags.put("ms123", "v1.2.2");
 
         when(microserviceRepository.findAllActive())
-                .thenReturn(Arrays.asList(testMicroservice));
+                .thenReturn(Collections.singletonList(testMicroservice));
         when(releaseNoteService.getAllPreviousTags("release123"))
                 .thenReturn(previousTags);
 
@@ -104,7 +113,7 @@ class MicroserviceServiceTest {
     void getAllActive_WithEmptyReleaseId_ShouldNotEnrich() {
         // Given
         when(microserviceRepository.findAllActive())
-                .thenReturn(Arrays.asList(testMicroservice));
+                .thenReturn(Collections.singletonList(testMicroservice));
 
         // When
         List<MicroserviceDto> result = microserviceService.getAllActive("");
@@ -141,7 +150,7 @@ class MicroserviceServiceTest {
     void getActiveBySquad_ShouldReturnSquadMicroservices() {
         // Given
         when(microserviceRepository.findActiveBySquad("Squad 3"))
-                .thenReturn(Arrays.asList(testMicroservice));
+                .thenReturn(Collections.singletonList(testMicroservice));
 
         // When
         List<MicroserviceDto> result = microserviceService.getActiveBySquad("Squad 3");

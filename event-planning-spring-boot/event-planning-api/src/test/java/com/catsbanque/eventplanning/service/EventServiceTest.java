@@ -6,7 +6,6 @@ import com.catsbanque.eventplanning.entity.Event;
 import com.catsbanque.eventplanning.entity.User;
 import com.catsbanque.eventplanning.exception.ResourceNotFoundException;
 import com.catsbanque.eventplanning.repository.EventRepository;
-import com.catsbanque.eventplanning.repository.HistoryRepository;
 import com.catsbanque.eventplanning.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +23,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EventServiceTest {
@@ -33,7 +34,7 @@ class EventServiceTest {
     private EventRepository eventRepository;
 
     @Mock
-    private HistoryRepository historyRepository;
+    private HistoryService historyService;
 
     @Mock
     private UserRepository userRepository;
@@ -77,7 +78,7 @@ class EventServiceTest {
     @Test
     void getAllEvents_WithoutFilters_ShouldReturnAllEvents() {
         // Given
-        List<Event> events = Arrays.asList(testEvent);
+        List<Event> events = Collections.singletonList(testEvent);
         when(eventRepository.findAll()).thenReturn(events);
 
         // When
@@ -91,7 +92,7 @@ class EventServiceTest {
     @Test
     void getAllEvents_WithCategory_ShouldFilterByCategory() {
         // Given
-        when(eventRepository.findByCategory("mep")).thenReturn(Arrays.asList(testEvent));
+        when(eventRepository.findByCategory("mep")).thenReturn(Collections.singletonList(testEvent));
 
         // When
         List<EventDto> result = eventService.getAllEvents("mep", null, null, null);
@@ -105,7 +106,7 @@ class EventServiceTest {
     void getAllEvents_WithDateRange_ShouldFilterByDates() {
         // Given
         when(eventRepository.findByDateBetween("2025-01-01", "2025-01-31"))
-                .thenReturn(Arrays.asList(testEvent));
+                .thenReturn(Collections.singletonList(testEvent));
 
         // When
         List<EventDto> result = eventService.getAllEvents(null, "2025-01-01", "2025-01-31", null);
@@ -119,7 +120,7 @@ class EventServiceTest {
     void getAllEvents_WithSearch_ShouldSearchByTitleOrDescription() {
         // Given
         when(eventRepository.searchByTitleOrDescription("v1.0"))
-                .thenReturn(Arrays.asList(testEvent));
+                .thenReturn(Collections.singletonList(testEvent));
 
         // When
         List<EventDto> result = eventService.getAllEvents(null, null, null, "v1.0");
@@ -133,7 +134,7 @@ class EventServiceTest {
     void getAllEvents_WithDateFrom_ShouldFilterByMinDate() {
         // Given
         when(eventRepository.findByDateAfter("2025-01-01"))
-                .thenReturn(Arrays.asList(testEvent));
+                .thenReturn(Collections.singletonList(testEvent));
 
         // When
         List<EventDto> result = eventService.getAllEvents(null, "2025-01-01", null, null);
@@ -147,7 +148,7 @@ class EventServiceTest {
     void getAllEvents_WithDateTo_ShouldFilterByMaxDate() {
         // Given
         when(eventRepository.findByDateBefore("2025-12-31"))
-                .thenReturn(Arrays.asList(testEvent));
+                .thenReturn(Collections.singletonList(testEvent));
 
         // When
         List<EventDto> result = eventService.getAllEvents(null, null, "2025-12-31", null);
@@ -185,7 +186,6 @@ class EventServiceTest {
     void createEvent_ShouldSaveAndReturnEvent() {
         // Given
         when(eventRepository.save(any(Event.class))).thenReturn(testEvent);
-        when(userRepository.findById("user123")).thenReturn(Optional.of(testUser));
 
         // When
         EventDto result = eventService.createEvent(createRequest, "user123");
@@ -194,7 +194,7 @@ class EventServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getTitle()).isEqualTo("MEP v1.0");
         verify(eventRepository).save(any(Event.class));
-        verify(historyRepository).save(any());
+        verify(historyService).createEntry(any(), any(), any(), any());
     }
 
     @Test
@@ -211,7 +211,6 @@ class EventServiceTest {
         updatedEvent.setCategory("mep");
 
         when(eventRepository.save(any(Event.class))).thenReturn(updatedEvent);
-        when(userRepository.findById("user123")).thenReturn(Optional.of(testUser));
 
         CreateEventRequest updateRequest = new CreateEventRequest();
         updateRequest.setTitle("MEP v2.0");
@@ -226,7 +225,7 @@ class EventServiceTest {
         // Then
         assertThat(result).isNotNull();
         verify(eventRepository).save(any(Event.class));
-        verify(historyRepository).save(any());
+        verify(historyService).createEntry(any(), any(), any(), any());
     }
 
     @Test
@@ -244,14 +243,13 @@ class EventServiceTest {
     void deleteEvent_WhenExists_ShouldDelete() {
         // Given
         when(eventRepository.findById("event123")).thenReturn(Optional.of(testEvent));
-        when(userRepository.findById("user123")).thenReturn(Optional.of(testUser));
 
         // When
         eventService.deleteEvent("event123", "user123");
 
         // Then
         verify(eventRepository).delete(testEvent);
-        verify(historyRepository).save(any());
+        verify(historyService).createEntry(any(), any(), any(), any());
     }
 
     @Test

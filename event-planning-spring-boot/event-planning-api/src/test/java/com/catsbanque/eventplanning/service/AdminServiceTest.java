@@ -1,10 +1,34 @@
 package com.catsbanque.eventplanning.service;
 
-import com.catsbanque.eventplanning.dto.*;
-import com.catsbanque.eventplanning.entity.*;
+import com.catsbanque.eventplanning.dto.AdminStatsResponse;
+import com.catsbanque.eventplanning.dto.AdminUsersResponse;
+import com.catsbanque.eventplanning.dto.DatabaseExportDto;
+import com.catsbanque.eventplanning.dto.DatabaseImportRequest;
+import com.catsbanque.eventplanning.dto.DeletedUserResponse;
+import com.catsbanque.eventplanning.dto.ExportData;
+import com.catsbanque.eventplanning.dto.ExportMetadata;
+import com.catsbanque.eventplanning.dto.ImportDatabaseResponse;
+import com.catsbanque.eventplanning.dto.TotalRecords;
+import com.catsbanque.eventplanning.entity.Event;
+import com.catsbanque.eventplanning.entity.History;
+import com.catsbanque.eventplanning.entity.PermissionLevel;
+import com.catsbanque.eventplanning.entity.PermissionModule;
+import com.catsbanque.eventplanning.entity.Release;
+import com.catsbanque.eventplanning.entity.Settings;
+import com.catsbanque.eventplanning.entity.Squad;
+import com.catsbanque.eventplanning.entity.User;
 import com.catsbanque.eventplanning.exception.BadRequestException;
 import com.catsbanque.eventplanning.exception.ResourceNotFoundException;
-import com.catsbanque.eventplanning.repository.*;
+import com.catsbanque.eventplanning.repository.ActionRepository;
+import com.catsbanque.eventplanning.repository.EventRepository;
+import com.catsbanque.eventplanning.repository.FeatureFlippingRepository;
+import com.catsbanque.eventplanning.repository.FeatureRepository;
+import com.catsbanque.eventplanning.repository.HistoryRepository;
+import com.catsbanque.eventplanning.repository.ReleaseHistoryRepository;
+import com.catsbanque.eventplanning.repository.ReleaseRepository;
+import com.catsbanque.eventplanning.repository.SettingsRepository;
+import com.catsbanque.eventplanning.repository.SquadRepository;
+import com.catsbanque.eventplanning.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,13 +39,23 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdminServiceTest {
@@ -107,9 +141,9 @@ class AdminServiceTest {
     void getAllUsers_ShouldReturnUsersWithPermissions() {
         // Given
         when(userRepository.findAllByOrderByCreatedAtDesc())
-                .thenReturn(Arrays.asList(testUser));
+                .thenReturn(Collections.singletonList(testUser));
         when(historyRepository.findByUserIdOrderByTimestampDesc("user123"))
-                .thenReturn(Arrays.asList(testHistory));
+                .thenReturn(Collections.singletonList(testHistory));
 
         Map<PermissionModule, PermissionLevel> permissions = new HashMap<>();
         permissions.put(PermissionModule.CALENDAR, PermissionLevel.WRITE);
@@ -157,7 +191,7 @@ class AdminServiceTest {
         // Given
         when(userRepository.findById("user123")).thenReturn(Optional.of(testUser));
         when(historyRepository.findByUserIdOrderByTimestampDesc("user123"))
-                .thenReturn(Arrays.asList(testHistory));
+                .thenReturn(Collections.singletonList(testHistory));
         when(releaseHistoryRepository.findByUserIdOrderByTimestampDesc("user123"))
                 .thenReturn(new ArrayList<>());
 
@@ -209,12 +243,12 @@ class AdminServiceTest {
     @Test
     void exportDatabase_ShouldExportAllData() {
         // Given
-        when(userRepository.findAll()).thenReturn(Arrays.asList(testUser));
-        when(eventRepository.findAll()).thenReturn(Arrays.asList(testEvent));
-        when(releaseRepository.findAll()).thenReturn(Arrays.asList(testRelease));
-        when(historyRepository.findAll()).thenReturn(Arrays.asList(testHistory));
+        when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
+        when(eventRepository.findAll()).thenReturn(Collections.singletonList(testEvent));
+        when(releaseRepository.findAll()).thenReturn(Collections.singletonList(testRelease));
+        when(historyRepository.findAll()).thenReturn(Collections.singletonList(testHistory));
         when(releaseHistoryRepository.findAll()).thenReturn(new ArrayList<>());
-        when(settingsRepository.findAll()).thenReturn(Arrays.asList(testSettings));
+        when(settingsRepository.findAll()).thenReturn(Collections.singletonList(testSettings));
 
         // When
         DatabaseExportDto result = adminService.exportDatabase();
@@ -243,16 +277,16 @@ class AdminServiceTest {
         request.setMetadata(metadata);
 
         ExportData data = new ExportData();
-        data.setUsers(Arrays.asList(testUser));
-        data.setEvents(Arrays.asList(testEvent));
+        data.setUsers(Collections.singletonList(testUser));
+        data.setEvents(Collections.singletonList(testEvent));
         data.setReleases(new ArrayList<>());
         data.setHistory(new ArrayList<>());
         data.setReleaseHistory(new ArrayList<>());
         data.setSettings(new ArrayList<>());
         request.setData(data);
 
-        when(userRepository.saveAll(anyList())).thenReturn(Arrays.asList(testUser));
-        when(eventRepository.saveAll(anyList())).thenReturn(Arrays.asList(testEvent));
+        when(userRepository.saveAll(anyList())).thenReturn(Collections.singletonList(testUser));
+        when(eventRepository.saveAll(anyList())).thenReturn(Collections.singletonList(testEvent));
 
         // When
         ImportDatabaseResponse result = adminService.importDatabase(request);
@@ -325,18 +359,18 @@ class AdminServiceTest {
 
         Squad squad = new Squad();
         squad.setId("squad1");
-        release.setSquads(Arrays.asList(squad));
+        release.setSquads(List.of(squad));
 
         ExportData data = new ExportData();
         data.setUsers(new ArrayList<>());
         data.setEvents(new ArrayList<>());
-        data.setReleases(Arrays.asList(release));
+        data.setReleases(List.of(release));
         data.setHistory(new ArrayList<>());
         data.setReleaseHistory(new ArrayList<>());
         data.setSettings(new ArrayList<>());
         request.setData(data);
 
-        when(releaseRepository.saveAll(anyList())).thenReturn(Arrays.asList(release));
+        when(releaseRepository.saveAll(anyList())).thenReturn(List.of(release));
 
         // When
         adminService.importDatabase(request);

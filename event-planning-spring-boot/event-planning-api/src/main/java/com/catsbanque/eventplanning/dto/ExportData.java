@@ -1,6 +1,11 @@
 package com.catsbanque.eventplanning.dto;
 
-import com.catsbanque.eventplanning.entity.*;
+import com.catsbanque.eventplanning.entity.Event;
+import com.catsbanque.eventplanning.entity.History;
+import com.catsbanque.eventplanning.entity.Release;
+import com.catsbanque.eventplanning.entity.ReleaseHistory;
+import com.catsbanque.eventplanning.entity.Settings;
+import com.catsbanque.eventplanning.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -9,7 +9,6 @@ import com.catsbanque.eventplanning.dto.UpdatePreferencesResponse;
 import com.catsbanque.eventplanning.dto.UpdateWidgetOrderRequest;
 import com.catsbanque.eventplanning.dto.UserDto;
 import com.catsbanque.eventplanning.exception.BadRequestException;
-import com.catsbanque.eventplanning.exception.UnauthorizedException;
 import com.catsbanque.eventplanning.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Contrôleur d'authentification

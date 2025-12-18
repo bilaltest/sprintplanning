@@ -17,13 +17,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class HistoryServiceTest {
@@ -109,9 +114,8 @@ class HistoryServiceTest {
     @Test
     void getHistory_ShouldReturnLast30Entries() throws JsonProcessingException {
         // Given
-        when(historyRepository.count()).thenReturn(10L);
         when(historyRepository.findLast30Entries())
-                .thenReturn(Arrays.asList(testHistory));
+                .thenReturn(Collections.singletonList(testHistory));
         when(objectMapper.readValue(anyString(), eq(Event.class)))
                 .thenReturn(testEvent);
 
@@ -247,11 +251,11 @@ class HistoryServiceTest {
     @Test
     void getHistory_WithInvalidJson_ShouldHandleGracefully() throws JsonProcessingException {
         // Given
-        when(historyRepository.count()).thenReturn(10L);
         when(historyRepository.findLast30Entries())
-                .thenReturn(Arrays.asList(testHistory));
+                .thenReturn(Collections.singletonList(testHistory));
         when(objectMapper.readValue(anyString(), eq(Event.class)))
-                .thenThrow(new JsonProcessingException("Invalid JSON") {});
+                .thenThrow(new JsonProcessingException("Invalid JSON") {
+                });
 
         // When
         List<HistoryDto> result = historyService.getHistory();
