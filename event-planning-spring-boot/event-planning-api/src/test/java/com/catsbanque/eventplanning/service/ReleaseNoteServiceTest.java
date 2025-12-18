@@ -5,6 +5,7 @@ import com.catsbanque.eventplanning.dto.ReleaseNoteEntryDto;
 import com.catsbanque.eventplanning.entity.Microservice;
 import com.catsbanque.eventplanning.entity.Release;
 import com.catsbanque.eventplanning.entity.ReleaseNoteEntry;
+import com.catsbanque.eventplanning.repository.FeatureRepository;
 import com.catsbanque.eventplanning.repository.MicroserviceRepository;
 import com.catsbanque.eventplanning.repository.ReleaseNoteEntryRepository;
 import com.catsbanque.eventplanning.repository.ReleaseRepository;
@@ -30,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.never;
@@ -47,6 +49,9 @@ class ReleaseNoteServiceTest {
 
     @Mock
     private MicroserviceRepository microserviceRepository;
+
+    @Mock
+    private FeatureRepository featureRepository;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -418,6 +423,7 @@ class ReleaseNoteServiceTest {
         when(releaseNoteEntryRepository.findByReleaseIdOrderBySquadAndDeployOrder("release123"))
                 .thenReturn(Collections.singletonList(testEntry));
         when(microserviceRepository.findById("ms123")).thenReturn(Optional.of(testMicroservice));
+        when(featureRepository.findByReleaseIdAndType("release123", "major")).thenReturn(Collections.emptyList());
 
         List<ReleaseNoteEntryDto.ChangeItem> changes = new ArrayList<>();
         when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(changes);
@@ -451,6 +457,7 @@ class ReleaseNoteServiceTest {
         when(releaseNoteEntryRepository.findByReleaseIdOrderBySquadAndDeployOrder("release123"))
                 .thenReturn(Arrays.asList(testEntry, notDeployed));
         when(microserviceRepository.findById("ms123")).thenReturn(Optional.of(testMicroservice));
+        when(featureRepository.findByReleaseIdAndType("release123", "major")).thenReturn(Collections.emptyList());
 
         List<ReleaseNoteEntryDto.ChangeItem> changes = new ArrayList<>();
         when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(changes);
