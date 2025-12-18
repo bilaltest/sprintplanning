@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MicroserviceService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.service</a> &gt; <span class="el_source">MicroserviceService.java</span></div><h1>MicroserviceService.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.service;
+
+import com.catsbanque.mabanquetools.dto.CreateMicroserviceRequest;
+import com.catsbanque.mabanquetools.dto.MicroserviceDto;
+import com.catsbanque.mabanquetools.dto.UpdateMicroserviceRequest;
+import com.catsbanque.mabanquetools.entity.Microservice;
+import com.catsbanque.mabanquetools.repository.MicroserviceRepository;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L22">@Slf4j</span>
+public class MicroserviceService {
+
+    private final MicroserviceRepository microserviceRepository;
+
+    // Lazy injection to avoid circular dependency (MicroserviceService &lt;-&gt;
+    // ReleaseNoteService)
+    @Lazy
+    private final ReleaseNoteService releaseNoteService;
+
+    /**
+     * Initialize default microservices on application startup
+     */
+    /**
+     * Initialize default microservices on application startup
+     * Called by DataInitializer
+     */
+    public void initDefaultMicroservices() {
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (microserviceRepository.count() &gt; 0) {</span>
+<span class="fc" id="L41">            return; // Already initialized</span>
+        }
+
+        // Default microservices grouped by squad
+<span class="fc" id="L45">        List&lt;MicroserviceData&gt; defaultMicroservices = Arrays.asList(</span>
+                // Squad 1
+                new MicroserviceData(&quot;api-gateway&quot;, &quot;Squad 1&quot;, &quot;Core Infrastructure&quot;, 0),
+                new MicroserviceData(&quot;auth-service&quot;, &quot;Squad 1&quot;, &quot;Core Infrastructure&quot;, 1),
+                new MicroserviceData(&quot;config-service&quot;, &quot;Squad 1&quot;, &quot;Core Infrastructure&quot;, 2),
+
+                // Squad 2
+                new MicroserviceData(&quot;user-service&quot;, &quot;Squad 2&quot;, &quot;User Management&quot;, 0),
+                new MicroserviceData(&quot;profile-service&quot;, &quot;Squad 2&quot;, &quot;User Management&quot;, 1),
+
+                // Squad 3
+                new MicroserviceData(&quot;payment-service&quot;, &quot;Squad 3&quot;, &quot;Financial Services&quot;, 0),
+                new MicroserviceData(&quot;transaction-service&quot;, &quot;Squad 3&quot;, &quot;Financial Services&quot;, 1),
+
+                // Squad 4
+                new MicroserviceData(&quot;notification-service&quot;, &quot;Squad 4&quot;, &quot;Communication&quot;, 0),
+                new MicroserviceData(&quot;email-service&quot;, &quot;Squad 4&quot;, &quot;Communication&quot;, 1),
+
+                // Squad 5
+                new MicroserviceData(&quot;analytics-service&quot;, &quot;Squad 5&quot;, &quot;Data &amp; Analytics&quot;, 0),
+                new MicroserviceData(&quot;reporting-service&quot;, &quot;Squad 5&quot;, &quot;Data &amp; Analytics&quot;, 1),
+
+                // Squad 6
+                new MicroserviceData(&quot;monitoring-service&quot;, &quot;Squad 6&quot;, &quot;DevOps&quot;, 0),
+                new MicroserviceData(&quot;logging-service&quot;, &quot;Squad 6&quot;, &quot;DevOps&quot;, 1));
+
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        for (MicroserviceData data : defaultMicroservices) {</span>
+<span class="fc" id="L72">            Microservice microservice = Microservice.builder()</span>
+<span class="fc" id="L73">                    .name(data.name)</span>
+<span class="fc" id="L74">                    .squad(data.squad)</span>
+<span class="fc" id="L75">                    .solution(data.solution)</span>
+<span class="fc" id="L76">                    .displayOrder(data.displayOrder)</span>
+<span class="fc" id="L77">                    .isActive(true)</span>
+<span class="fc" id="L78">                    .description(&quot;Microservice géré par &quot; + data.squad)</span>
+<span class="fc" id="L79">                    .build();</span>
+<span class="fc" id="L80">            microserviceRepository.save(microservice);</span>
+<span class="fc" id="L81">        }</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Get all active microservices
+     *
+     * @param releaseId Optional release ID to compute previousTag for each
+     *                  microservice
+     */
+    public List&lt;MicroserviceDto&gt; getAllActive(String releaseId) {
+<span class="fc" id="L91">        List&lt;Microservice&gt; microservices = microserviceRepository.findAllActive();</span>
+
+        // Si releaseId fourni, charger les tags précédents en une seule query
+<span class="fc" id="L94">        Map&lt;String, String&gt; previousTags = null;</span>
+<span class="fc bfc" id="L95" title="All 4 branches covered.">        if (releaseId != null &amp;&amp; !releaseId.isEmpty()) {</span>
+<span class="fc" id="L96">            log.info(&quot;Loading previous tags for releaseId: {}&quot;, releaseId);</span>
+<span class="fc" id="L97">            previousTags = releaseNoteService.getAllPreviousTags(releaseId);</span>
+<span class="fc" id="L98">            log.info(&quot;Found {} previous tags&quot;, previousTags.size());</span>
+<span class="fc" id="L99">            previousTags.forEach((msId, tag) -&gt; log.info(&quot;  - {} -&gt; {}&quot;, msId, tag));</span>
+        }
+
+        // Convertir en DTO et enrichir avec previousTag
+<span class="fc" id="L103">        final Map&lt;String, String&gt; finalPreviousTags = previousTags;</span>
+<span class="fc" id="L104">        return microservices.stream()</span>
+<span class="fc" id="L105">                .map(ms -&gt; toDto(ms, finalPreviousTags))</span>
+<span class="fc" id="L106">                .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Get all microservices (including inactive)
+     */
+    public List&lt;MicroserviceDto&gt; getAll() {
+<span class="fc" id="L113">        return microserviceRepository.findAll().stream()</span>
+<span class="fc" id="L114">                .map(this::toDto)</span>
+<span class="fc" id="L115">                .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Get active microservices by squad
+     */
+    public List&lt;MicroserviceDto&gt; getActiveBySquad(String squad) {
+<span class="fc" id="L122">        return microserviceRepository.findActiveBySquad(squad).stream()</span>
+<span class="fc" id="L123">                .map(this::toDto)</span>
+<span class="fc" id="L124">                .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Get microservice by ID
+     */
+    public MicroserviceDto getById(String id) {
+<span class="fc" id="L131">        Microservice microservice = microserviceRepository.findById(id)</span>
+<span class="fc" id="L132">                .orElseThrow(() -&gt; new RuntimeException(&quot;Microservice non trouvé: &quot; + id));</span>
+<span class="fc" id="L133">        return toDto(microservice);</span>
+    }
+
+    /**
+     * Create new microservice
+     */
+    @Transactional
+    public MicroserviceDto create(CreateMicroserviceRequest request) {
+        // Check if name already exists
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        if (microserviceRepository.findByName(request.getName()).isPresent()) {</span>
+<span class="fc" id="L143">            throw new RuntimeException(&quot;Un microservice avec ce nom existe déjà: &quot; + request.getName());</span>
+        }
+
+<span class="fc" id="L146">        Microservice microservice = Microservice.builder()</span>
+<span class="fc" id="L147">                .name(request.getName())</span>
+<span class="fc" id="L148">                .squad(request.getSquad())</span>
+<span class="fc" id="L149">                .solution(request.getSolution())</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">                .displayOrder(request.getDisplayOrder() != null ? request.getDisplayOrder() : 0)</span>
+<span class="fc" id="L151">                .description(request.getDescription())</span>
+<span class="fc" id="L152">                .isActive(true)</span>
+<span class="fc" id="L153">                .build();</span>
+
+<span class="fc" id="L155">        microservice = microserviceRepository.save(microservice);</span>
+<span class="fc" id="L156">        return toDto(microservice);</span>
+    }
+
+    /**
+     * Update microservice
+     */
+    @Transactional
+    public MicroserviceDto update(String id, UpdateMicroserviceRequest request) {
+<span class="fc" id="L164">        Microservice microservice = microserviceRepository.findById(id)</span>
+<span class="pc" id="L165">                .orElseThrow(() -&gt; new RuntimeException(&quot;Microservice non trouvé: &quot; + id));</span>
+
+        // Check if new name conflicts with existing microservice
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">        if (request.getName() != null &amp;&amp;</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">                !request.getName().equals(microservice.getName()) &amp;&amp;</span>
+<span class="fc bfc" id="L170" title="All 2 branches covered.">                microserviceRepository.existsByNameAndIdNot(request.getName(), id)) {</span>
+<span class="fc" id="L171">            throw new RuntimeException(&quot;Un microservice avec ce nom existe déjà: &quot; + request.getName());</span>
+        }
+
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">        if (request.getName() != null) {</span>
+<span class="fc" id="L175">            microservice.setName(request.getName());</span>
+        }
+<span class="fc bfc" id="L177" title="All 2 branches covered.">        if (request.getSquad() != null) {</span>
+<span class="fc" id="L178">            microservice.setSquad(request.getSquad());</span>
+        }
+<span class="fc bfc" id="L180" title="All 2 branches covered.">        if (request.getSolution() != null) {</span>
+<span class="fc" id="L181">            microservice.setSolution(request.getSolution());</span>
+        }
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        if (request.getDisplayOrder() != null) {</span>
+<span class="fc" id="L184">            microservice.setDisplayOrder(request.getDisplayOrder());</span>
+        }
+<span class="fc bfc" id="L186" title="All 2 branches covered.">        if (request.getIsActive() != null) {</span>
+<span class="fc" id="L187">            microservice.setIsActive(request.getIsActive());</span>
+        }
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        if (request.getDescription() != null) {</span>
+<span class="fc" id="L190">            microservice.setDescription(request.getDescription());</span>
+        }
+
+<span class="fc" id="L193">        microservice = microserviceRepository.save(microservice);</span>
+<span class="fc" id="L194">        return toDto(microservice);</span>
+    }
+
+    /**
+     * Delete (soft delete) microservice
+     */
+    @Transactional
+    public void delete(String id) {
+<span class="fc" id="L202">        Microservice microservice = microserviceRepository.findById(id)</span>
+<span class="fc" id="L203">                .orElseThrow(() -&gt; new RuntimeException(&quot;Microservice non trouvé: &quot; + id));</span>
+
+        // Soft delete
+<span class="fc" id="L206">        microservice.setIsActive(false);</span>
+<span class="fc" id="L207">        microserviceRepository.save(microservice);</span>
+<span class="fc" id="L208">    }</span>
+
+    /**
+     * Hard delete microservice (use with caution!)
+     */
+    @Transactional
+    public void hardDelete(String id) {
+<span class="fc bfc" id="L215" title="All 2 branches covered.">        if (!microserviceRepository.existsById(id)) {</span>
+<span class="fc" id="L216">            throw new RuntimeException(&quot;Microservice non trouvé: &quot; + id);</span>
+        }
+<span class="fc" id="L218">        microserviceRepository.deleteById(id);</span>
+<span class="fc" id="L219">    }</span>
+
+    /**
+     * Convert entity to DTO (without previousTag)
+     */
+    private MicroserviceDto toDto(Microservice microservice) {
+<span class="fc" id="L225">        return toDto(microservice, null);</span>
+    }
+
+    /**
+     * Convert entity to DTO with optional previousTag enrichment
+     *
+     * @param microservice The microservice entity
+     * @param previousTags Map of microserviceId -&gt; previousTag (nullable)
+     */
+    private MicroserviceDto toDto(Microservice microservice, Map&lt;String, String&gt; previousTags) {
+<span class="fc" id="L235">        String previousTag = null;</span>
+<span class="pc bpc" id="L236" title="1 of 4 branches missed.">        if (previousTags != null &amp;&amp; microservice.getId() != null) {</span>
+<span class="fc" id="L237">            previousTag = previousTags.get(microservice.getId());</span>
+        }
+
+<span class="fc" id="L240">        return MicroserviceDto.builder()</span>
+<span class="fc" id="L241">                .id(microservice.getId())</span>
+<span class="fc" id="L242">                .name(microservice.getName())</span>
+<span class="fc" id="L243">                .squad(microservice.getSquad())</span>
+<span class="fc" id="L244">                .solution(microservice.getSolution())</span>
+<span class="fc" id="L245">                .displayOrder(microservice.getDisplayOrder())</span>
+<span class="fc" id="L246">                .isActive(microservice.getIsActive())</span>
+<span class="fc" id="L247">                .description(microservice.getDescription())</span>
+<span class="fc" id="L248">                .previousTag(previousTag)</span>
+<span class="fc" id="L249">                .build();</span>
+    }
+
+    /**
+     * Helper class for initializing default microservices
+     */
+    private static class MicroserviceData {
+        String name;
+        String squad;
+        String solution;
+        int displayOrder;
+
+<span class="fc" id="L261">        MicroserviceData(String name, String squad, String solution, int displayOrder) {</span>
+<span class="fc" id="L262">            this.name = name;</span>
+<span class="fc" id="L263">            this.squad = squad;</span>
+<span class="fc" id="L264">            this.solution = solution;</span>
+<span class="fc" id="L265">            this.displayOrder = displayOrder;</span>
+<span class="fc" id="L266">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

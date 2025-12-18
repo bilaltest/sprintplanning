@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.service</a> &gt; <span class="el_source">AdminService.java</span></div><h1>AdminService.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.service;
+
+import com.catsbanque.mabanquetools.dto.AdminStats;
+import com.catsbanque.mabanquetools.dto.AdminStatsResponse;
+import com.catsbanque.mabanquetools.dto.AdminUserDto;
+import com.catsbanque.mabanquetools.dto.AdminUsersResponse;
+import com.catsbanque.mabanquetools.dto.DatabaseExportDto;
+import com.catsbanque.mabanquetools.dto.DatabaseImportRequest;
+import com.catsbanque.mabanquetools.dto.DeletedUserInfo;
+import com.catsbanque.mabanquetools.dto.DeletedUserResponse;
+import com.catsbanque.mabanquetools.dto.ExportData;
+import com.catsbanque.mabanquetools.dto.ExportMetadata;
+import com.catsbanque.mabanquetools.dto.ImportDatabaseResponse;
+import com.catsbanque.mabanquetools.dto.TotalRecords;
+import com.catsbanque.mabanquetools.entity.Event;
+import com.catsbanque.mabanquetools.entity.History;
+import com.catsbanque.mabanquetools.entity.PermissionLevel;
+import com.catsbanque.mabanquetools.entity.PermissionModule;
+import com.catsbanque.mabanquetools.entity.Release;
+import com.catsbanque.mabanquetools.entity.ReleaseHistory;
+import com.catsbanque.mabanquetools.entity.Settings;
+import com.catsbanque.mabanquetools.entity.User;
+import com.catsbanque.mabanquetools.exception.BadRequestException;
+import com.catsbanque.mabanquetools.exception.ResourceNotFoundException;
+import com.catsbanque.mabanquetools.repository.ActionRepository;
+import com.catsbanque.mabanquetools.repository.EventRepository;
+import com.catsbanque.mabanquetools.repository.FeatureFlippingRepository;
+import com.catsbanque.mabanquetools.repository.FeatureRepository;
+import com.catsbanque.mabanquetools.repository.HistoryRepository;
+import com.catsbanque.mabanquetools.repository.ReleaseHistoryRepository;
+import com.catsbanque.mabanquetools.repository.ReleaseRepository;
+import com.catsbanque.mabanquetools.repository.SettingsRepository;
+import com.catsbanque.mabanquetools.repository.SquadRepository;
+import com.catsbanque.mabanquetools.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * Service d'administration
+ * Référence: admin.controller.js
+ */
+<span class="fc" id="L49">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class AdminService {
+
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final ReleaseRepository releaseRepository;
+    private final HistoryRepository historyRepository;
+    private final ReleaseHistoryRepository releaseHistoryRepository;
+    private final SettingsRepository settingsRepository;
+    private final SquadRepository squadRepository;
+    private final FeatureRepository featureRepository;
+    private final ActionRepository actionRepository;
+    private final FeatureFlippingRepository featureFlippingRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final PermissionService permissionService;
+
+    /**
+     * Récupérer tous les utilisateurs
+     * Référence: admin.controller.js:9-36
+     */
+    @Transactional(readOnly = true)
+    public AdminUsersResponse getAllUsers() {
+<span class="fc" id="L73">        List&lt;User&gt; users = userRepository.findAllByOrderByCreatedAtDesc();</span>
+
+<span class="fc" id="L75">        List&lt;AdminUserDto&gt; userDtos = users.stream()</span>
+<span class="fc" id="L76">                .map(user -&gt; {</span>
+                    // Count histories
+<span class="fc" id="L78">                    long historyCount = historyRepository.findByUserIdOrderByTimestampDesc(user.getId()).size();</span>
+
+                    // Get permissions
+<span class="fc" id="L81">                    Map&lt;PermissionModule, PermissionLevel&gt; permissions = permissionService</span>
+<span class="fc" id="L82">                            .getUserPermissions(user.getId());</span>
+
+<span class="fc" id="L84">                    return AdminUserDto.builder()</span>
+<span class="fc" id="L85">                            .id(user.getId())</span>
+<span class="fc" id="L86">                            .email(user.getEmail())</span>
+<span class="fc" id="L87">                            .firstName(user.getFirstName())</span>
+<span class="fc" id="L88">                            .lastName(user.getLastName())</span>
+<span class="fc" id="L89">                            .themePreference(user.getThemePreference())</span>
+<span class="fc" id="L90">                            .createdAt(user.getCreatedAt())</span>
+<span class="fc" id="L91">                            .updatedAt(user.getUpdatedAt())</span>
+<span class="fc" id="L92">                            .historiesCount(historyCount)</span>
+<span class="fc" id="L93">                            .permissions(permissions)</span>
+<span class="fc" id="L94">                            .build();</span>
+                })
+<span class="fc" id="L96">                .collect(Collectors.toList());</span>
+
+<span class="fc" id="L98">        return new AdminUsersResponse(userDtos);</span>
+    }
+
+    /**
+     * Supprimer un utilisateur
+     * Référence: admin.controller.js:44-83
+     */
+    @Transactional
+    public DeletedUserResponse deleteUser(String id) {
+<span class="fc" id="L107">        User user = userRepository.findById(id)</span>
+<span class="fc" id="L108">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Utilisateur non trouvé&quot;));</span>
+
+        // Mettre à jour les entrées d'historique pour remplacer le nom par &quot;Deleted
+        // User&quot;
+<span class="fc" id="L112">        List&lt;History&gt; histories = historyRepository.findByUserIdOrderByTimestampDesc(id);</span>
+<span class="fc" id="L113">        histories.forEach(h -&gt; h.setUserDisplayName(&quot;Deleted User&quot;));</span>
+<span class="fc" id="L114">        historyRepository.saveAll(histories);</span>
+
+<span class="fc" id="L116">        List&lt;ReleaseHistory&gt; releaseHistories = releaseHistoryRepository.findByUserIdOrderByTimestampDesc(id);</span>
+<span class="pc" id="L117">        releaseHistories.forEach(rh -&gt; rh.setUserDisplayName(&quot;Deleted User&quot;));</span>
+<span class="fc" id="L118">        releaseHistoryRepository.saveAll(releaseHistories);</span>
+
+        // Supprimer l'utilisateur
+<span class="fc" id="L121">        userRepository.delete(user);</span>
+
+<span class="fc" id="L123">        log.info(&quot;Deleted user: {} {}&quot;, user.getFirstName(), user.getLastName());</span>
+
+<span class="fc" id="L125">        DeletedUserInfo deletedUser = new DeletedUserInfo(</span>
+<span class="fc" id="L126">                user.getId(),</span>
+<span class="fc" id="L127">                user.getEmail(),</span>
+<span class="fc" id="L128">                user.getFirstName(),</span>
+<span class="fc" id="L129">                user.getLastName());</span>
+
+<span class="fc" id="L131">        return new DeletedUserResponse(&quot;Utilisateur supprimé avec succès&quot;, deletedUser);</span>
+    }
+
+    /**
+     * Récupérer des statistiques
+     * Référence: admin.controller.js:89-115
+     */
+    @Transactional(readOnly = true)
+    public AdminStatsResponse getStats() {
+<span class="fc" id="L140">        long totalUsers = userRepository.count();</span>
+<span class="fc" id="L141">        long totalEvents = eventRepository.count();</span>
+<span class="fc" id="L142">        long totalReleases = releaseRepository.count();</span>
+<span class="fc" id="L143">        long totalHistoryEntries = historyRepository.count();</span>
+
+<span class="fc" id="L145">        AdminStats stats = new AdminStats(totalUsers, totalEvents, totalReleases, totalHistoryEntries);</span>
+<span class="fc" id="L146">        return new AdminStatsResponse(stats);</span>
+    }
+
+    /**
+     * Exporter la base de données
+     * Référence: admin.controller.js:121-191
+     */
+    @Transactional(readOnly = true)
+    public DatabaseExportDto exportDatabase() {
+        // Exporter toutes les données
+<span class="fc" id="L156">        List&lt;User&gt; users = userRepository.findAll();</span>
+<span class="fc" id="L157">        List&lt;Event&gt; events = eventRepository.findAll();</span>
+<span class="fc" id="L158">        List&lt;Release&gt; releases = releaseRepository.findAll();</span>
+<span class="fc" id="L159">        List&lt;History&gt; history = historyRepository.findAll();</span>
+<span class="fc" id="L160">        List&lt;ReleaseHistory&gt; releaseHistory = releaseHistoryRepository.findAll();</span>
+<span class="fc" id="L161">        List&lt;Settings&gt; settings = settingsRepository.findAll();</span>
+
+        // Créer les métadonnées
+<span class="fc" id="L164">        ExportMetadata metadata = new ExportMetadata();</span>
+<span class="fc" id="L165">        metadata.setExportDate(LocalDateTime.now().toString());</span>
+<span class="fc" id="L166">        metadata.setVersion(&quot;1.0&quot;);</span>
+
+<span class="fc" id="L168">        TotalRecords totalRecords = new TotalRecords();</span>
+<span class="fc" id="L169">        totalRecords.setUsers(users.size());</span>
+<span class="fc" id="L170">        totalRecords.setEvents(events.size());</span>
+<span class="fc" id="L171">        totalRecords.setReleases(releases.size());</span>
+<span class="fc" id="L172">        totalRecords.setHistory(history.size());</span>
+<span class="fc" id="L173">        totalRecords.setReleaseHistory(releaseHistory.size());</span>
+<span class="fc" id="L174">        totalRecords.setSettings(settings.size());</span>
+<span class="fc" id="L175">        metadata.setTotalRecords(totalRecords);</span>
+
+        // Créer les données d'export
+<span class="fc" id="L178">        ExportData exportData = new ExportData();</span>
+<span class="fc" id="L179">        exportData.setUsers(users);</span>
+<span class="fc" id="L180">        exportData.setEvents(events);</span>
+<span class="fc" id="L181">        exportData.setReleases(releases);</span>
+<span class="fc" id="L182">        exportData.setHistory(history);</span>
+<span class="fc" id="L183">        exportData.setReleaseHistory(releaseHistory);</span>
+<span class="fc" id="L184">        exportData.setSettings(settings);</span>
+
+<span class="fc" id="L186">        DatabaseExportDto export = new DatabaseExportDto();</span>
+<span class="fc" id="L187">        export.setMetadata(metadata);</span>
+<span class="fc" id="L188">        export.setData(exportData);</span>
+
+<span class="fc" id="L190">        log.info(&quot;Database exported with {} total records&quot;,</span>
+<span class="fc" id="L191">                totalRecords.getUsers() + totalRecords.getEvents() + totalRecords.getReleases());</span>
+
+<span class="fc" id="L193">        return export;</span>
+    }
+
+    /**
+     * Importer la base de données
+     * Référence: admin.controller.js:198-318
+     * ATTENTION: Écrase toutes les données existantes
+     */
+    @Transactional
+    public ImportDatabaseResponse importDatabase(DatabaseImportRequest request) {
+<span class="fc bfc" id="L203" title="All 4 branches covered.">        if (request.getData() == null || request.getMetadata() == null) {</span>
+<span class="fc" id="L204">            throw new BadRequestException(&quot;Format de données invalide&quot;);</span>
+        }
+
+<span class="fc bfc" id="L207" title="All 2 branches covered.">        if (!&quot;1.0&quot;.equals(request.getMetadata().getVersion())) {</span>
+<span class="fc" id="L208">            throw new BadRequestException(&quot;Version du fichier non supportée&quot;);</span>
+        }
+
+        try {
+            // 1. Supprimer toutes les données existantes (dans l'ordre pour respecter les
+            // contraintes)
+<span class="fc" id="L214">            historyRepository.deleteAll();</span>
+<span class="fc" id="L215">            releaseHistoryRepository.deleteAll();</span>
+<span class="fc" id="L216">            featureFlippingRepository.deleteAll();</span>
+<span class="fc" id="L217">            actionRepository.deleteAll();</span>
+<span class="fc" id="L218">            featureRepository.deleteAll();</span>
+<span class="fc" id="L219">            squadRepository.deleteAll();</span>
+<span class="fc" id="L220">            releaseRepository.deleteAll();</span>
+<span class="fc" id="L221">            eventRepository.deleteAll();</span>
+<span class="fc" id="L222">            settingsRepository.deleteAll();</span>
+<span class="fc" id="L223">            userRepository.deleteAll();</span>
+
+<span class="fc" id="L225">            log.info(&quot;All existing data deleted&quot;);</span>
+
+            // 2. Importer les nouvelles données (dans l'ordre pour respecter les
+            // contraintes)
+
+            // Users
+<span class="pc bpc" id="L231" title="1 of 4 branches missed.">            if (request.getData().getUsers() != null &amp;&amp; !request.getData().getUsers().isEmpty()) {</span>
+<span class="fc" id="L232">                userRepository.saveAll(request.getData().getUsers());</span>
+<span class="fc" id="L233">                log.info(&quot;Imported {} users&quot;, request.getData().getUsers().size());</span>
+            }
+
+            // Settings
+<span class="pc bpc" id="L237" title="2 of 4 branches missed.">            if (request.getData().getSettings() != null &amp;&amp; !request.getData().getSettings().isEmpty()) {</span>
+<span class="nc" id="L238">                settingsRepository.saveAll(request.getData().getSettings());</span>
+<span class="nc" id="L239">                log.info(&quot;Imported {} settings&quot;, request.getData().getSettings().size());</span>
+            }
+
+            // Events
+<span class="pc bpc" id="L243" title="1 of 4 branches missed.">            if (request.getData().getEvents() != null &amp;&amp; !request.getData().getEvents().isEmpty()) {</span>
+<span class="fc" id="L244">                eventRepository.saveAll(request.getData().getEvents());</span>
+<span class="fc" id="L245">                log.info(&quot;Imported {} events&quot;, request.getData().getEvents().size());</span>
+            }
+
+            // Releases with nested relations
+<span class="pc bpc" id="L249" title="1 of 4 branches missed.">            if (request.getData().getReleases() != null &amp;&amp; !request.getData().getReleases().isEmpty()) {</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">                for (Release release : request.getData().getReleases()) {</span>
+                    // Set bidirectional relationship for squads
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">                    if (release.getSquads() != null) {</span>
+<span class="fc" id="L253">                        release.getSquads().forEach(squad -&gt; {</span>
+<span class="fc" id="L254">                            squad.setRelease(release);</span>
+
+                            // Set bidirectional relationship for features
+<span class="pc bpc" id="L257" title="1 of 2 branches missed.">                            if (squad.getFeatures() != null) {</span>
+<span class="pc" id="L258">                                squad.getFeatures().forEach(feature -&gt; feature.setSquad(squad));</span>
+                            }
+
+                            // Set bidirectional relationship for actions
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">                            if (squad.getActions() != null) {</span>
+<span class="fc" id="L263">                                squad.getActions().forEach(action -&gt; {</span>
+<span class="nc" id="L264">                                    action.setSquad(squad);</span>
+
+                                    // Set bidirectional relationship for flipping
+<span class="nc bnc" id="L267" title="All 2 branches missed.">                                    if (action.getFlipping() != null) {</span>
+<span class="nc" id="L268">                                        action.getFlipping().setAction(action);</span>
+                                    }
+<span class="nc" id="L270">                                });</span>
+                            }
+<span class="fc" id="L272">                        });</span>
+                    }
+<span class="fc" id="L274">                }</span>
+<span class="fc" id="L275">                releaseRepository.saveAll(request.getData().getReleases());</span>
+<span class="fc" id="L276">                log.info(&quot;Imported {} releases&quot;, request.getData().getReleases().size());</span>
+            }
+
+            // History
+<span class="pc bpc" id="L280" title="2 of 4 branches missed.">            if (request.getData().getHistory() != null &amp;&amp; !request.getData().getHistory().isEmpty()) {</span>
+<span class="nc" id="L281">                historyRepository.saveAll(request.getData().getHistory());</span>
+<span class="nc" id="L282">                log.info(&quot;Imported {} history entries&quot;, request.getData().getHistory().size());</span>
+            }
+
+            // Release History
+<span class="pc bpc" id="L286" title="2 of 4 branches missed.">            if (request.getData().getReleaseHistory() != null &amp;&amp; !request.getData().getReleaseHistory().isEmpty()) {</span>
+<span class="nc" id="L287">                releaseHistoryRepository.saveAll(request.getData().getReleaseHistory());</span>
+<span class="nc" id="L288">                log.info(&quot;Imported {} release history entries&quot;, request.getData().getReleaseHistory().size());</span>
+            }
+
+<span class="fc" id="L291">            return new ImportDatabaseResponse(</span>
+                    &quot;Base de données importée avec succès&quot;,
+<span class="fc" id="L293">                    request.getMetadata().getTotalRecords());</span>
+
+<span class="nc" id="L295">        } catch (Exception e) {</span>
+<span class="nc" id="L296">            log.error(&quot;Error importing database&quot;, e);</span>
+<span class="nc" id="L297">            throw new RuntimeException(&quot;Erreur lors de l'import de la base de données: &quot; + e.getMessage());</span>
+        }
+    }
+
+    /**
+     * Créer un utilisateur admin si il n'existe pas déjà
+     * Email: admin
+     */
+    @Transactional
+    public void createAdminUser() {
+        // Vérifier si l'utilisateur admin existe déjà
+<span class="fc bfc" id="L308" title="All 2 branches covered.">        if (userRepository.existsByEmail(&quot;admin&quot;)) {</span>
+<span class="fc" id="L309">            log.info(&quot;L'utilisateur admin existe déjà&quot;);</span>
+<span class="fc" id="L310">            return;</span>
+        }
+
+        // Créer l'utilisateur admin avec un mot de passe conforme aux règles
+        // (minimum 8 caractères, alphanumérique, avec lettres et chiffres)
+<span class="fc" id="L315">        User adminUser = new User();</span>
+<span class="fc" id="L316">        adminUser.setId(&quot;cadmin001&quot;);</span>
+<span class="fc" id="L317">        adminUser.setEmail(&quot;admin&quot;);</span>
+<span class="fc" id="L318">        adminUser.setPassword(passwordEncoder.encode(&quot;admin123&quot;));</span>
+<span class="fc" id="L319">        adminUser.setFirstName(&quot;Admin&quot;);</span>
+<span class="fc" id="L320">        adminUser.setLastName(&quot;Système&quot;);</span>
+<span class="fc" id="L321">        adminUser.setThemePreference(&quot;light&quot;);</span>
+<span class="fc" id="L322">        adminUser.setWidgetOrder(&quot;[]&quot;);</span>
+
+<span class="fc" id="L324">        userRepository.save(adminUser);</span>
+<span class="fc" id="L325">        log.info(&quot;Utilisateur admin créé avec succès (email: admin, password: admin123)&quot;);</span>
+<span class="fc" id="L326">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

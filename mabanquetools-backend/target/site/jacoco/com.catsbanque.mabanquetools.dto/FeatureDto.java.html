@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FeatureDto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.dto</a> &gt; <span class="el_source">FeatureDto.java</span></div><h1>FeatureDto.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.dto;
+
+import com.catsbanque.mabanquetools.entity.Feature;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class FeatureDto {
+
+    private String id;
+    private String squadId;
+    private String title;
+    private String description;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    public static FeatureDto fromEntity(Feature feature) {
+<span class="nc" id="L25">        return FeatureDto.builder()</span>
+<span class="nc" id="L26">                .id(feature.getId())</span>
+<span class="nc" id="L27">                .squadId(feature.getSquadId())</span>
+<span class="nc" id="L28">                .title(feature.getTitle())</span>
+<span class="nc" id="L29">                .description(feature.getDescription())</span>
+<span class="nc" id="L30">                .createdAt(feature.getCreatedAt())</span>
+<span class="nc" id="L31">                .updatedAt(feature.getUpdatedAt())</span>
+<span class="nc" id="L32">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

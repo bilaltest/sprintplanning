@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReleaseNoteEntry.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.entity</a> &gt; <span class="el_source">ReleaseNoteEntry.java</span></div><h1>ReleaseNoteEntry.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Random;
+
+@Entity
+@Table(name = &quot;release_note_entry&quot;, indexes = {
+        @Index(name = &quot;idx_release_note_release_id&quot;, columnList = &quot;release_id&quot;),
+        @Index(name = &quot;idx_release_note_squad&quot;, columnList = &quot;squad&quot;),
+        @Index(name = &quot;idx_release_note_deploy_order&quot;, columnList = &quot;deploy_order&quot;)
+})
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ReleaseNoteEntry {
+
+    @Id
+    @Column(length = 25)
+    private String id;
+
+    @Column(name = &quot;release_id&quot;, nullable = false, length = 25)
+    private String releaseId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;release_id&quot;, insertable = false, updatable = false)
+    private Release release;
+
+    // ⚠️ DEPRECATED: Use microserviceId instead (kept for backward compatibility)
+    @Column(length = 100)
+    private String microservice; // Ex: &quot;ms-auth&quot; - Legacy field
+
+    @Column(name = &quot;microservice_id&quot;, length = 25)
+    private String microserviceId; // FK to microservice table (preferred)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;microservice_id&quot;, insertable = false, updatable = false)
+    private Microservice microserviceEntity;
+
+    @Column(nullable = false, length = 50)
+    private String squad; // Ex: &quot;Squad 1&quot;
+
+    @Column(name = &quot;part_en_mep&quot;, nullable = false)
+    private Boolean partEnMep = false; // Part en MEP ?
+
+    @Column(name = &quot;deploy_order&quot;)
+    private Integer deployOrder; // Ordre de déploiement (nullable si partEnMep=false)
+
+    @Column(length = 50)
+    private String tag; // Ex: &quot;v2.1.0&quot;
+
+    @Column(name = &quot;previous_tag&quot;, length = 50)
+    private String previousTag; // Ex: &quot;v2.0.5&quot; (tag N-1 en prod)
+
+    @Column(name = &quot;parent_version&quot;, length = 50)
+    private String parentVersion; // Ex: &quot;4.0.3&quot;
+
+    @Column(columnDefinition = &quot;JSON&quot;)
+    private String changes; // JSON: [{&quot;jiraId&quot;: &quot;BANK-1234&quot;, &quot;description&quot;: &quot;Fix auth&quot;}]
+
+    @Column(columnDefinition = &quot;TEXT&quot;)
+    private String comment; // Commentaire libre sur l'entrée
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;status&quot;, length = 30)
+    private DeploymentStatus status = DeploymentStatus.HOM2; // Default to HOM2
+
+    @CreationTimestamp
+    @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = &quot;updated_at&quot;, nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (this.id == null) {</span>
+<span class="nc" id="L96">            this.id = generateCuid();</span>
+        }
+<span class="nc" id="L98">    }</span>
+
+    private static final String ALPHABET = &quot;0123456789abcdefghijklmnopqrstuvwxyz&quot;;
+<span class="fc" id="L101">    private static final Random random = new SecureRandom();</span>
+
+    private String generateCuid() {
+<span class="nc" id="L104">        long timestamp = System.currentTimeMillis();</span>
+<span class="nc" id="L105">        StringBuilder cuid = new StringBuilder(&quot;c&quot;);</span>
+<span class="nc" id="L106">        cuid.append(Long.toString(timestamp, 36));</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        for (int i = 0; i &lt; 8; i++) {</span>
+<span class="nc" id="L108">            cuid.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));</span>
+        }
+<span class="nc" id="L110">        return cuid.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

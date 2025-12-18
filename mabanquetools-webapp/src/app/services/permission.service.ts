@@ -21,11 +21,13 @@ export interface UserPermissionsResponse {
   permissions: UserPermissions;
 }
 
+import { environment } from '../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class PermissionService {
-  private readonly API_URL = 'http://localhost:3000/api/admin/permissions';
+  private readonly API_URL = `${environment.apiUrl}/admin/permissions`;
 
   private permissionsSubject = new BehaviorSubject<UserPermissions | null>(null);
   public permissions$: Observable<UserPermissions | null> = this.permissionsSubject.asObservable();

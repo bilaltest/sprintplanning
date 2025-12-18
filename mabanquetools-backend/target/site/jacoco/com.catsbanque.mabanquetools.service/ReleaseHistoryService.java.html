@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReleaseHistoryService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.service</a> &gt; <span class="el_source">ReleaseHistoryService.java</span></div><h1>ReleaseHistoryService.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.service;
+
+import com.catsbanque.mabanquetools.dto.ReleaseHistoryDto;
+import com.catsbanque.mabanquetools.entity.Release;
+import com.catsbanque.mabanquetools.entity.ReleaseHistory;
+import com.catsbanque.mabanquetools.entity.Squad;
+import com.catsbanque.mabanquetools.exception.ResourceNotFoundException;
+import com.catsbanque.mabanquetools.repository.ReleaseHistoryRepository;
+import com.catsbanque.mabanquetools.repository.ReleaseRepository;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Service de gestion de l'historique des releases
+ * Référence: release-history.controller.js
+ */
+<span class="fc" id="L27">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class ReleaseHistoryService {
+
+    private static final int MAX_HISTORY_ENTRIES = 30;
+
+    private final ReleaseHistoryRepository releaseHistoryRepository;
+    private final ReleaseRepository releaseRepository;
+    private final ObjectMapper objectMapper;
+
+    /**
+     * Archivage automatique : supprimer les entrées au-delà de 30
+     * Référence: release-history.controller.js:3-35
+     */
+    public void archiveReleaseHistory() {
+        try {
+<span class="nc" id="L44">            long historyCount = releaseHistoryRepository.count();</span>
+
+            // Si on dépasse 30, supprimer les plus anciennes
+<span class="nc bnc" id="L47" title="All 2 branches missed.">            if (historyCount &gt; MAX_HISTORY_ENTRIES) {</span>
+<span class="nc" id="L48">                int toDelete = (int) (historyCount - MAX_HISTORY_ENTRIES);</span>
+
+<span class="nc" id="L50">                List&lt;ReleaseHistory&gt; entriesToDelete = releaseHistoryRepository</span>
+<span class="nc" id="L51">                        .findOldestEntries(toDelete);</span>
+
+<span class="nc" id="L53">                releaseHistoryRepository.deleteAll(entriesToDelete);</span>
+<span class="nc" id="L54">                log.info(&quot;Archived {} old release history entries&quot;, entriesToDelete.size());</span>
+            }
+<span class="nc" id="L56">        } catch (Exception e) {</span>
+<span class="nc" id="L57">            log.error(&quot;Error archiving release history&quot;, e);</span>
+<span class="nc" id="L58">        }</span>
+<span class="nc" id="L59">    }</span>
+
+    /**
+     * Récupérer l'historique des releases (30 derniers)
+     * Référence: release-history.controller.js:37-59
+     */
+    @Transactional(readOnly = true)
+    public List&lt;ReleaseHistoryDto&gt; getReleaseHistory() {
+        // Archivage automatique
+<span class="nc" id="L68">        archiveReleaseHistory();</span>
+
+<span class="nc" id="L70">        List&lt;ReleaseHistory&gt; history = releaseHistoryRepository.findLast30Entries();</span>
+
+<span class="nc" id="L72">        return history.stream()</span>
+<span class="nc" id="L73">                .map(this::convertToDto)</span>
+<span class="nc" id="L74">                .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Annuler une modification (rollback)
+     * Référence: release-history.controller.js:61-127
+     */
+    @Transactional
+    public void rollbackReleaseHistory(String id) {
+<span class="nc" id="L83">        ReleaseHistory historyEntry = releaseHistoryRepository.findById(id)</span>
+<span class="nc" id="L84">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;History entry not found&quot;));</span>
+
+        // Parser les données JSON
+<span class="nc" id="L87">        JsonNode previousData = parseJsonData(historyEntry.getPreviousData());</span>
+
+        // Logique de rollback selon l'action
+<span class="nc bnc" id="L90" title="All 4 branches missed.">        switch (historyEntry.getAction()) {</span>
+            case &quot;create&quot;:
+                // Supprimer la release créée
+<span class="nc bnc" id="L93" title="All 2 branches missed.">                if (historyEntry.getReleaseId() != null) {</span>
+<span class="nc" id="L94">                    releaseRepository.deleteById(historyEntry.getReleaseId());</span>
+<span class="nc" id="L95">                    log.info(&quot;Rollback: deleted created release {}&quot;, historyEntry.getReleaseId());</span>
+                }
+                break;
+
+            case &quot;update&quot;:
+                // Restaurer l'ancienne version
+<span class="nc bnc" id="L101" title="All 4 branches missed.">                if (previousData != null &amp;&amp; historyEntry.getReleaseId() != null) {</span>
+<span class="nc" id="L102">                    Release existingRelease = releaseRepository.findById(historyEntry.getReleaseId())</span>
+<span class="nc" id="L103">                            .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Release not found&quot;));</span>
+
+                    // Restore previous data (excluding squads)
+<span class="nc bnc" id="L106" title="All 2 branches missed.">                    if (previousData.has(&quot;name&quot;)) {</span>
+<span class="nc" id="L107">                        existingRelease.setName(previousData.get(&quot;name&quot;).asText());</span>
+                    }
+<span class="nc bnc" id="L109" title="All 2 branches missed.">                    if (previousData.has(&quot;releaseDate&quot;)) {</span>
+<span class="nc" id="L110">                        existingRelease.setReleaseDate(</span>
+<span class="nc" id="L111">                                LocalDateTime.parse(previousData.get(&quot;releaseDate&quot;).asText()));</span>
+                    }
+<span class="nc bnc" id="L113" title="All 2 branches missed.">                    if (previousData.has(&quot;type&quot;)) {</span>
+<span class="nc" id="L114">                        existingRelease.setType(previousData.get(&quot;type&quot;).asText());</span>
+                    }
+<span class="nc bnc" id="L116" title="All 2 branches missed.">                    if (previousData.has(&quot;description&quot;)) {</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">                        String description = previousData.get(&quot;description&quot;).isNull() ? null</span>
+<span class="nc" id="L118">                                : previousData.get(&quot;description&quot;).asText();</span>
+<span class="nc" id="L119">                        existingRelease.setDescription(description);</span>
+                    }
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                    if (previousData.has(&quot;status&quot;)) {</span>
+<span class="nc" id="L122">                        existingRelease.setStatus(previousData.get(&quot;status&quot;).asText());</span>
+                    }
+
+<span class="nc" id="L125">                    releaseRepository.save(existingRelease);</span>
+<span class="nc" id="L126">                    log.info(&quot;Rollback: restored release {} to previous state&quot;, historyEntry.getReleaseId());</span>
+<span class="nc" id="L127">                }</span>
+                break;
+
+            case &quot;delete&quot;:
+                // Re-créer la release supprimée avec 6 squads
+<span class="nc bnc" id="L132" title="All 2 branches missed.">                if (previousData != null) {</span>
+<span class="nc" id="L133">                    Release newRelease = new Release();</span>
+
+<span class="nc bnc" id="L135" title="All 2 branches missed.">                    if (previousData.has(&quot;id&quot;)) {</span>
+<span class="nc" id="L136">                        newRelease.setId(previousData.get(&quot;id&quot;).asText());</span>
+                    }
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                    if (previousData.has(&quot;name&quot;)) {</span>
+<span class="nc" id="L139">                        newRelease.setName(previousData.get(&quot;name&quot;).asText());</span>
+                    }
+<span class="nc bnc" id="L141" title="All 2 branches missed.">                    if (previousData.has(&quot;releaseDate&quot;)) {</span>
+<span class="nc" id="L142">                        newRelease.setReleaseDate(</span>
+<span class="nc" id="L143">                                LocalDateTime.parse(previousData.get(&quot;releaseDate&quot;).asText()));</span>
+                    }
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                    if (previousData.has(&quot;type&quot;)) {</span>
+<span class="nc" id="L146">                        newRelease.setType(previousData.get(&quot;type&quot;).asText());</span>
+                    }
+<span class="nc bnc" id="L148" title="All 2 branches missed.">                    if (previousData.has(&quot;description&quot;)) {</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">                        String description = previousData.get(&quot;description&quot;).isNull() ? null</span>
+<span class="nc" id="L150">                                : previousData.get(&quot;description&quot;).asText();</span>
+<span class="nc" id="L151">                        newRelease.setDescription(description);</span>
+                    }
+<span class="nc bnc" id="L153" title="All 2 branches missed.">                    if (previousData.has(&quot;status&quot;)) {</span>
+<span class="nc" id="L154">                        newRelease.setStatus(previousData.get(&quot;status&quot;).asText());</span>
+                    }
+
+                    // Créer 6 squads par défaut
+<span class="nc" id="L158">                    List&lt;Squad&gt; squads = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">                    for (int i = 1; i &lt;= 6; i++) {</span>
+<span class="nc" id="L160">                        Squad squad = new Squad();</span>
+<span class="nc" id="L161">                        squad.setSquadNumber(i);</span>
+<span class="nc" id="L162">                        squad.setIsCompleted(false);</span>
+<span class="nc" id="L163">                        squad.setFeaturesEmptyConfirmed(false);</span>
+<span class="nc" id="L164">                        squad.setPreMepEmptyConfirmed(false);</span>
+<span class="nc" id="L165">                        squad.setPostMepEmptyConfirmed(false);</span>
+<span class="nc" id="L166">                        squad.setRelease(newRelease);</span>
+<span class="nc" id="L167">                        squads.add(squad);</span>
+                    }
+<span class="nc" id="L169">                    newRelease.setSquads(squads);</span>
+
+<span class="nc" id="L171">                    releaseRepository.save(newRelease);</span>
+<span class="nc" id="L172">                    log.info(&quot;Rollback: recreated deleted release {}&quot;, newRelease.getId());</span>
+<span class="nc" id="L173">                }</span>
+                break;
+
+            default:
+<span class="nc" id="L177">                throw new IllegalStateException(&quot;Unknown action: &quot; + historyEntry.getAction());</span>
+        }
+
+        // Supprimer l'entrée d'historique après rollback réussi
+<span class="nc" id="L181">        releaseHistoryRepository.delete(historyEntry);</span>
+<span class="nc" id="L182">        log.info(&quot;Deleted release history entry after rollback: {}&quot;, id);</span>
+<span class="nc" id="L183">    }</span>
+
+    /**
+     * Vider l'historique
+     * Référence: release-history.controller.js:129-137
+     */
+    @Transactional
+    public void clearReleaseHistory() {
+<span class="nc" id="L191">        releaseHistoryRepository.deleteAll();</span>
+<span class="nc" id="L192">        log.info(&quot;Cleared all release history&quot;);</span>
+<span class="nc" id="L193">    }</span>
+
+    /**
+     * Convertir ReleaseHistory en ReleaseHistoryDto avec parsing JSON
+     */
+    private ReleaseHistoryDto convertToDto(ReleaseHistory history) {
+<span class="nc" id="L199">        ReleaseHistoryDto dto = new ReleaseHistoryDto();</span>
+<span class="nc" id="L200">        dto.setId(history.getId());</span>
+<span class="nc" id="L201">        dto.setAction(history.getAction());</span>
+<span class="nc" id="L202">        dto.setReleaseId(history.getReleaseId());</span>
+<span class="nc" id="L203">        dto.setUserId(history.getUserId());</span>
+<span class="nc" id="L204">        dto.setUserDisplayName(history.getUserDisplayName());</span>
+<span class="nc" id="L205">        dto.setTimestamp(history.getTimestamp());</span>
+
+        // Parser les JSON strings
+<span class="nc" id="L208">        dto.setReleaseData(parseJsonData(history.getReleaseData()));</span>
+<span class="nc" id="L209">        dto.setPreviousData(parseJsonData(history.getPreviousData()));</span>
+
+<span class="nc" id="L211">        return dto;</span>
+    }
+
+    /**
+     * Parser une chaîne JSON en JsonNode
+     */
+    private JsonNode parseJsonData(String jsonString) {
+<span class="nc bnc" id="L218" title="All 4 branches missed.">        if (jsonString == null || jsonString.isEmpty()) {</span>
+<span class="nc" id="L219">            return null;</span>
+        }
+
+        try {
+<span class="nc" id="L223">            return objectMapper.readTree(jsonString);</span>
+<span class="nc" id="L224">        } catch (JacksonException e) {</span>
+<span class="nc" id="L225">            log.error(&quot;Error parsing JSON data: {}&quot;, jsonString, e);</span>
+<span class="nc" id="L226">            return null;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -28,6 +28,8 @@ interface Stats {
   totalHistoryEntries: number;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Component({
   selector: 'app-admin',
   standalone: true,
@@ -301,7 +303,7 @@ interface Stats {
   `]
 })
 export class AdminComponent implements OnInit {
-  private readonly API_URL = 'http://localhost:3000/api/admin';
+  private readonly API_URL = `${environment.apiUrl}/admin`;
 
   users: AdminUser[] = [];
   stats: Stats | null = null;
@@ -319,7 +321,7 @@ export class AdminComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private toastService: ToastService,
     private permissionService: PermissionService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadData();

@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ActionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.service</a> &gt; <span class="el_source">ActionService.java</span></div><h1>ActionService.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.service;
+
+import com.catsbanque.mabanquetools.dto.FeatureFlippingDto;
+import com.catsbanque.mabanquetools.entity.Action;
+import com.catsbanque.mabanquetools.entity.FeatureFlipping;
+import com.catsbanque.mabanquetools.entity.Squad;
+import com.catsbanque.mabanquetools.exception.ResourceNotFoundException;
+import com.catsbanque.mabanquetools.repository.ActionRepository;
+import com.catsbanque.mabanquetools.repository.SquadRepository;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Service de gestion des actions
+ */
+<span class="fc" id="L20">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class ActionService {
+
+    private final ActionRepository actionRepository;
+    private final SquadRepository squadRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final String ALPHABET = &quot;0123456789abcdefghijklmnopqrstuvwxyz&quot;;
+<span class="fc" id="L30">    private static final java.util.Random random = new java.security.SecureRandom();</span>
+
+    /**
+     * Créer une nouvelle action
+     */
+    @Transactional
+    public Action createAction(String squadId, CreateActionRequest request) {
+        // Vérifier que le squad existe
+<span class="nc" id="L38">        Squad squad = squadRepository.findById(squadId)</span>
+<span class="nc" id="L39">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Squad not found&quot;));</span>
+
+<span class="nc" id="L41">        Action action = new Action();</span>
+<span class="nc" id="L42">        action.setId(generateCuid()); // Generate ID immediately to link FeatureFlipping</span>
+<span class="nc" id="L43">        action.setSquadId(squadId);</span>
+<span class="nc" id="L44">        action.setPhase(request.getPhase());</span>
+<span class="nc" id="L45">        action.setType(request.getType());</span>
+<span class="nc" id="L46">        action.setTitle(request.getTitle());</span>
+<span class="nc" id="L47">        action.setDescription(request.getDescription());</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        action.setStatus(request.getStatus() != null ? request.getStatus() : &quot;pending&quot;);</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        action.setOrder(request.getOrder() != null ? request.getOrder() : 0);</span>
+
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if (request.getFlipping() != null) {</span>
+<span class="nc" id="L52">            FeatureFlipping flipping = mapToEntity(request.getFlipping());</span>
+<span class="nc" id="L53">            flipping.setActionId(action.getId()); // Manually set FK</span>
+<span class="nc" id="L54">            flipping.setAction(action);</span>
+<span class="nc" id="L55">            action.setFlipping(flipping);</span>
+        }
+
+<span class="nc" id="L58">        Action saved = actionRepository.save(action);</span>
+<span class="nc" id="L59">        log.info(&quot;Action created: {} for squad {}&quot;, saved.getId(), squadId);</span>
+<span class="nc" id="L60">        return saved;</span>
+    }
+
+    /**
+     * Mettre à jour une action
+     */
+    @Transactional
+    public Action updateAction(String actionId, UpdateActionRequest request) {
+<span class="nc" id="L68">        Action action = actionRepository.findById(actionId)</span>
+<span class="nc" id="L69">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Action not found&quot;));</span>
+
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (request.getPhase() != null) {</span>
+<span class="nc" id="L72">            action.setPhase(request.getPhase());</span>
+        }
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (request.getType() != null) {</span>
+<span class="nc" id="L75">            action.setType(request.getType());</span>
+        }
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (request.getTitle() != null) {</span>
+<span class="nc" id="L78">            action.setTitle(request.getTitle());</span>
+        }
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (request.getDescription() != null) {</span>
+<span class="nc" id="L81">            action.setDescription(request.getDescription());</span>
+        }
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        if (request.getStatus() != null) {</span>
+<span class="nc" id="L84">            action.setStatus(request.getStatus());</span>
+        }
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (request.getOrder() != null) {</span>
+<span class="nc" id="L87">            action.setOrder(request.getOrder());</span>
+        }
+
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (request.getFlipping() != null) {</span>
+<span class="nc" id="L91">            FeatureFlipping flipping = action.getFlipping();</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">            if (flipping == null) {</span>
+<span class="nc" id="L93">                flipping = new FeatureFlipping();</span>
+<span class="nc" id="L94">                flipping.setActionId(action.getId()); // Manually set FK for new entity</span>
+<span class="nc" id="L95">                flipping.setAction(action);</span>
+<span class="nc" id="L96">                action.setFlipping(flipping);</span>
+            }
+<span class="nc" id="L98">            updateFlippingEntity(flipping, request.getFlipping());</span>
+        }
+
+<span class="nc" id="L101">        Action updated = actionRepository.save(action);</span>
+<span class="nc" id="L102">        log.info(&quot;Action updated: {} (status: {})&quot;, updated.getId(), updated.getStatus());</span>
+<span class="nc" id="L103">        return updated;</span>
+    }
+
+    private FeatureFlipping mapToEntity(FeatureFlippingDto dto) {
+<span class="nc" id="L107">        FeatureFlipping entity = new FeatureFlipping();</span>
+<span class="nc" id="L108">        updateFlippingEntity(entity, dto);</span>
+<span class="nc" id="L109">        return entity;</span>
+    }
+
+    private void updateFlippingEntity(FeatureFlipping entity, FeatureFlippingDto dto) {
+<span class="nc" id="L113">        entity.setFlippingType(dto.getFlippingType());</span>
+<span class="nc" id="L114">        entity.setRuleName(dto.getRuleName());</span>
+<span class="nc" id="L115">        entity.setTheme(dto.getTheme());</span>
+<span class="nc" id="L116">        entity.setRuleAction(dto.getRuleAction());</span>
+<span class="nc" id="L117">        entity.setRuleState(dto.getRuleState());</span>
+<span class="nc" id="L118">        entity.setTargetCaisses(dto.getTargetCaisses());</span>
+
+        try {
+<span class="nc" id="L121">            entity.setTargetClients(objectMapper.writeValueAsString(dto.getTargetClients()));</span>
+<span class="nc" id="L122">            entity.setTargetOS(objectMapper.writeValueAsString(dto.getTargetOS()));</span>
+<span class="nc" id="L123">            entity.setTargetVersions(objectMapper.writeValueAsString(dto.getTargetVersions()));</span>
+<span class="nc" id="L124">        } catch (JacksonException e) {</span>
+<span class="nc" id="L125">            log.error(&quot;Error serializing flipping targets&quot;, e);</span>
+<span class="nc" id="L126">            throw new RuntimeException(&quot;Error serializing flipping targets&quot;, e);</span>
+<span class="nc" id="L127">        }</span>
+<span class="nc" id="L128">    }</span>
+
+    private String generateCuid() {
+<span class="nc" id="L131">        long timestamp = System.currentTimeMillis();</span>
+<span class="nc" id="L132">        StringBuilder cuid = new StringBuilder(&quot;c&quot;);</span>
+<span class="nc" id="L133">        cuid.append(Long.toString(timestamp, 36));</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        for (int i = 0; i &lt; 8; i++) {</span>
+<span class="nc" id="L135">            cuid.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));</span>
+        }
+<span class="nc" id="L137">        return cuid.toString();</span>
+    }
+
+    /**
+     * Supprimer une action
+     */
+    @Transactional
+    public void deleteAction(String actionId) {
+<span class="nc" id="L145">        Action action = actionRepository.findById(actionId)</span>
+<span class="nc" id="L146">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Action not found&quot;));</span>
+
+<span class="nc" id="L148">        actionRepository.delete(action);</span>
+<span class="nc" id="L149">        log.info(&quot;Action deleted: {}&quot;, actionId);</span>
+<span class="nc" id="L150">    }</span>
+
+    /**
+     * DTO pour la création d'une action
+     */
+<span class="nc" id="L155">    public static class CreateActionRequest {</span>
+        private String phase;
+        private String type;
+        private String title;
+        private String description;
+        private String status;
+        private Integer order;
+        private FeatureFlippingDto flipping;
+
+        public String getPhase() {
+<span class="nc" id="L165">            return phase;</span>
+        }
+
+        public void setPhase(String phase) {
+<span class="nc" id="L169">            this.phase = phase;</span>
+<span class="nc" id="L170">        }</span>
+
+        public String getType() {
+<span class="nc" id="L173">            return type;</span>
+        }
+
+        public void setType(String type) {
+<span class="nc" id="L177">            this.type = type;</span>
+<span class="nc" id="L178">        }</span>
+
+        public String getTitle() {
+<span class="nc" id="L181">            return title;</span>
+        }
+
+        public void setTitle(String title) {
+<span class="nc" id="L185">            this.title = title;</span>
+<span class="nc" id="L186">        }</span>
+
+        public String getDescription() {
+<span class="nc" id="L189">            return description;</span>
+        }
+
+        public void setDescription(String description) {
+<span class="nc" id="L193">            this.description = description;</span>
+<span class="nc" id="L194">        }</span>
+
+        public String getStatus() {
+<span class="nc" id="L197">            return status;</span>
+        }
+
+        public void setStatus(String status) {
+<span class="nc" id="L201">            this.status = status;</span>
+<span class="nc" id="L202">        }</span>
+
+        public Integer getOrder() {
+<span class="nc" id="L205">            return order;</span>
+        }
+
+        public void setOrder(Integer order) {
+<span class="nc" id="L209">            this.order = order;</span>
+<span class="nc" id="L210">        }</span>
+
+        public FeatureFlippingDto getFlipping() {
+<span class="nc" id="L213">            return flipping;</span>
+        }
+
+        public void setFlipping(FeatureFlippingDto flipping) {
+<span class="nc" id="L217">            this.flipping = flipping;</span>
+<span class="nc" id="L218">        }</span>
+    }
+
+    /**
+     * DTO pour la mise à jour d'une action
+     */
+<span class="nc" id="L224">    public static class UpdateActionRequest {</span>
+        private String phase;
+        private String type;
+        private String title;
+        private String description;
+        private String status;
+        private Integer order;
+        private FeatureFlippingDto flipping;
+
+        public String getPhase() {
+<span class="nc" id="L234">            return phase;</span>
+        }
+
+        public void setPhase(String phase) {
+<span class="nc" id="L238">            this.phase = phase;</span>
+<span class="nc" id="L239">        }</span>
+
+        public String getType() {
+<span class="nc" id="L242">            return type;</span>
+        }
+
+        public void setType(String type) {
+<span class="nc" id="L246">            this.type = type;</span>
+<span class="nc" id="L247">        }</span>
+
+        public String getTitle() {
+<span class="nc" id="L250">            return title;</span>
+        }
+
+        public void setTitle(String title) {
+<span class="nc" id="L254">            this.title = title;</span>
+<span class="nc" id="L255">        }</span>
+
+        public String getDescription() {
+<span class="nc" id="L258">            return description;</span>
+        }
+
+        public void setDescription(String description) {
+<span class="nc" id="L262">            this.description = description;</span>
+<span class="nc" id="L263">        }</span>
+
+        public String getStatus() {
+<span class="nc" id="L266">            return status;</span>
+        }
+
+        public void setStatus(String status) {
+<span class="nc" id="L270">            this.status = status;</span>
+<span class="nc" id="L271">        }</span>
+
+        public Integer getOrder() {
+<span class="nc" id="L274">            return order;</span>
+        }
+
+        public void setOrder(Integer order) {
+<span class="nc" id="L278">            this.order = order;</span>
+<span class="nc" id="L279">        }</span>
+
+        public FeatureFlippingDto getFlipping() {
+<span class="nc" id="L282">            return flipping;</span>
+        }
+
+        public void setFlipping(FeatureFlippingDto flipping) {
+<span class="nc" id="L286">            this.flipping = flipping;</span>
+<span class="nc" id="L287">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

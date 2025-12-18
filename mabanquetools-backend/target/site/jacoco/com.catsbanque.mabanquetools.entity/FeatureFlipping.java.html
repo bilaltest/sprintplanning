@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FeatureFlipping.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.entity</a> &gt; <span class="el_source">FeatureFlipping.java</span></div><h1>FeatureFlipping.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.entity;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = &quot;feature_flipping&quot;, indexes = {
+    @Index(name = &quot;idx_ff_action_id&quot;, columnList = &quot;action_id&quot;),
+    @Index(name = &quot;idx_ff_rule_name&quot;, columnList = &quot;rule_name&quot;)
+})
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class FeatureFlipping {
+
+    @Id
+    @Column(length = 25)
+    private String id;
+
+    @Column(name = &quot;action_id&quot;, nullable = false, unique = true, length = 25)
+    private String actionId;
+
+    @Column(name = &quot;flipping_type&quot;, nullable = false, length = 50)
+    private String flippingType; // 'memory_flipping', 'feature_flipping', extensible
+
+    @Column(name = &quot;rule_name&quot;, nullable = false, length = 255)
+    private String ruleName; // Rule name in the repository
+
+    @Column(length = 100)
+    private String theme; // FF/MF theme
+
+    @Column(name = &quot;rule_action&quot;, nullable = false, length = 50)
+    private String ruleAction; // 'create_rule', 'obsolete_rule', 'disable_rule', 'enable_rule'
+
+    @Column(name = &quot;rule_state&quot;, length = 20)
+    private String ruleState; // 'enabled', 'disabled' (deprecated, kept for backward compatibility)
+
+    // Scopes (JSON stored as String)
+    @Column(name = &quot;target_clients&quot;, nullable = false, columnDefinition = &quot;TEXT&quot;)
+    private String targetClients = &quot;[]&quot;; // [&quot;all&quot;] or list of CAELs
+
+    @Column(name = &quot;target_caisses&quot;, columnDefinition = &quot;TEXT&quot;)
+    private String targetCaisses; // Free text list of caisses
+
+    @Column(name = &quot;target_os&quot;, nullable = false, columnDefinition = &quot;TEXT&quot;)
+    private String targetOS = &quot;[]&quot;; // [&quot;ios&quot;, &quot;android&quot;] or empty for all
+
+    @Column(name = &quot;target_versions&quot;, nullable = false, columnDefinition = &quot;TEXT&quot;)
+    private String targetVersions = &quot;[]&quot;; // Version conditions [{&quot;operator&quot;: &quot;&gt;=&quot;, &quot;version&quot;: &quot;38.5&quot;}]
+
+    @CreationTimestamp
+    @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = &quot;updated_at&quot;, nullable = false)
+    private LocalDateTime updatedAt;
+
+    // Relationship
+    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;action_id&quot;, insertable = false, updatable = false)
+    private Action action;
+
+    @PrePersist
+    public void prePersist() {
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        if (this.id == null) {</span>
+<span class="nc" id="L83">            this.id = generateCuid();</span>
+        }
+<span class="nc" id="L85">    }</span>
+
+    private String generateCuid() {
+<span class="nc" id="L88">        long timestamp = System.currentTimeMillis();</span>
+<span class="nc" id="L89">        int random = (int) (Math.random() * Integer.MAX_VALUE);</span>
+<span class="nc" id="L90">        return &quot;c&quot; + Long.toString(timestamp, 36) + Integer.toString(random, 36);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

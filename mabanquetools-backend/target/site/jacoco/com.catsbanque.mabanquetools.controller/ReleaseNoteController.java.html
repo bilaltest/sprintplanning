@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReleaseNoteController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.controller</a> &gt; <span class="el_source">ReleaseNoteController.java</span></div><h1>ReleaseNoteController.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.controller;
+
+import com.catsbanque.mabanquetools.dto.CreateReleaseNoteEntryRequest;
+import com.catsbanque.mabanquetools.dto.ReleaseNoteEntryDto;
+import com.catsbanque.mabanquetools.service.ReleaseNoteService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/releases/{releaseId}/release-notes&quot;)
+@RequiredArgsConstructor
+@PreAuthorize(&quot;hasAnyAuthority('PERMISSION_RELEASES_READ', 'PERMISSION_RELEASES_WRITE')&quot;)
+public class ReleaseNoteController {
+
+    private final ReleaseNoteService releaseNoteService;
+
+    /**
+     * GET : Récupère toutes les entrées de release note pour une release
+     */
+    @GetMapping
+    public ResponseEntity&lt;List&lt;ReleaseNoteEntryDto&gt;&gt; getAllEntries(@PathVariable String releaseId) {
+<span class="nc" id="L36">        List&lt;ReleaseNoteEntryDto&gt; entries = releaseNoteService.getAllEntries(releaseId);</span>
+<span class="nc" id="L37">        return ResponseEntity.ok(entries);</span>
+    }
+
+    /**
+     * POST : Crée une nouvelle entrée de release note
+     */
+    @PostMapping
+    @PreAuthorize(&quot;hasAuthority('PERMISSION_RELEASES_WRITE')&quot;)
+    public ResponseEntity&lt;ReleaseNoteEntryDto&gt; createEntry(
+            @PathVariable String releaseId,
+            @Valid @RequestBody CreateReleaseNoteEntryRequest request
+    ) {
+<span class="nc" id="L49">        ReleaseNoteEntryDto created = releaseNoteService.createEntry(releaseId, request);</span>
+<span class="nc" id="L50">        return ResponseEntity.status(HttpStatus.CREATED).body(created);</span>
+    }
+
+    /**
+     * PUT : Met à jour une entrée de release note
+     */
+    @PutMapping(&quot;/{entryId}&quot;)
+    @PreAuthorize(&quot;hasAuthority('PERMISSION_RELEASES_WRITE')&quot;)
+    public ResponseEntity&lt;ReleaseNoteEntryDto&gt; updateEntry(
+            @PathVariable String releaseId,
+            @PathVariable String entryId,
+            @Valid @RequestBody CreateReleaseNoteEntryRequest request
+    ) {
+<span class="nc" id="L63">        ReleaseNoteEntryDto updated = releaseNoteService.updateEntry(releaseId, entryId, request);</span>
+<span class="nc" id="L64">        return ResponseEntity.ok(updated);</span>
+    }
+
+    /**
+     * DELETE : Supprime une entrée de release note
+     */
+    @DeleteMapping(&quot;/{entryId}&quot;)
+    @PreAuthorize(&quot;hasAuthority('PERMISSION_RELEASES_WRITE')&quot;)
+    public ResponseEntity&lt;Void&gt; deleteEntry(
+            @PathVariable String releaseId,
+            @PathVariable String entryId
+    ) {
+<span class="nc" id="L76">        releaseNoteService.deleteEntry(releaseId, entryId);</span>
+<span class="nc" id="L77">        return ResponseEntity.noContent().build();</span>
+    }
+
+    /**
+     * GET : Exporte la release note en Markdown
+     */
+    @GetMapping(&quot;/export/markdown&quot;)
+    public ResponseEntity&lt;String&gt; exportMarkdown(@PathVariable String releaseId) {
+<span class="nc" id="L85">        String markdown = releaseNoteService.exportMarkdown(releaseId);</span>
+<span class="nc" id="L86">        return ResponseEntity.ok()</span>
+<span class="nc" id="L87">                .contentType(MediaType.TEXT_MARKDOWN)</span>
+<span class="nc" id="L88">                .header(&quot;Content-Disposition&quot;, &quot;attachment; filename=release-note.md&quot;)</span>
+<span class="nc" id="L89">                .body(markdown);</span>
+    }
+
+    /**
+     * GET : Exporte la release note en HTML
+     */
+    @GetMapping(&quot;/export/html&quot;)
+    public ResponseEntity&lt;String&gt; exportHtml(@PathVariable String releaseId) {
+<span class="nc" id="L97">        String html = releaseNoteService.exportHtml(releaseId);</span>
+<span class="nc" id="L98">        return ResponseEntity.ok()</span>
+<span class="nc" id="L99">                .contentType(MediaType.TEXT_HTML)</span>
+<span class="nc" id="L100">                .header(&quot;Content-Disposition&quot;, &quot;attachment; filename=release-note.html&quot;)</span>
+<span class="nc" id="L101">                .body(html);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -35,11 +35,13 @@ interface RegisterResponse {
   user: User;
 }
 
+import { environment } from '../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:3000/api/auth';
+  private readonly API_URL = `${environment.apiUrl}/auth`;
   private readonly STORAGE_KEY = 'planning_auth_token';
   private readonly USER_KEY = 'planning_user';
 
@@ -49,7 +51,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(this.getStoredUser());
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private checkInitialAuth(): boolean {
     return !!sessionStorage.getItem(this.STORAGE_KEY);

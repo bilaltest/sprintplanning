@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserDto.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.dto</a> &gt; <span class="el_source">UserDto.java</span></div><h1>UserDto.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.dto;
+
+import com.catsbanque.mabanquetools.entity.PermissionLevel;
+import com.catsbanque.mabanquetools.entity.PermissionModule;
+import com.catsbanque.mabanquetools.entity.User;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserDto {
+
+    private String id;
+    private String email;
+    private String firstName;
+    private String lastName;
+    private String themePreference;
+    private String widgetOrder;
+    private Map&lt;PermissionModule, PermissionLevel&gt; permissions;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    public static UserDto fromEntity(User user) {
+<span class="nc" id="L31">        return UserDto.builder()</span>
+<span class="nc" id="L32">                .id(user.getId())</span>
+<span class="nc" id="L33">                .email(user.getEmail())</span>
+<span class="nc" id="L34">                .firstName(user.getFirstName())</span>
+<span class="nc" id="L35">                .lastName(user.getLastName())</span>
+<span class="nc" id="L36">                .themePreference(user.getThemePreference())</span>
+<span class="nc" id="L37">                .widgetOrder(user.getWidgetOrder())</span>
+<span class="nc" id="L38">                .createdAt(user.getCreatedAt())</span>
+<span class="nc" id="L39">                .updatedAt(user.getUpdatedAt())</span>
+<span class="nc" id="L40">                .build();</span>
+    }
+
+    public static UserDto fromEntityWithPermissions(User user, Map&lt;PermissionModule, PermissionLevel&gt; permissions) {
+<span class="fc" id="L44">        return UserDto.builder()</span>
+<span class="fc" id="L45">                .id(user.getId())</span>
+<span class="fc" id="L46">                .email(user.getEmail())</span>
+<span class="fc" id="L47">                .firstName(user.getFirstName())</span>
+<span class="fc" id="L48">                .lastName(user.getLastName())</span>
+<span class="fc" id="L49">                .themePreference(user.getThemePreference())</span>
+<span class="fc" id="L50">                .widgetOrder(user.getWidgetOrder())</span>
+<span class="fc" id="L51">                .permissions(permissions)</span>
+<span class="fc" id="L52">                .createdAt(user.getCreatedAt())</span>
+<span class="fc" id="L53">                .updatedAt(user.getUpdatedAt())</span>
+<span class="fc" id="L54">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

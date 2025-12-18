@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtAuthenticationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.config</a> &gt; <span class="el_source">JwtAuthenticationFilter.java</span></div><h1>JwtAuthenticationFilter.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.config;
+
+import com.catsbanque.mabanquetools.entity.PermissionLevel;
+import com.catsbanque.mabanquetools.entity.PermissionModule;
+import com.catsbanque.mabanquetools.service.PermissionService;
+import com.catsbanque.mabanquetools.util.JwtUtil;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Filtre d'authentification JWT.
+ *
+ * Intercepte toutes les requêtes HTTP et valide le token JWT présent dans le header Authorization.
+ * Si le token est valide, l'utilisateur est authentifié dans le SecurityContext.
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L36">@Slf4j</span>
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JwtUtil jwtUtil;
+    private final PermissionService permissionService;
+
+    private static final String AUTHORIZATION_HEADER = &quot;Authorization&quot;;
+    private static final String TOKEN_PREFIX = &quot;Bearer &quot;;
+
+    @Override
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
+
+        // Récupérer le header Authorization
+<span class="fc" id="L53">        String authHeader = request.getHeader(AUTHORIZATION_HEADER);</span>
+
+        // Si pas de header ou ne commence pas par &quot;Bearer &quot;, ignorer
+<span class="pc bpc" id="L56" title="3 of 4 branches missed.">        if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {</span>
+<span class="fc" id="L57">            filterChain.doFilter(request, response);</span>
+<span class="fc" id="L58">            return;</span>
+        }
+
+        try {
+            // Extraire le token
+<span class="nc" id="L63">            String token = authHeader.substring(TOKEN_PREFIX.length());</span>
+
+            // Valider le token et extraire l'userId
+<span class="nc" id="L66">            String userId = jwtUtil.extractUserId(token);</span>
+
+<span class="nc bnc" id="L68" title="All 4 branches missed.">            if (userId != null &amp;&amp; SecurityContextHolder.getContext().getAuthentication() == null) {</span>
+                // Charger les permissions de l'utilisateur et les convertir en GrantedAuthorities
+<span class="nc" id="L70">                List&lt;GrantedAuthority&gt; authorities = loadUserAuthorities(userId);</span>
+
+                // Créer l'authentification (utilisateur authentifié)
+                // Le principal est l'userId
+<span class="nc" id="L74">                UsernamePasswordAuthenticationToken authentication =</span>
+                        new UsernamePasswordAuthenticationToken(
+                                userId,
+                                null,
+                                authorities // Charger les permissions comme GrantedAuthorities
+                        );
+
+<span class="nc" id="L81">                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));</span>
+
+                // Définir l'authentification dans le SecurityContext
+<span class="nc" id="L84">                SecurityContextHolder.getContext().setAuthentication(authentication);</span>
+
+<span class="nc" id="L86">                log.debug(&quot;Utilisateur authentifié via JWT: {} avec {} authorities&quot;, userId, authorities.size());</span>
+            }
+
+<span class="nc" id="L89">        } catch (JwtException e) {</span>
+<span class="nc" id="L90">            log.warn(&quot;Token JWT invalide: {}&quot;, e.getMessage());</span>
+            // Ne pas bloquer la requête, laisser Spring Security gérer l'accès non autorisé
+<span class="nc" id="L92">        } catch (Exception e) {</span>
+<span class="nc" id="L93">            log.error(&quot;Erreur lors de l'authentification JWT: {}&quot;, e.getMessage(), e);</span>
+<span class="nc" id="L94">        }</span>
+
+<span class="nc" id="L96">        filterChain.doFilter(request, response);</span>
+<span class="nc" id="L97">    }</span>
+
+    /**
+     * Charge les permissions de l'utilisateur depuis la base de données
+     * et les convertit en GrantedAuthorities pour Spring Security.
+     *
+     * Format des authorities: &quot;PERMISSION_{MODULE}_{LEVEL}&quot;
+     * Exemples:
+     * - PERMISSION_CALENDAR_WRITE
+     * - PERMISSION_RELEASES_READ
+     * - PERMISSION_ADMIN_NONE
+     *
+     * @param userId l'ID de l'utilisateur
+     * @return liste des GrantedAuthorities
+     */
+    private List&lt;GrantedAuthority&gt; loadUserAuthorities(String userId) {
+<span class="nc" id="L113">        List&lt;GrantedAuthority&gt; authorities = new ArrayList&lt;&gt;();</span>
+
+        try {
+            // Récupérer les permissions de l'utilisateur
+<span class="nc" id="L117">            Map&lt;PermissionModule, PermissionLevel&gt; permissions = permissionService.getUserPermissions(userId);</span>
+
+            // Convertir chaque permission en GrantedAuthority
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            for (Map.Entry&lt;PermissionModule, PermissionLevel&gt; entry : permissions.entrySet()) {</span>
+<span class="nc" id="L121">                PermissionModule module = entry.getKey();</span>
+<span class="nc" id="L122">                PermissionLevel level = entry.getValue();</span>
+
+                // Format: PERMISSION_{MODULE}_{LEVEL}
+<span class="nc" id="L125">                String authority = String.format(&quot;PERMISSION_%s_%s&quot;, module.name(), level.name());</span>
+<span class="nc" id="L126">                authorities.add(new SimpleGrantedAuthority(authority));</span>
+
+<span class="nc" id="L128">                log.debug(&quot;Authority ajoutée: {}&quot;, authority);</span>
+<span class="nc" id="L129">            }</span>
+
+            // Ajouter une authority générique pour marquer l'utilisateur comme authentifié
+<span class="nc" id="L132">            authorities.add(new SimpleGrantedAuthority(&quot;ROLE_USER&quot;));</span>
+
+<span class="nc" id="L134">        } catch (Exception e) {</span>
+<span class="nc" id="L135">            log.error(&quot;Erreur lors du chargement des permissions pour userId {}: {}&quot;, userId, e.getMessage());</span>
+            // En cas d'erreur, retourner au minimum ROLE_USER pour que l'utilisateur soit authentifié
+<span class="nc" id="L137">            authorities.add(new SimpleGrantedAuthority(&quot;ROLE_USER&quot;));</span>
+<span class="nc" id="L138">        }</span>
+
+<span class="nc" id="L140">        return authorities;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

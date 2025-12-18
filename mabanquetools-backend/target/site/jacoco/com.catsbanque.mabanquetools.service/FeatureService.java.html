@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FeatureService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.service</a> &gt; <span class="el_source">FeatureService.java</span></div><h1>FeatureService.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.service;
+
+import com.catsbanque.mabanquetools.entity.Feature;
+import com.catsbanque.mabanquetools.entity.Squad;
+import com.catsbanque.mabanquetools.exception.ResourceNotFoundException;
+import com.catsbanque.mabanquetools.repository.FeatureRepository;
+import com.catsbanque.mabanquetools.repository.SquadRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * Service de gestion des features
+ */
+<span class="fc" id="L16">@Slf4j</span>
+@Service
+@RequiredArgsConstructor
+public class FeatureService {
+
+    private final FeatureRepository featureRepository;
+    private final SquadRepository squadRepository;
+
+    /**
+     * Créer une nouvelle feature
+     */
+    @Transactional
+    public Feature createFeature(String squadId, CreateFeatureRequest request) {
+        // Vérifier que le squad existe
+<span class="nc" id="L30">        Squad squad = squadRepository.findById(squadId)</span>
+<span class="nc" id="L31">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Squad not found&quot;));</span>
+
+<span class="nc" id="L33">        Feature feature = new Feature();</span>
+<span class="nc" id="L34">        feature.setSquadId(squadId);</span>
+<span class="nc" id="L35">        feature.setTitle(request.getTitle());</span>
+<span class="nc" id="L36">        feature.setDescription(request.getDescription());</span>
+<span class="nc" id="L37">        feature.setType(&quot;major&quot;);</span>
+
+<span class="nc" id="L39">        Feature saved = featureRepository.save(feature);</span>
+<span class="nc" id="L40">        log.info(&quot;Feature created: {} for squad {}&quot;, saved.getId(), squadId);</span>
+<span class="nc" id="L41">        return saved;</span>
+    }
+
+    /**
+     * Mettre à jour une feature
+     */
+    @Transactional
+    public Feature updateFeature(String featureId, UpdateFeatureRequest request) {
+<span class="nc" id="L49">        Feature feature = featureRepository.findById(featureId)</span>
+<span class="nc" id="L50">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Feature not found&quot;));</span>
+
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        if (request.getTitle() != null) {</span>
+<span class="nc" id="L53">            feature.setTitle(request.getTitle());</span>
+        }
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        if (request.getDescription() != null) {</span>
+<span class="nc" id="L56">            feature.setDescription(request.getDescription());</span>
+        }
+
+<span class="nc" id="L59">        Feature updated = featureRepository.save(feature);</span>
+<span class="nc" id="L60">        log.info(&quot;Feature updated: {}&quot;, updated.getId());</span>
+<span class="nc" id="L61">        return updated;</span>
+    }
+
+    /**
+     * Supprimer une feature
+     */
+    @Transactional
+    public void deleteFeature(String featureId) {
+<span class="nc" id="L69">        Feature feature = featureRepository.findById(featureId)</span>
+<span class="nc" id="L70">                .orElseThrow(() -&gt; new ResourceNotFoundException(&quot;Feature not found&quot;));</span>
+
+<span class="nc" id="L72">        featureRepository.delete(feature);</span>
+<span class="nc" id="L73">        log.info(&quot;Feature deleted: {}&quot;, featureId);</span>
+<span class="nc" id="L74">    }</span>
+
+    /**
+     * DTO pour la création d'une feature
+     */
+<span class="nc" id="L79">    public static class CreateFeatureRequest {</span>
+        private String title;
+        private String description;
+
+        public String getTitle() {
+<span class="nc" id="L84">            return title;</span>
+        }
+
+        public void setTitle(String title) {
+<span class="nc" id="L88">            this.title = title;</span>
+<span class="nc" id="L89">        }</span>
+
+        public String getDescription() {
+<span class="nc" id="L92">            return description;</span>
+        }
+
+        public void setDescription(String description) {
+<span class="nc" id="L96">            this.description = description;</span>
+<span class="nc" id="L97">        }</span>
+    }
+
+    /**
+     * DTO pour la mise à jour d'une feature
+     */
+<span class="nc" id="L103">    public static class UpdateFeatureRequest {</span>
+        private String title;
+        private String description;
+
+        public String getTitle() {
+<span class="nc" id="L108">            return title;</span>
+        }
+
+        public void setTitle(String title) {
+<span class="nc" id="L112">            this.title = title;</span>
+<span class="nc" id="L113">        }</span>
+
+        public String getDescription() {
+<span class="nc" id="L116">            return description;</span>
+        }
+
+        public void setDescription(String description) {
+<span class="nc" id="L120">            this.description = description;</span>
+<span class="nc" id="L121">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

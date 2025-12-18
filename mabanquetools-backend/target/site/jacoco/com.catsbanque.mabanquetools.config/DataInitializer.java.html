@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="fr"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataInitializer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Ma Banque Tools API</a> &gt; <a href="index.source.html" class="el_package">com.catsbanque.mabanquetools.config</a> &gt; <span class="el_source">DataInitializer.java</span></div><h1>DataInitializer.java</h1><pre class="source lang-java linenums">package com.catsbanque.mabanquetools.config;
+
+import com.catsbanque.mabanquetools.entity.User;
+import com.catsbanque.mabanquetools.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+
+/**
+ * Initialise les données par défaut au démarrage
+ * Crée l'utilisateur admin si il n'existe pas
+ */
+<span class="fc" id="L15">@Slf4j</span>
+@Component
+@RequiredArgsConstructor
+public class DataInitializer implements CommandLineRunner {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final com.catsbanque.mabanquetools.service.PermissionService permissionService;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+    private final com.catsbanque.mabanquetools.service.MicroserviceService microserviceService;
+    private final com.catsbanque.mabanquetools.service.ReleaseService releaseService;
+
+    @Override
+    public void run(String... args) {
+<span class="fc" id="L29">        cleanUpObsoletePermissions();</span>
+<span class="fc" id="L30">        createDefaultAdminUser();</span>
+<span class="fc" id="L31">        microserviceService.initDefaultMicroservices();</span>
+<span class="fc" id="L32">        releaseService.migrateSlugs();</span>
+<span class="fc" id="L33">    }</span>
+
+    private void createDefaultAdminUser() {
+<span class="fc" id="L36">        String adminEmail = &quot;admin&quot;;</span>
+
+<span class="fc" id="L38">        java.util.Optional&lt;User&gt; adminOpt = userRepository.findByEmail(adminEmail);</span>
+
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (adminOpt.isEmpty()) {</span>
+<span class="fc" id="L41">            User admin = new User();</span>
+<span class="fc" id="L42">            admin.setId(&quot;admin001&quot;);</span>
+<span class="fc" id="L43">            admin.setEmail(adminEmail);</span>
+<span class="fc" id="L44">            admin.setPassword(passwordEncoder.encode(&quot;admin&quot;));</span>
+<span class="fc" id="L45">            admin.setFirstName(&quot;Admin&quot;);</span>
+<span class="fc" id="L46">            admin.setLastName(&quot;Système&quot;);</span>
+<span class="fc" id="L47">            admin.setThemePreference(&quot;light&quot;);</span>
+<span class="fc" id="L48">            admin.setWidgetOrder(&quot;[]&quot;);</span>
+
+<span class="fc" id="L50">            User savedAdmin = userRepository.save(admin);</span>
+<span class="fc" id="L51">            permissionService.createDefaultPermissions(savedAdmin);</span>
+<span class="fc" id="L52">            log.info(&quot;✅ Utilisateur admin créé avec permissions : {} / {}&quot;, adminEmail, &quot;admin&quot;);</span>
+<span class="fc" id="L53">        } else {</span>
+            // S'assurer que les permissions existent même si l'user existe déjà
+<span class="fc" id="L55">            User admin = adminOpt.get();</span>
+
+            // Si les permissions par défaut sont retournées (donc pas de vraies permissions
+            // en BDD pour certains cas),
+            // ou si la map est vide (bien que getUserPermissions renvoie default si vide),
+            // on force la recréation si nécessaire.
+            // Une façon simple est de vérifier si le module ADMIN est présent avec WRITE.
+            // Mais getUserPermissions renvoie des defaults si vide.
+
+            // On peut checker directement via permissionService pour voir s'il a les droits
+            // admin
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">            if (!permissionService.hasWriteAccess(admin.getId(),</span>
+                    com.catsbanque.mabanquetools.entity.PermissionModule.ADMIN)) {
+<span class="nc" id="L68">                log.info(&quot;⚠️  L'admin existant n'a pas les droits ADMIN WRITE. Correction...&quot;);</span>
+                // On crée les permissions par défaut (qui incluent ADMIN WRITE)
+                // Attention: createDefaultPermissions fait des saves directs.
+                // Il vaut mieux utiliser une méthode update ou gérer ça finement.
+                // Pour faire simple et robuste : on réapplique les defaults pour l'admin.
+                try {
+<span class="nc" id="L74">                    permissionService.createDefaultPermissions(admin);</span>
+<span class="nc" id="L75">                    log.info(&quot;✅ Permissions admin corrigées&quot;);</span>
+<span class="nc" id="L76">                } catch (Exception e) {</span>
+                    // Ignorer si doublon (ConstraintViolation) - mais createDefaultPermissions fait
+                    // des new UserPermission.
+                    // Il n'y a pas de check d'existence dans createDefaultPermissions.
+                    // Il faut donc faire attention.
+<span class="nc" id="L81">                    log.warn(&quot;Erreur lors de la correction des permissions admin: {}&quot;, e.getMessage());</span>
+<span class="nc" id="L82">                }</span>
+            } else {
+<span class="fc" id="L84">                log.info(&quot;ℹ️  Utilisateur admin existe déjà avec les droits corrects&quot;);</span>
+            }
+        }
+<span class="fc" id="L87">    }</span>
+
+    private void cleanUpObsoletePermissions() {
+        try {
+<span class="fc" id="L91">            log.info(&quot;🧹 Nettoyage des permissions obsolètes (PI_PLANNING)...&quot;);</span>
+<span class="fc" id="L92">            int deleted = jdbcTemplate.update(&quot;DELETE FROM user_permissions WHERE module = 'PI_PLANNING'&quot;);</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">            if (deleted &gt; 0) {</span>
+<span class="nc" id="L94">                log.info(&quot;✅ {} permissions obsolètes 'PI_PLANNING' supprimées.&quot;, deleted);</span>
+            } else {
+<span class="fc" id="L96">                log.info(&quot;ℹ️  Aucune permission 'PI_PLANNING' trouvée.&quot;);</span>
+            }
+<span class="fc" id="L98">        } catch (Exception e) {</span>
+<span class="fc" id="L99">            log.warn(&quot;⚠️ Erreur lors du nettoyage des permissions : {}&quot;, e.getMessage());</span>
+<span class="fc" id="L100">        }</span>
+<span class="fc" id="L101">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
