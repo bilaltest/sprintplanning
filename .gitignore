@@ -27,6 +27,7 @@ node_modules/
 dist/
 build/
 
+
 # Database
 *.db
 *.db-journal
