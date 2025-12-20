@@ -10,6 +10,12 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 *.swp
 *.swo
 *~
@@ -19,14 +25,25 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+testem.log
+/libpeerconnection.log
 
 # Dependencies
 node_modules/
+connect.lock
+typings/
 
 # Build outputs
 dist/
 build/
+target/
+out-tsc/
+bazel-out/
 
+# Angular
+.angular/
+.sass-cache/
+coverage/
 
 # Database
 *.db

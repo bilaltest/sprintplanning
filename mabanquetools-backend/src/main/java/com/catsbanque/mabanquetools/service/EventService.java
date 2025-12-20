@@ -145,6 +145,10 @@ public class EventService {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Event not found"));
 
+        if (event.getSprintId() != null) {
+            throw new RuntimeException("Cannot delete event linked to a sprint. Delete the sprint instead.");
+        }
+
         eventRepository.delete(event);
 
         // Enregistrer dans l'historique

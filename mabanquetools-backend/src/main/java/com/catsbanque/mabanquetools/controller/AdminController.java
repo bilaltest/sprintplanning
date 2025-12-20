@@ -1,6 +1,8 @@
 package com.catsbanque.mabanquetools.controller;
 
 import com.catsbanque.mabanquetools.dto.AdminStatsResponse;
+import com.catsbanque.mabanquetools.dto.AdminUpdateUserRequest;
+import com.catsbanque.mabanquetools.dto.AdminUserDto;
 import com.catsbanque.mabanquetools.dto.AdminUsersResponse;
 import com.catsbanque.mabanquetools.dto.DatabaseExportDto;
 import com.catsbanque.mabanquetools.dto.DatabaseImportRequest;
@@ -16,7 +18,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,7 +48,8 @@ public class AdminController {
      */
     @GetMapping("/users")
     @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).ADMIN)")
-    public ResponseEntity<AdminUsersResponse> getAllUsers(org.springframework.security.core.Authentication authentication) {
+    public ResponseEntity<AdminUsersResponse> getAllUsers(
+            org.springframework.security.core.Authentication authentication) {
         log.info("GET /api/admin/users");
         AdminUsersResponse response = adminService.getAllUsers();
         return ResponseEntity.ok(response);
@@ -57,9 +62,25 @@ public class AdminController {
      */
     @DeleteMapping("/users/{id}")
     @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).ADMIN)")
-    public ResponseEntity<DeletedUserResponse> deleteUser(@PathVariable String id, org.springframework.security.core.Authentication authentication) {
+    public ResponseEntity<DeletedUserResponse> deleteUser(@PathVariable String id,
+            org.springframework.security.core.Authentication authentication) {
         log.info("DELETE /api/admin/users/{}", id);
         DeletedUserResponse response = adminService.deleteUser(id);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * PUT /api/admin/users/:id
+     * Met à jour un utilisateur
+     */
+    @PutMapping("/users/{id}")
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).ADMIN)")
+    public ResponseEntity<AdminUserDto> updateUser(
+            @PathVariable String id,
+            @RequestBody AdminUpdateUserRequest request,
+            org.springframework.security.core.Authentication authentication) {
+        log.info("PUT /api/admin/users/{}", id);
+        AdminUserDto response = adminService.updateUser(id, request);
         return ResponseEntity.ok(response);
     }
 
@@ -70,7 +91,8 @@ public class AdminController {
      */
     @GetMapping("/stats")
     @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).ADMIN)")
-    public ResponseEntity<AdminStatsResponse> getStats(org.springframework.security.core.Authentication authentication) {
+    public ResponseEntity<AdminStatsResponse> getStats(
+            org.springframework.security.core.Authentication authentication) {
         log.info("GET /api/admin/stats");
         AdminStatsResponse response = adminService.getStats();
         return ResponseEntity.ok(response);
@@ -83,15 +105,15 @@ public class AdminController {
      */
     @GetMapping("/export")
     @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).ADMIN)")
-    public ResponseEntity<DatabaseExportDto> exportDatabase(org.springframework.security.core.Authentication authentication) {
+    public ResponseEntity<DatabaseExportDto> exportDatabase(
+            org.springframework.security.core.Authentication authentication) {
         log.info("GET /api/admin/export");
         DatabaseExportDto export = adminService.exportDatabase();
 
         // Generate filename with current date
         String filename = String.format(
                 "ma-banque-tools-backup-%s.json",
-                LocalDate.now().format(DateTimeFormatter.ISO_DATE)
-        );
+                LocalDate.now().format(DateTimeFormatter.ISO_DATE));
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -109,8 +131,7 @@ public class AdminController {
     @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).ADMIN)")
     public ResponseEntity<ImportDatabaseResponse> importDatabase(
             @RequestBody DatabaseImportRequest request,
-            org.springframework.security.core.Authentication authentication
-    ) {
+            org.springframework.security.core.Authentication authentication) {
         log.info("POST /api/admin/import");
         ImportDatabaseResponse response = adminService.importDatabase(request);
         return ResponseEntity.ok(response);

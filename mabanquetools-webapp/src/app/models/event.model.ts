@@ -18,40 +18,32 @@ export interface Event {
   icon: EventIcon;
   category: EventCategory;
   description?: string;
+  sprintId?: string;
   createdAt: string; // ISO timestamp
   updatedAt: string; // ISO timestamp
 }
 
 export const EVENT_CATEGORY_LABELS: Record<string, string> = {
-  mep: 'Mise en production',
+  mep_front: 'MEP Front',
+  mep_back: 'MEP Back',
   hotfix: 'Hotfix',
-  maintenance: 'Maintenance',
-  pi_planning: 'PI Planning',
-  sprint_start: 'Début de sprint',
   code_freeze: 'Freeze du code',
-  psi: 'PSI',
   other: 'Autre'
 };
 
 export const CATEGORY_DEFAULTS: Record<string, { color: string; icon: string }> = {
-  mep: { color: '#22c55e', icon: 'rocket_launch' },
+  mep_front: { color: '#22c55e', icon: 'rocket_launch' },
+  mep_back: { color: '#06b6d4', icon: 'rocket_launch' },
   hotfix: { color: '#ef4444', icon: 'bug_report' },
-  maintenance: { color: '#6b7280', icon: 'build' },
-  pi_planning: { color: '#eab308', icon: 'groups' },
-  sprint_start: { color: '#06b6d4', icon: 'flag' },
-  code_freeze: { color: '#f97316', icon: 'ac_unit' },
-  psi: { color: '#1f2937', icon: 'block' },
+  code_freeze: { color: '#1e3a8a', icon: 'ac_unit' },
   other: { color: '#8b5cf6', icon: 'event' }
 };
 
 // Couleurs adaptées pour le dark mode (versions plus claires/vibrantes)
 export const CATEGORY_COLORS_DARK: Record<string, string> = {
-  mep: '#4ade80',        // vert plus clair
+  mep_front: '#4ade80',  // vert plus clair
+  mep_back: '#22d3ee',   // cyan plus clair
   hotfix: '#f87171',     // rouge plus clair
-  maintenance: '#9ca3af', // gris plus clair
-  pi_planning: '#fde047', // jaune plus clair
-  sprint_start: '#22d3ee', // turquoise plus clair
-  code_freeze: '#fb923c', // orange plus clair
-  psi: '#4b5563',        // gris foncé plus visible
+  code_freeze: '#3b82f6', // bleu plus clair
   other: '#a78bfa'       // violet plus clair
 };

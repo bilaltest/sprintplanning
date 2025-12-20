@@ -7,21 +7,22 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.catsbanque.mabanquetools.util.Cuid;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.ElementCollection;
 
 @Entity
 @Table(name = "app_user", indexes = {
-    @Index(name = "idx_user_email", columnList = "email")
+        @Index(name = "idx_user_email", columnList = "email")
 })
 @Data
 @NoArgsConstructor
@@ -29,6 +30,7 @@ import java.util.List;
 public class User {
 
     @Id
+    @Cuid
     @Column(length = 25)
     private String id;
 
@@ -46,6 +48,20 @@ public class User {
 
     @Column(nullable = false, length = 20)
     private String themePreference = "light"; // 'light' or 'dark'
+
+    @Column(length = 50)
+    private String metier; // e.g., AFN2, BA, Back...
+
+    @Column(length = 50)
+    private String tribu; // e.g., ChDF, ChUX...
+
+    @Column(nullable = false)
+    private boolean isInterne = true;
+
+    @ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
+    @jakarta.persistence.CollectionTable(name = "user_squads", joinColumns = @jakarta.persistence.JoinColumn(name = "user_id"))
+    @Column(name = "squad")
+    private List<String> squads = new ArrayList<>(); // e.g., Squad 1, ADAM...
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String widgetOrder = "[]"; // JSON array stored as String
@@ -75,19 +91,4 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserPermission> permissions = new ArrayList<>();
 
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = generateCuid();
-        }
-    }
-
-    // Simple CUID-like generator (for compatibility with Prisma)
-    private String generateCuid() {
-        // Using a simple timestamp-based ID similar to CUID format
-        // Format: c + timestamp (base36) + random (base36)
-        long timestamp = System.currentTimeMillis();
-        int random = (int) (Math.random() * Integer.MAX_VALUE);
-        return "c" + Long.toString(timestamp, 36) + Integer.toString(random, 36);
-    }
 }

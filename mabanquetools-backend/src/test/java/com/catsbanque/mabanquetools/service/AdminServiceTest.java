@@ -1,6 +1,8 @@
 package com.catsbanque.mabanquetools.service;
 
 import com.catsbanque.mabanquetools.dto.AdminStatsResponse;
+import com.catsbanque.mabanquetools.dto.AdminUpdateUserRequest;
+import com.catsbanque.mabanquetools.dto.AdminUserDto;
 import com.catsbanque.mabanquetools.dto.AdminUsersResponse;
 import com.catsbanque.mabanquetools.dto.DatabaseExportDto;
 import com.catsbanque.mabanquetools.dto.DatabaseImportRequest;
@@ -19,17 +21,25 @@ import com.catsbanque.mabanquetools.entity.Squad;
 import com.catsbanque.mabanquetools.entity.User;
 import com.catsbanque.mabanquetools.exception.BadRequestException;
 import com.catsbanque.mabanquetools.exception.ResourceNotFoundException;
+import com.catsbanque.mabanquetools.repository.AbsenceRepository;
 import com.catsbanque.mabanquetools.repository.ActionRepository;
 import com.catsbanque.mabanquetools.repository.EventRepository;
 import com.catsbanque.mabanquetools.repository.FeatureFlippingRepository;
 import com.catsbanque.mabanquetools.repository.FeatureRepository;
+import com.catsbanque.mabanquetools.repository.GameRepository;
+import com.catsbanque.mabanquetools.repository.GameScoreRepository;
 import com.catsbanque.mabanquetools.repository.HistoryRepository;
+import com.catsbanque.mabanquetools.repository.MicroserviceRepository;
 import com.catsbanque.mabanquetools.repository.ReleaseHistoryRepository;
+import com.catsbanque.mabanquetools.repository.ReleaseNoteEntryRepository;
 import com.catsbanque.mabanquetools.repository.ReleaseRepository;
 import com.catsbanque.mabanquetools.repository.SettingsRepository;
+import com.catsbanque.mabanquetools.repository.SprintRepository;
 import com.catsbanque.mabanquetools.repository.SquadRepository;
+import com.catsbanque.mabanquetools.repository.UserPermissionRepository;
+import com.catsbanque.mabanquetools.repository.UserPermissionRepository;
 import com.catsbanque.mabanquetools.repository.UserRepository;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -89,6 +99,27 @@ class AdminServiceTest {
 
     @Mock
     private FeatureFlippingRepository featureFlippingRepository;
+
+    @Mock
+    private AbsenceRepository absenceRepository;
+
+    @Mock
+    private SprintRepository sprintRepository;
+
+    @Mock
+    private MicroserviceRepository microserviceRepository;
+
+    @Mock
+    private GameRepository gameRepository;
+
+    @Mock
+    private GameScoreRepository gameScoreRepository;
+
+    @Mock
+    private UserPermissionRepository userPermissionRepository;
+
+    @Mock
+    private ReleaseNoteEntryRepository releaseNoteEntryRepository;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -249,6 +280,13 @@ class AdminServiceTest {
         when(historyRepository.findAll()).thenReturn(Collections.singletonList(testHistory));
         when(releaseHistoryRepository.findAll()).thenReturn(new ArrayList<>());
         when(settingsRepository.findAll()).thenReturn(Collections.singletonList(testSettings));
+        when(absenceRepository.findAll()).thenReturn(new ArrayList<>());
+        when(sprintRepository.findAll()).thenReturn(new ArrayList<>());
+        when(microserviceRepository.findAll()).thenReturn(new ArrayList<>());
+        when(gameRepository.findAll()).thenReturn(new ArrayList<>());
+        when(gameScoreRepository.findAll()).thenReturn(new ArrayList<>());
+        when(userPermissionRepository.findAll()).thenReturn(new ArrayList<>());
+        when(releaseNoteEntryRepository.findAll()).thenReturn(new ArrayList<>());
 
         // When
         DatabaseExportDto result = adminService.exportDatabase();
@@ -261,6 +299,8 @@ class AdminServiceTest {
         assertThat(result.getMetadata().getTotalRecords().getReleases()).isEqualTo(1);
         assertThat(result.getData().getUsers()).hasSize(1);
         assertThat(result.getData().getEvents()).hasSize(1);
+        assertThat(result.getData().getAbsences()).isNotNull();
+        assertThat(result.getData().getSprints()).isNotNull();
     }
 
     @Test
@@ -298,6 +338,13 @@ class AdminServiceTest {
         verify(eventRepository).deleteAll();
         verify(userRepository).saveAll(anyList());
         verify(eventRepository).saveAll(anyList());
+        verify(absenceRepository).deleteAll();
+        verify(sprintRepository).deleteAll();
+        verify(microserviceRepository).deleteAll();
+        verify(gameRepository).deleteAll();
+        verify(gameScoreRepository).deleteAll();
+        verify(userPermissionRepository).deleteAll();
+        verify(releaseNoteEntryRepository).deleteAll();
     }
 
     @Test
@@ -415,5 +462,27 @@ class AdminServiceTest {
 
         // Then
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void updateUser_ShouldUpdateSquads() {
+        // Given
+        AdminUpdateUserRequest request = new AdminUpdateUserRequest();
+        request.setSquads(Arrays.asList("Squad 1", "Squad 2"));
+
+        when(userRepository.findById("user123")).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(historyRepository.findByUserIdOrderByTimestampDesc("user123")).thenReturn(Collections.emptyList());
+        when(permissionService.getUserPermissions("user123")).thenReturn(new HashMap<>());
+
+        // When
+        AdminUserDto result = adminService.updateUser("user123", request);
+
+        // Then
+        assertThat(result.getSquads()).containsExactly("Squad 1", "Squad 2");
+        verify(userRepository).save(argThat(user -> {
+            assertThat(user.getSquads()).containsExactly("Squad 1", "Squad 2");
+            return true;
+        }));
     }
 }

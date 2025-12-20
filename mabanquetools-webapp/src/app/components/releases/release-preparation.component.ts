@@ -1433,10 +1433,7 @@ export class ReleasePreparationComponent implements OnInit {
 
       await this.checkAndUpdateCompletion(squadId);
 
-      this.toastService.success(
-        'Tonton MEP mis à jour',
-        tontonMep ? `Assigné à ${tontonMep}` : 'Tonton MEP retiré'
-      );
+
     } catch (error) {
       console.error('Error updating Tonton MEP:', error);
       this.toastService.error(
@@ -1525,12 +1522,7 @@ export class ReleasePreparationComponent implements OnInit {
         // But to be safe and update UI immediately:
         squad.isCompleted = isCompleted;
 
-        if (isCompleted) {
-          this.toastService.success(
-            'Félicitations ! 🎉',
-            `La Squad ${squad.squadNumber} a complété toutes ses tâches !`
-          );
-        }
+
       } catch (error) {
         console.error('Error auto-updating completion:', error);
       }

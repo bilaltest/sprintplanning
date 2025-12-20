@@ -34,6 +34,17 @@ import { CanAccessDirective } from '@directives/can-access.directive';
           </button>
         </div>
 
+
+
+        <div *ngIf="isSprintEvent" class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 mx-6 mt-6">
+            <div class="flex items-start">
+                <span class="material-icons text-blue-500 mr-2">info</span>
+                <p class="text-sm text-blue-700 dark:text-blue-300">
+                    Cet événement est lié à un sprint. Modifications et suppression doivent se faire via l'administration des sprints.
+                </p>
+            </div>
+        </div>
+
         <form (ngSubmit)="onSubmit()" class="p-6 space-y-6">
           <!-- Title -->
           <div>
@@ -132,7 +143,7 @@ import { CanAccessDirective } from '@directives/can-access.directive';
           <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
             <div>
               <button
-                *ngIf="isEditMode"
+                *ngIf="isEditMode && !isSprintEvent"
                 type="button"
                 appCanAccess="CALENDAR"
                 accessLevel="write"
@@ -155,7 +166,7 @@ import { CanAccessDirective } from '@directives/can-access.directive';
                 type="submit"
                 appCanAccess="CALENDAR"
                 accessLevel="write"
-                [disabled]="!isFormValid()"
+                [disabled]="!isFormValid() || isSprintEvent"
                 class="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {{ isEditMode ? 'Enregistrer' : 'Créer' }}
@@ -180,6 +191,10 @@ export class EventModalComponent implements OnInit {
   isEditMode = false;
   allCategories: CategoryInfo[] = [];
 
+  get isSprintEvent(): boolean {
+    return !!this.event?.sprintId;
+  }
+
   formData = {
     title: '',
     date: '',
@@ -195,7 +210,7 @@ export class EventModalComponent implements OnInit {
     private categoryService: CategoryService,
     private toastService: ToastService,
     private confirmationService: ConfirmationService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Charger les catégories

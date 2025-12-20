@@ -2,6 +2,7 @@ package com.catsbanque.mabanquetools.service;
 
 import com.catsbanque.mabanquetools.dto.AdminStats;
 import com.catsbanque.mabanquetools.dto.AdminStatsResponse;
+import com.catsbanque.mabanquetools.dto.AdminUpdateUserRequest;
 import com.catsbanque.mabanquetools.dto.AdminUserDto;
 import com.catsbanque.mabanquetools.dto.AdminUsersResponse;
 import com.catsbanque.mabanquetools.dto.DatabaseExportDto;
@@ -12,28 +13,43 @@ import com.catsbanque.mabanquetools.dto.ExportData;
 import com.catsbanque.mabanquetools.dto.ExportMetadata;
 import com.catsbanque.mabanquetools.dto.ImportDatabaseResponse;
 import com.catsbanque.mabanquetools.dto.TotalRecords;
+import com.catsbanque.mabanquetools.entity.Absence;
 import com.catsbanque.mabanquetools.entity.Event;
+import com.catsbanque.mabanquetools.entity.Game;
+import com.catsbanque.mabanquetools.entity.GameScore;
 import com.catsbanque.mabanquetools.entity.History;
+import com.catsbanque.mabanquetools.entity.Microservice;
 import com.catsbanque.mabanquetools.entity.PermissionLevel;
 import com.catsbanque.mabanquetools.entity.PermissionModule;
 import com.catsbanque.mabanquetools.entity.Release;
 import com.catsbanque.mabanquetools.entity.ReleaseHistory;
+import com.catsbanque.mabanquetools.entity.ReleaseNoteEntry;
 import com.catsbanque.mabanquetools.entity.Settings;
+import com.catsbanque.mabanquetools.entity.Sprint;
 import com.catsbanque.mabanquetools.entity.User;
+import com.catsbanque.mabanquetools.entity.UserPermission;
 import com.catsbanque.mabanquetools.exception.BadRequestException;
 import com.catsbanque.mabanquetools.exception.ResourceNotFoundException;
+import com.catsbanque.mabanquetools.repository.AbsenceRepository;
 import com.catsbanque.mabanquetools.repository.ActionRepository;
 import com.catsbanque.mabanquetools.repository.EventRepository;
 import com.catsbanque.mabanquetools.repository.FeatureFlippingRepository;
 import com.catsbanque.mabanquetools.repository.FeatureRepository;
+import com.catsbanque.mabanquetools.repository.GameRepository;
+import com.catsbanque.mabanquetools.repository.GameScoreRepository;
 import com.catsbanque.mabanquetools.repository.HistoryRepository;
+import com.catsbanque.mabanquetools.repository.MicroserviceRepository;
 import com.catsbanque.mabanquetools.repository.ReleaseHistoryRepository;
+import com.catsbanque.mabanquetools.repository.ReleaseNoteEntryRepository;
 import com.catsbanque.mabanquetools.repository.ReleaseRepository;
 import com.catsbanque.mabanquetools.repository.SettingsRepository;
+import com.catsbanque.mabanquetools.repository.SprintRepository;
 import com.catsbanque.mabanquetools.repository.SquadRepository;
+import com.catsbanque.mabanquetools.repository.UserPermissionRepository;
 import com.catsbanque.mabanquetools.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +77,13 @@ public class AdminService {
     private final FeatureRepository featureRepository;
     private final ActionRepository actionRepository;
     private final FeatureFlippingRepository featureFlippingRepository;
+    private final AbsenceRepository absenceRepository;
+    private final SprintRepository sprintRepository;
+    private final MicroserviceRepository microserviceRepository;
+    private final GameRepository gameRepository;
+    private final GameScoreRepository gameScoreRepository;
+    private final UserPermissionRepository userPermissionRepository;
+    private final ReleaseNoteEntryRepository releaseNoteEntryRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final PermissionService permissionService;
 
@@ -87,6 +110,10 @@ public class AdminService {
                             .firstName(user.getFirstName())
                             .lastName(user.getLastName())
                             .themePreference(user.getThemePreference())
+                            .metier(user.getMetier())
+                            .tribu(user.getTribu())
+                            .interne(user.isInterne())
+                            .squads(user.getSquads())
                             .createdAt(user.getCreatedAt())
                             .updatedAt(user.getUpdatedAt())
                             .historiesCount(historyCount)
@@ -132,6 +159,50 @@ public class AdminService {
     }
 
     /**
+     * Mettre à jour un utilisateur
+     */
+    @Transactional
+    public AdminUserDto updateUser(String id, AdminUpdateUserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
+
+        if (request.getFirstName() != null)
+            user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null)
+            user.setLastName(request.getLastName());
+        if (request.getMetier() != null)
+            user.setMetier(request.getMetier());
+        if (request.getTribu() != null)
+            user.setTribu(request.getTribu());
+        if (request.getInterne() != null)
+            user.setInterne(request.getInterne());
+        if (request.getSquads() != null)
+            user.setSquads(request.getSquads());
+
+        User savedUser = userRepository.save(user);
+
+        // Map permission
+        Map<PermissionModule, PermissionLevel> permissions = permissionService.getUserPermissions(savedUser.getId());
+        long historyCount = historyRepository.findByUserIdOrderByTimestampDesc(savedUser.getId()).size();
+
+        return AdminUserDto.builder()
+                .id(savedUser.getId())
+                .email(savedUser.getEmail())
+                .firstName(savedUser.getFirstName())
+                .lastName(savedUser.getLastName())
+                .themePreference(savedUser.getThemePreference())
+                .metier(savedUser.getMetier())
+                .tribu(savedUser.getTribu())
+                .interne(savedUser.isInterne())
+                .squads(savedUser.getSquads())
+                .createdAt(savedUser.getCreatedAt())
+                .updatedAt(savedUser.getUpdatedAt())
+                .historiesCount(historyCount)
+                .permissions(permissions)
+                .build();
+    }
+
+    /**
      * Récupérer des statistiques
      * Référence: admin.controller.js:89-115
      */
@@ -152,13 +223,32 @@ public class AdminService {
      */
     @Transactional(readOnly = true)
     public DatabaseExportDto exportDatabase() {
-        // Exporter toutes les données
         List<User> users = userRepository.findAll();
         List<Event> events = eventRepository.findAll();
         List<Release> releases = releaseRepository.findAll();
+
+        // Initialize lazy collections for Release export
+        for (Release release : releases) {
+            Hibernate.initialize(release.getSquads());
+            for (com.catsbanque.mabanquetools.entity.Squad squad : release.getSquads()) {
+                Hibernate.initialize(squad.getFeatures());
+                Hibernate.initialize(squad.getActions());
+                for (com.catsbanque.mabanquetools.entity.Action action : squad.getActions()) {
+                    Hibernate.initialize(action.getFlipping());
+                }
+            }
+        }
+
         List<History> history = historyRepository.findAll();
         List<ReleaseHistory> releaseHistory = releaseHistoryRepository.findAll();
         List<Settings> settings = settingsRepository.findAll();
+        List<Absence> absences = absenceRepository.findAll();
+        List<Sprint> sprints = sprintRepository.findAll();
+        List<Microservice> microservices = microserviceRepository.findAll();
+        List<Game> games = gameRepository.findAll();
+        List<GameScore> gameScores = gameScoreRepository.findAll();
+        List<UserPermission> userPermissions = userPermissionRepository.findAll();
+        List<ReleaseNoteEntry> releaseNoteEntries = releaseNoteEntryRepository.findAll();
 
         // Créer les métadonnées
         ExportMetadata metadata = new ExportMetadata();
@@ -172,6 +262,13 @@ public class AdminService {
         totalRecords.setHistory(history.size());
         totalRecords.setReleaseHistory(releaseHistory.size());
         totalRecords.setSettings(settings.size());
+        totalRecords.setAbsences(absences.size());
+        totalRecords.setSprints(sprints.size());
+        totalRecords.setMicroservices(microservices.size());
+        totalRecords.setGames(games.size());
+        totalRecords.setGameScores(gameScores.size());
+        totalRecords.setUserPermissions(userPermissions.size());
+        totalRecords.setReleaseNoteEntries(releaseNoteEntries.size());
         metadata.setTotalRecords(totalRecords);
 
         // Créer les données d'export
@@ -182,6 +279,13 @@ public class AdminService {
         exportData.setHistory(history);
         exportData.setReleaseHistory(releaseHistory);
         exportData.setSettings(settings);
+        exportData.setAbsences(absences);
+        exportData.setSprints(sprints);
+        exportData.setMicroservices(microservices);
+        exportData.setGames(games);
+        exportData.setGameScores(gameScores);
+        exportData.setUserPermissions(userPermissions);
+        exportData.setReleaseNoteEntries(releaseNoteEntries);
 
         DatabaseExportDto export = new DatabaseExportDto();
         export.setMetadata(metadata);
@@ -211,6 +315,11 @@ public class AdminService {
         try {
             // 1. Supprimer toutes les données existantes (dans l'ordre pour respecter les
             // contraintes)
+            releaseNoteEntryRepository.deleteAll();
+            gameScoreRepository.deleteAll();
+            userPermissionRepository.deleteAll();
+            absenceRepository.deleteAll();
+            sprintRepository.deleteAll();
             historyRepository.deleteAll();
             releaseHistoryRepository.deleteAll();
             featureFlippingRepository.deleteAll();
@@ -219,6 +328,8 @@ public class AdminService {
             squadRepository.deleteAll();
             releaseRepository.deleteAll();
             eventRepository.deleteAll();
+            microserviceRepository.deleteAll();
+            gameRepository.deleteAll();
             settingsRepository.deleteAll();
             userRepository.deleteAll();
 
@@ -286,6 +397,49 @@ public class AdminService {
             if (request.getData().getReleaseHistory() != null && !request.getData().getReleaseHistory().isEmpty()) {
                 releaseHistoryRepository.saveAll(request.getData().getReleaseHistory());
                 log.info("Imported {} release history entries", request.getData().getReleaseHistory().size());
+            }
+
+            // Microservices
+            if (request.getData().getMicroservices() != null && !request.getData().getMicroservices().isEmpty()) {
+                microserviceRepository.saveAll(request.getData().getMicroservices());
+                log.info("Imported {} microservices", request.getData().getMicroservices().size());
+            }
+
+            // Sprints
+            if (request.getData().getSprints() != null && !request.getData().getSprints().isEmpty()) {
+                sprintRepository.saveAll(request.getData().getSprints());
+                log.info("Imported {} sprints", request.getData().getSprints().size());
+            }
+
+            // Absences
+            if (request.getData().getAbsences() != null && !request.getData().getAbsences().isEmpty()) {
+                absenceRepository.saveAll(request.getData().getAbsences());
+                log.info("Imported {} absences", request.getData().getAbsences().size());
+            }
+
+            // Games
+            if (request.getData().getGames() != null && !request.getData().getGames().isEmpty()) {
+                gameRepository.saveAll(request.getData().getGames());
+                log.info("Imported {} games", request.getData().getGames().size());
+            }
+
+            // Game Scores
+            if (request.getData().getGameScores() != null && !request.getData().getGameScores().isEmpty()) {
+                gameScoreRepository.saveAll(request.getData().getGameScores());
+                log.info("Imported {} game scores", request.getData().getGameScores().size());
+            }
+
+            // User Permissions
+            if (request.getData().getUserPermissions() != null && !request.getData().getUserPermissions().isEmpty()) {
+                userPermissionRepository.saveAll(request.getData().getUserPermissions());
+                log.info("Imported {} user permissions", request.getData().getUserPermissions().size());
+            }
+
+            // Release Note Entries
+            if (request.getData().getReleaseNoteEntries() != null
+                    && !request.getData().getReleaseNoteEntries().isEmpty()) {
+                releaseNoteEntryRepository.saveAll(request.getData().getReleaseNoteEntries());
+                log.info("Imported {} release note entries", request.getData().getReleaseNoteEntries().size());
             }
 
             return new ImportDatabaseResponse(

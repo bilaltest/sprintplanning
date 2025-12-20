@@ -10,6 +10,8 @@ import { TimelineView } from '@models/timeline.model';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Event } from '@models/event.model';
+import { Sprint } from '@models/sprint.model';
+import { SprintService } from '@services/sprint.service';
 
 import { SemesterViewComponent } from './semester-view.component';
 import { NowViewComponent } from './now-view.component';
@@ -148,6 +150,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
         <app-semester-view
           *ngIf="(currentView$ | async) === 'semester'"
           [events]="filteredEvents$ | async"
+          [sprints]="sprints$ | async"
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
         ></app-semester-view>
@@ -180,6 +183,7 @@ export class TimelineContainerComponent implements OnInit {
 
   currentView$!: Observable<TimelineView>;
   filteredEvents$!: Observable<Event[]>;
+  sprints$!: Observable<Sprint[]>;
 
   showEventModal = false;
   selectedEvent?: Event;
@@ -190,6 +194,7 @@ export class TimelineContainerComponent implements OnInit {
   constructor(
     private timelineService: TimelineService,
     private eventService: EventService,
+    private sprintService: SprintService,
     private filterService: FilterService,
     private exportService: ExportService,
     private toastService: ToastService,
@@ -198,10 +203,11 @@ export class TimelineContainerComponent implements OnInit {
     // Initialisation des observables
     this.filteredEvents$ = this.filterService.filteredEvents$;
 
-    // Utiliser map pour extraire la vue de l'état
     this.currentView$ = this.timelineService.state$.pipe(
       map(state => state.view)
     );
+
+    this.sprints$ = this.sprintService.getAllSprints();
   }
 
   ngOnInit(): void {
@@ -301,6 +307,14 @@ export class TimelineContainerComponent implements OnInit {
 
   async handleDeleteEvent(event: Event): Promise<void> {
     if (!event.id) return;
+
+    if (event.sprintId) {
+      this.toastService.warning(
+        'Action impossible',
+        'Cet événement est lié à un sprint. Vous devez supprimer le sprint depuis la page Administration.'
+      );
+      return;
+    }
 
     try {
       await this.eventService.deleteEvent(event.id);

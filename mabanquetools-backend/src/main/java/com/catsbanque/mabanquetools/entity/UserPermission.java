@@ -22,21 +22,20 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 /**
- * Entité représentant les permissions d'un utilisateur pour un module spécifique.
+ * Entité représentant les permissions d'un utilisateur pour un module
+ * spécifique.
  *
- * Chaque utilisateur possède une permission par module (CALENDAR, RELEASES, ADMIN)
+ * Chaque utilisateur possède une permission par module (CALENDAR, RELEASES,
+ * ADMIN)
  * avec un niveau de permission (NONE, READ, WRITE).
  */
 @Entity
-@Table(name = "user_permissions",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uk_user_module", columnNames = {"user_id", "module"})
-    },
-    indexes = {
+@Table(name = "user_permissions", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_user_module", columnNames = { "user_id", "module" })
+}, indexes = {
         @Index(name = "idx_user_permission_user_id", columnList = "user_id"),
         @Index(name = "idx_user_permission_module", columnList = "module")
-    }
-)
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -46,9 +45,12 @@ public class UserPermission {
     @Column(length = 25)
     private String id;
 
+    @Column(name = "user_id", length = 25)
+    private String userId;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
     @Enumerated(EnumType.STRING)

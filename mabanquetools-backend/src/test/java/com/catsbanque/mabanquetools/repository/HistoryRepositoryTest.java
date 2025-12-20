@@ -32,40 +32,35 @@ class HistoryRepositoryTest {
     @BeforeEach
     void setUp() {
         user = new User();
-        user.setId("user-1");
         user.setEmail("test@example.com");
         user.setPassword("hashed");
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setThemePreference("light");
         user.setWidgetOrder("[]");
+        entityManager.persist(user); // Persist first to generate ID
 
         history1 = new History();
-        history1.setId("history-1");
         history1.setAction("create");
         history1.setEventId("event-1");
         history1.setEventData("{\"title\":\"MEP v40.5\"}");
-        history1.setUserId("user-1");
+        history1.setUserId(user.getId());
         history1.setUserDisplayName("John D.");
 
         history2 = new History();
-        history2.setId("history-2");
         history2.setAction("update");
         history2.setEventId("event-1");
         history2.setEventData("{\"title\":\"MEP v40.5 Updated\"}");
         history2.setPreviousData("{\"title\":\"MEP v40.5\"}");
-        history2.setUserId("user-1");
+        history2.setUserId(user.getId());
         history2.setUserDisplayName("John D.");
 
         history3 = new History();
-        history3.setId("history-3");
         history3.setAction("create");
         history3.setEventId("event-2");
         history3.setEventData("{\"title\":\"Hotfix\"}");
-        history3.setUserId("user-1");
+        history3.setUserId(user.getId());
         history3.setUserDisplayName("John D.");
-
-        entityManager.persist(user);
     }
 
     @Test
@@ -93,7 +88,7 @@ class HistoryRepositoryTest {
         entityManager.flush();
 
         // When
-        List<History> userHistory = historyRepository.findByUserIdOrderByTimestampDesc("user-1");
+        List<History> userHistory = historyRepository.findByUserIdOrderByTimestampDesc(user.getId());
 
         // Then
         assertThat(userHistory).hasSize(3);
@@ -161,7 +156,7 @@ class HistoryRepositoryTest {
         entityManager.flush();
 
         // When
-        History found = historyRepository.findById("history-1").orElse(null);
+        History found = historyRepository.findById(history1.getId()).orElse(null);
 
         // Then
         assertThat(found).isNotNull();

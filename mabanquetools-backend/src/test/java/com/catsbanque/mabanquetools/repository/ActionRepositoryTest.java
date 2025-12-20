@@ -33,14 +33,13 @@ class ActionRepositoryTest {
     @BeforeEach
     void setUp() {
         Release release = new Release();
-        release.setId("release-1");
         release.setName("Release v40.5 - Sprint 2025.01");
         release.setReleaseDate(LocalDateTime.now().plusDays(7));
         release.setStatus("draft");
         release.setType("release");
+        entityManager.persist(release); // Persist to generate ID
 
         squad = new Squad();
-        squad.setId("squad-1");
         squad.setRelease(release);
         squad.setSquadNumber(1);
         squad.setTontonMep("Jean D.");
@@ -48,10 +47,10 @@ class ActionRepositoryTest {
         squad.setFeaturesEmptyConfirmed(false);
         squad.setPreMepEmptyConfirmed(false);
         squad.setPostMepEmptyConfirmed(false);
+        entityManager.persist(squad); // Persist to generate ID
 
         action1 = new Action();
-        action1.setId("action-1");
-        action1.setSquadId("squad-1");
+        action1.setSquadId(squad.getId());
         action1.setPhase("pre_mep");
         action1.setType("database_update");
         action1.setTitle("Update schema v40.5");
@@ -59,8 +58,7 @@ class ActionRepositoryTest {
         action1.setOrder(1);
 
         action2 = new Action();
-        action2.setId("action-2");
-        action2.setSquadId("squad-1");
+        action2.setSquadId(squad.getId());
         action2.setPhase("pre_mep");
         action2.setType("feature_flipping");
         action2.setTitle("Enable FF_NEW_FEATURE");
@@ -68,16 +66,12 @@ class ActionRepositoryTest {
         action2.setOrder(2);
 
         action3 = new Action();
-        action3.setId("action-3");
-        action3.setSquadId("squad-1");
+        action3.setSquadId(squad.getId());
         action3.setPhase("post_mep");
         action3.setType("other");
         action3.setTitle("Verify deployment");
         action3.setStatus("pending");
         action3.setOrder(1);
-
-        entityManager.persist(release);
-        entityManager.persist(squad);
     }
 
     @Test
@@ -89,7 +83,7 @@ class ActionRepositoryTest {
         entityManager.flush();
 
         // When
-        List<Action> actions = actionRepository.findBySquadIdOrderByOrderAsc("squad-1");
+        List<Action> actions = actionRepository.findBySquadIdOrderByOrderAsc(squad.getId());
 
         // Then
         assertThat(actions).hasSize(3);
@@ -106,11 +100,9 @@ class ActionRepositoryTest {
 
         // When
         List<Action> preMepActions = actionRepository.findBySquadIdAndPhaseOrderByOrderAsc(
-            "squad-1", "pre_mep"
-        );
+                squad.getId(), "pre_mep");
         List<Action> postMepActions = actionRepository.findBySquadIdAndPhaseOrderByOrderAsc(
-            "squad-1", "post_mep"
-        );
+                squad.getId(), "post_mep");
 
         // Then
         assertThat(preMepActions).hasSize(2);
@@ -127,11 +119,9 @@ class ActionRepositoryTest {
 
         // When
         List<Action> pendingActions = actionRepository.findBySquadIdAndStatusOrderByOrderAsc(
-            "squad-1", "pending"
-        );
+                squad.getId(), "pending");
         List<Action> completedActions = actionRepository.findBySquadIdAndStatusOrderByOrderAsc(
-            "squad-1", "completed"
-        );
+                squad.getId(), "completed");
 
         // Then
         assertThat(pendingActions).hasSize(2);
@@ -147,8 +137,8 @@ class ActionRepositoryTest {
         entityManager.flush();
 
         // When
-        long completedCount = actionRepository.countBySquadIdAndStatus("squad-1", "completed");
-        long totalCount = actionRepository.countBySquadId("squad-1");
+        long completedCount = actionRepository.countBySquadIdAndStatus(squad.getId(), "completed");
+        long totalCount = actionRepository.countBySquadId(squad.getId());
 
         // Then
         assertThat(completedCount).isEqualTo(1);
@@ -163,7 +153,7 @@ class ActionRepositoryTest {
         entityManager.flush();
 
         // When
-        List<Action> actions = actionRepository.findBySquadIdOrderByOrderAsc("squad-1");
+        List<Action> actions = actionRepository.findBySquadIdOrderByOrderAsc(squad.getId());
 
         // Then
         assertThat(actions).hasSize(2);

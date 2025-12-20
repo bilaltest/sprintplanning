@@ -582,16 +582,16 @@ export class FlappyDsiComponent implements OnInit, OnDestroy {
 
   // Bird
   bird: Bird = { y: 250, velocity: 0, rotation: 0 };
-  gravity = 0.09;
-  jumpStrength = -4.0;
-  birdSize = 38;
+  gravity = 0.15;
+  jumpStrength = -5;
+  birdSize = 48;
 
   // Pipes
   pipes: Pipe[] = [];
-  pipeWidth = 54;
-  gapSize = 180;
-  pipeSpeed = 1.7;
-  pipeSpawnInterval = 1200;
+  pipeWidth = 64;
+  gapSize = 150;
+  pipeSpeed = 2;
+  pipeSpawnInterval = 1800;
 
   // Collectibles
   collectibles: Collectible[] = [];

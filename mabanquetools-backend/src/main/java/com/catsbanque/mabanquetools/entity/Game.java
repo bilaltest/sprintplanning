@@ -7,13 +7,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.catsbanque.mabanquetools.util.Cuid;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,8 +21,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "game", indexes = {
-    @Index(name = "idx_game_slug", columnList = "slug"),
-    @Index(name = "idx_game_is_active", columnList = "is_active")
+        @Index(name = "idx_game_slug", columnList = "slug"),
+        @Index(name = "idx_game_is_active", columnList = "is_active")
 })
 @Data
 @NoArgsConstructor
@@ -30,6 +30,7 @@ import java.util.List;
 public class Game {
 
     @Id
+    @Cuid
     @Column(length = 25)
     private String id;
 
@@ -61,16 +62,4 @@ public class Game {
     @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GameScore> scores = new ArrayList<>();
 
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = generateCuid();
-        }
-    }
-
-    private String generateCuid() {
-        long timestamp = System.currentTimeMillis();
-        int random = (int) (Math.random() * Integer.MAX_VALUE);
-        return "c" + Long.toString(timestamp, 36) + Integer.toString(random, 36);
-    }
 }

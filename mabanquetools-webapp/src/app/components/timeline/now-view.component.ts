@@ -8,6 +8,8 @@ import { CategoryService } from '@services/category.service';
 import { ConfirmationService } from '@services/confirmation.service';
 import { format, addDays, subDays, isToday, isPast, isFuture } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { SprintService } from '@services/sprint.service';
+import { Sprint } from '@models/sprint.model';
 
 interface DayCard {
   date: Date;
@@ -22,6 +24,9 @@ interface DayCard {
   isHoliday: boolean;
   weekNumber: number;
   events: Event[];
+  activeSprint?: Sprint;
+  sprintIndex?: number;
+  isSprintStart?: boolean;
 }
 
 @Component({
@@ -59,7 +64,10 @@ interface DayCard {
                 [class.dark:border-amber-500]="day.isToday"
                 [class.dark:border-gray-600]="!day.isToday && !day.isWeekend && !day.isHoliday"
                 [class.dark:border-gray-500]="!day.isToday && (day.isWeekend || day.isHoliday)"
+                [class.dark:border-gray-500]="!day.isToday && (day.isWeekend || day.isHoliday)"
               >
+                <!-- Sprint Marker (Option A) -->
+
                 <!-- Header de la carte -->
                 <div
                   [class.bg-gradient-to-br]="true"
@@ -95,8 +103,9 @@ interface DayCard {
                       *ngIf="!day.isToday"
                       class="mt-0.5 text-[10px] opacity-90"
                     >
-                      Semaine {{ day.weekNumber }}
+                      Semaine {{ day.weekNumber }}<span *ngIf="day.activeSprint"> - {{ day.activeSprint.name }}</span>
                     </div>
+
                   </div>
 
                   <!-- Déco géométrique -->
@@ -275,6 +284,7 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
   @ViewChild('scrollContainer') scrollContainer?: ElementRef;
 
   days: DayCard[] = [];
+  sprints: Sprint[] = [];
   isDark = false;
 
   // Gestion du scroll infini avec fenêtre glissante
@@ -293,7 +303,8 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
     private settingsService: SettingsService,
     private timelineService: TimelineService,
     private categoryService: CategoryService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private sprintService: SprintService
   ) {
     this.settingsService.preferences$
       .pipe(takeUntilDestroyed())
@@ -308,7 +319,18 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
         this.scrollToTodayStart();
       });
 
-    this.initializeDays();
+
+
+    this.loadSprints();
+  }
+
+  private loadSprints() {
+    this.sprintService.getAllSprints().subscribe(sprints => {
+      // Sort sprints
+      this.sprints = sprints.sort((a, b) => a.startDate.localeCompare(b.startDate));
+      // Re-initialize days to apply sprint info
+      this.initializeDays();
+    });
   }
 
   ngOnChanges(): void {
@@ -481,7 +503,23 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
       isWeekend: date.getDay() === 0 || date.getDay() === 6,
       isHoliday: this.isHoliday(date),
       weekNumber: this.getWeekNumber(date),
-      events: this.getEventsForDay(dateStr)
+
+      events: this.getEventsForDay(dateStr),
+      ...this.getSprintInfo(dateStr)
+    };
+  }
+
+  private getSprintInfo(dateStr: string): { activeSprint?: Sprint, sprintIndex?: number, isSprintStart?: boolean } {
+    if (!this.sprints.length) return {};
+
+    const index = this.sprints.findIndex(s => dateStr >= s.startDate && dateStr <= s.endDate);
+    if (index === -1) return {};
+
+    const sprint = this.sprints[index];
+    return {
+      activeSprint: sprint,
+      sprintIndex: index,
+      isSprintStart: sprint.startDate === dateStr
     };
   }
 

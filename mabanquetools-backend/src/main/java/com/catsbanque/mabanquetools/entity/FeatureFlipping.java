@@ -8,20 +8,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.catsbanque.mabanquetools.util.Cuid;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "feature_flipping", indexes = {
-    @Index(name = "idx_ff_action_id", columnList = "action_id"),
-    @Index(name = "idx_ff_rule_name", columnList = "rule_name")
+        @Index(name = "idx_ff_action_id", columnList = "action_id"),
+        @Index(name = "idx_ff_rule_name", columnList = "rule_name")
 })
 @Data
 @NoArgsConstructor
@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 public class FeatureFlipping {
 
     @Id
+    @Cuid
     @Column(length = 25)
     private String id;
 
@@ -77,16 +78,4 @@ public class FeatureFlipping {
     @JoinColumn(name = "action_id", insertable = false, updatable = false)
     private Action action;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = generateCuid();
-        }
-    }
-
-    private String generateCuid() {
-        long timestamp = System.currentTimeMillis();
-        int random = (int) (Math.random() * Integer.MAX_VALUE);
-        return "c" + Long.toString(timestamp, 36) + Integer.toString(random, 36);
-    }
 }

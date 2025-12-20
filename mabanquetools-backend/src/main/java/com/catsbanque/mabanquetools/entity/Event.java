@@ -4,22 +4,20 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.catsbanque.mabanquetools.util.Cuid;
 
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 @Entity
 @Table(name = "event", indexes = {
-    @Index(name = "idx_event_date", columnList = "date"),
-    @Index(name = "idx_event_category", columnList = "category")
+        @Index(name = "idx_event_date", columnList = "date"),
+        @Index(name = "idx_event_category", columnList = "category")
 })
 @Data
 @NoArgsConstructor
@@ -27,6 +25,7 @@ import java.util.Random;
 public class Event {
 
     @Id
+    @Cuid
     @Column(length = 25)
     private String id;
 
@@ -52,10 +51,13 @@ public class Event {
     private String icon;
 
     @Column(nullable = false, length = 50)
-    private String category; // 'mep', 'hotfix', 'maintenance', 'pi_planning', 'sprint_start', 'code_freeze', 'psi', 'other'
+    private String category; // 'mep_front', 'mep_back', 'hotfix', 'code_freeze', 'other'
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(length = 25)
+    private String sprintId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -65,23 +67,4 @@ public class Event {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = generateCuid();
-        }
-    }
-
-    private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
-    private static final Random random = new SecureRandom();
-
-    private String generateCuid() {
-        long timestamp = System.currentTimeMillis();
-        StringBuilder cuid = new StringBuilder("c");
-        cuid.append(Long.toString(timestamp, 36));
-        for (int i = 0; i < 8; i++) {
-            cuid.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
-        }
-        return cuid.toString();
-    }
 }

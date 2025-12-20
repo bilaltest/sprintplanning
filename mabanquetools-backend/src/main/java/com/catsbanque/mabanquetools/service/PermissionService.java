@@ -108,6 +108,7 @@ public class PermissionService {
         createOrUpdatePermission(user, PermissionModule.CALENDAR, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.RELEASES, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.ADMIN, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.ABSENCE, PermissionLevel.WRITE);
 
         log.info("Permissions par défaut vérifiées/créées pour l'utilisateur {}", user.getEmail());
     }
@@ -127,7 +128,7 @@ public class PermissionService {
                         },
                         () -> {
                             UserPermission newPerm = new UserPermission();
-                            newPerm.setUser(user);
+                            newPerm.setUserId(user.getId());
                             newPerm.setModule(module);
                             newPerm.setPermissionLevel(level);
                             permissionRepository.save(newPerm);
@@ -160,7 +161,7 @@ public class PermissionService {
             } else {
                 // Création d'une nouvelle permission
                 UserPermission newPermission = new UserPermission();
-                newPermission.setUser(user);
+                newPermission.setUserId(user.getId());
                 newPermission.setModule(module);
                 newPermission.setPermissionLevel(newLevel);
                 permissionRepository.save(newPermission);
@@ -180,6 +181,7 @@ public class PermissionService {
         defaults.put(PermissionModule.CALENDAR, PermissionLevel.WRITE);
         defaults.put(PermissionModule.RELEASES, PermissionLevel.WRITE);
         defaults.put(PermissionModule.ADMIN, PermissionLevel.NONE);
+        defaults.put(PermissionModule.ABSENCE, PermissionLevel.WRITE);
         return defaults;
     }
 }

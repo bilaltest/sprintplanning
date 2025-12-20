@@ -14,4 +14,11 @@ public class TotalRecords {
     private int history;
     private int releaseHistory;
     private int settings;
+    private int absences;
+    private int sprints;
+    private int microservices;
+    private int games;
+    private int gameScores;
+    private int userPermissions;
+    private int releaseNoteEntries;
 }
