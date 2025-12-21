@@ -22,8 +22,7 @@ export interface CategoryInfo {
 })
 export class CategoryService {
   private defaultCategories: EventCategory[] = [
-    'mep', 'hotfix', 'maintenance', 'pi_planning',
-    'sprint_start', 'code_freeze', 'psi', 'other'
+    'mep_front', 'mep_back', 'hotfix', 'code_freeze'
   ];
 
   // Observable qui combine les catégories par défaut + personnalisées

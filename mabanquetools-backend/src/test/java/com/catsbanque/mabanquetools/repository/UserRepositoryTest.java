@@ -27,7 +27,6 @@ class UserRepositoryTest {
     @BeforeEach
     void setUp() {
         testUser = new User();
-        testUser.setId("test-user-1");
         testUser.setEmail("test@example.com");
         testUser.setPassword("$2a$10$hashedPassword");
         testUser.setFirstName("John");

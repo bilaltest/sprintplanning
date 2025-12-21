@@ -14,18 +14,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.catsbanque.mabanquetools.util.Cuid;
 
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Entity
 @Table(name = "app_release", indexes = {
-    @Index(name = "idx_release_date", columnList = "release_date"),
-    @Index(name = "idx_release_status", columnList = "status"),
-    @Index(name = "idx_release_type", columnList = "type")
+        @Index(name = "idx_release_date", columnList = "release_date"),
+        @Index(name = "idx_release_status", columnList = "status"),
+        @Index(name = "idx_release_type", columnList = "type")
 })
 @Data
 @NoArgsConstructor
@@ -33,6 +33,7 @@ import java.util.Random;
 public class Release {
 
     @Id
+    @Cuid
     @Column(length = 25)
     private String id;
 
@@ -40,7 +41,8 @@ public class Release {
     private String name; // Ex: "Release v40.5 - Sprint 2024.12" (contient déjà la version)
 
     @Column(unique = true, length = 255)
-    private String slug; // Ex: "release-v40-5-sprint-2024-12" (URL-friendly, unique) - nullable temporairement pour migration
+    private String slug; // Ex: "release-v40-5-sprint-2024-12" (URL-friendly, unique) - nullable
+                         // temporairement pour migration
 
     @Column(name = "release_date", nullable = false)
     private LocalDateTime releaseDate; // Planned MEP date
@@ -66,14 +68,12 @@ public class Release {
     @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Squad> squads = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReleaseNoteEntry> releaseNoteEntries = new ArrayList<>();
 
     @PrePersist
     public void prePersist() {
-        if (this.id == null) {
-            this.id = generateCuid();
-        }
         if (this.slug == null) {
             this.slug = generateSlug(this.name);
         }
@@ -85,19 +85,6 @@ public class Release {
         if (this.name != null) {
             this.slug = generateSlug(this.name);
         }
-    }
-
-    private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
-    private static final Random random = new SecureRandom();
-
-    private String generateCuid() {
-        long timestamp = System.currentTimeMillis();
-        StringBuilder cuid = new StringBuilder("c");
-        cuid.append(Long.toString(timestamp, 36));
-        for (int i = 0; i < 8; i++) {
-            cuid.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
-        }
-        return cuid.toString();
     }
 
     /**
@@ -116,8 +103,8 @@ public class Release {
                 .replaceAll("[òóôõö]", "o")
                 .replaceAll("[ùúûü]", "u")
                 .replaceAll("[ç]", "c")
-                .replaceAll("[^a-z0-9]+", "-")  // Remplacer tout ce qui n'est pas alphanum par -
-                .replaceAll("^-+|-+$", "")      // Supprimer les - en début/fin
-                .replaceAll("-+", "-");          // Remplacer multiple - par un seul
+                .replaceAll("[^a-z0-9]+", "-") // Remplacer tout ce qui n'est pas alphanum par -
+                .replaceAll("^-+|-+$", "") // Supprimer les - en début/fin
+                .replaceAll("-+", "-"); // Remplacer multiple - par un seul
     }
 }

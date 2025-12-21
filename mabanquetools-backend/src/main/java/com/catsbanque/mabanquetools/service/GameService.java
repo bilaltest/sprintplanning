@@ -121,7 +121,11 @@ public class GameService {
 
             // Convertir Timestamp en LocalDateTime
             if (row[7] != null) {
-                entry.setCreatedAt(((java.sql.Timestamp) row[7]).toLocalDateTime());
+                if (row[7] instanceof java.sql.Timestamp) {
+                    entry.setCreatedAt(((java.sql.Timestamp) row[7]).toLocalDateTime());
+                } else if (row[7] instanceof java.time.LocalDateTime) {
+                    entry.setCreatedAt((java.time.LocalDateTime) row[7]);
+                }
             }
 
             entry.setUserId((String) row[2]);

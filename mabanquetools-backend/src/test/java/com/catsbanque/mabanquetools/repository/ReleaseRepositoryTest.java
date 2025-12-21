@@ -32,7 +32,6 @@ class ReleaseRepositoryTest {
         LocalDateTime now = LocalDateTime.now();
 
         release1 = new Release();
-        release1.setId("release-1");
         release1.setName("Release v40.5 - Sprint 2025.01");
         release1.setReleaseDate(now.plusDays(7));
         release1.setStatus("draft");
@@ -40,14 +39,12 @@ class ReleaseRepositoryTest {
         release1.setDescription("January release");
 
         release2 = new Release();
-        release2.setId("release-2");
         release2.setName("Hotfix v40.4.1");
         release2.setReleaseDate(now.minusDays(2));
         release2.setStatus("completed");
         release2.setType("hotfix");
 
         release3 = new Release();
-        release3.setId("release-3");
         release3.setName("Release v41.0");
         release3.setReleaseDate(now.plusDays(30));
         release3.setStatus("in_progress");

@@ -22,4 +22,11 @@ public class ExportData {
     private List<History> history;
     private List<ReleaseHistory> releaseHistory;
     private List<Settings> settings;
+    private List<com.catsbanque.mabanquetools.entity.Absence> absences;
+    private List<com.catsbanque.mabanquetools.entity.Sprint> sprints;
+    private List<com.catsbanque.mabanquetools.entity.Microservice> microservices;
+    private List<com.catsbanque.mabanquetools.entity.Game> games;
+    private List<com.catsbanque.mabanquetools.entity.GameScore> gameScores;
+    private List<com.catsbanque.mabanquetools.entity.UserPermission> userPermissions;
+    private List<com.catsbanque.mabanquetools.entity.ReleaseNoteEntry> releaseNoteEntries;
 }

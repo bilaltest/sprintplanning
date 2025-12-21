@@ -77,28 +77,6 @@ import { AuthService } from '@services/auth.service';
               </p>
             </div>
 
-            <!-- Confirm Password Input -->
-            <div>
-              <label for="confirmPassword" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Confirmer le mot de passe
-              </label>
-              <div class="relative">
-                <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                  lock
-                </span>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  [(ngModel)]="confirmPassword"
-                  name="confirmPassword"
-                  required
-                  autocomplete="new-password"
-                  class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white transition"
-                  placeholder="Confirmez votre mot de passe"
-                  [class.border-red-500]="showError && password !== confirmPassword"
-                />
-              </div>
-            </div>
 
             <!-- Error Message -->
             <div *ngIf="errorMessage" class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
@@ -159,7 +137,7 @@ import { AuthService } from '@services/auth.service';
 export class RegisterComponent {
   email = '';
   password = '';
-  confirmPassword = '';
+
   isLoading = false;
   showError = false;
   errorMessage = '';
@@ -176,17 +154,14 @@ export class RegisterComponent {
     this.successMessage = '';
 
     // Validations basiques
-    if (!this.email.trim() || !this.password.trim() || !this.confirmPassword.trim()) {
+    // Validations basiques
+    if (!this.email.trim() || !this.password.trim()) {
       this.showError = true;
       this.errorMessage = 'Veuillez remplir tous les champs';
       return;
     }
 
-    if (this.password !== this.confirmPassword) {
-      this.showError = true;
-      this.errorMessage = 'Les mots de passe ne correspondent pas';
-      return;
-    }
+
 
     this.isLoading = true;
 

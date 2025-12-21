@@ -29,7 +29,6 @@ class GameRepositoryTest {
     @BeforeEach
     void setUp() {
         game1 = new Game();
-        game1.setId("game-1");
         game1.setSlug("typing-fr");
         game1.setName("Typing Challenge FR");
         game1.setDescription("French typing speed test");
@@ -37,7 +36,6 @@ class GameRepositoryTest {
         game1.setIsActive(true);
 
         game2 = new Game();
-        game2.setId("game-2");
         game2.setSlug("typing-en");
         game2.setName("Typing Challenge EN");
         game2.setDescription("English typing speed test");

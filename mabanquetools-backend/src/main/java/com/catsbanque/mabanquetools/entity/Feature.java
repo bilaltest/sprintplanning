@@ -8,17 +8,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.catsbanque.mabanquetools.util.Cuid;
 
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 @Entity
 @Table(name = "feature", indexes = {
@@ -30,6 +28,7 @@ import java.util.Random;
 public class Feature {
 
     @Id
+    @Cuid
     @Column(length = 25)
     private String id;
 
@@ -59,23 +58,4 @@ public class Feature {
     @JoinColumn(name = "squad_id", insertable = false, updatable = false)
     private Squad squad;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = generateCuid();
-        }
-    }
-
-    private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
-    private static final Random random = new SecureRandom();
-
-    private String generateCuid() {
-        long timestamp = System.currentTimeMillis();
-        StringBuilder cuid = new StringBuilder("c");
-        cuid.append(Long.toString(timestamp, 36));
-        for (int i = 0; i < 8; i++) {
-            cuid.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
-        }
-        return cuid.toString();
-    }
 }

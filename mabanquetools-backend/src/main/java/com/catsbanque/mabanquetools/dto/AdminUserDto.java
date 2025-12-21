@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.List;
 
 @Data
 @Builder
@@ -20,6 +21,10 @@ public class AdminUserDto {
     private String firstName;
     private String lastName;
     private String themePreference;
+    private String metier;
+    private String tribu;
+    private boolean interne;
+    private List<String> squads;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private long historiesCount;

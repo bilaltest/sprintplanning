@@ -8,20 +8,20 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import com.catsbanque.mabanquetools.util.Cuid;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "release_history", indexes = {
-    @Index(name = "idx_release_history_timestamp", columnList = "timestamp"),
-    @Index(name = "idx_release_history_user_id", columnList = "user_id"),
-    @Index(name = "idx_release_history_release_id", columnList = "release_id")
+        @Index(name = "idx_release_history_timestamp", columnList = "timestamp"),
+        @Index(name = "idx_release_history_user_id", columnList = "user_id"),
+        @Index(name = "idx_release_history_release_id", columnList = "release_id")
 })
 @Data
 @NoArgsConstructor
@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 public class ReleaseHistory {
 
     @Id
+    @Cuid
     @Column(length = 25)
     private String id;
 
@@ -60,16 +61,4 @@ public class ReleaseHistory {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = generateCuid();
-        }
-    }
-
-    private String generateCuid() {
-        long timestamp = System.currentTimeMillis();
-        int random = (int) (Math.random() * Integer.MAX_VALUE);
-        return "c" + Long.toString(timestamp, 36) + Integer.toString(random, 36);
-    }
 }

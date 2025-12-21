@@ -23,5 +23,11 @@ public enum PermissionModule {
      * Module Administration - Gestion des utilisateurs et permissions
      * Accès aux statistiques, export/import de la base de données
      */
-    ADMIN
+    ADMIN,
+
+    /**
+     * Module Absences - Gestion des congés et absences
+     * Visualisation timeline et demande de congés
+     */
+    ABSENCE
 }

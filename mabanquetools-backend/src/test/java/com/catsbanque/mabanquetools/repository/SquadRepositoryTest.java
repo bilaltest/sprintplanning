@@ -32,14 +32,12 @@ class SquadRepositoryTest {
     @BeforeEach
     void setUp() {
         release = new Release();
-        release.setId("release-1");
         release.setName("Release v40.5 - Sprint 2025.01");
         release.setReleaseDate(LocalDateTime.now().plusDays(7));
         release.setStatus("draft");
         release.setType("release");
 
         squad1 = new Squad();
-        squad1.setId("squad-1");
         squad1.setRelease(release);
         squad1.setSquadNumber(1);
         squad1.setTontonMep("Jean D.");
@@ -49,7 +47,6 @@ class SquadRepositoryTest {
         squad1.setPostMepEmptyConfirmed(false);
 
         squad2 = new Squad();
-        squad2.setId("squad-2");
         squad2.setRelease(release);
         squad2.setSquadNumber(2);
         squad2.setTontonMep("Marie L.");
@@ -68,7 +65,7 @@ class SquadRepositoryTest {
         entityManager.flush();
 
         // When
-        List<Squad> squads = squadRepository.findByReleaseIdOrderBySquadNumberAsc("release-1");
+        List<Squad> squads = squadRepository.findByReleaseIdOrderBySquadNumberAsc(release.getId());
 
         // Then
         assertThat(squads).hasSize(2);
@@ -85,7 +82,8 @@ class SquadRepositoryTest {
         entityManager.flush();
 
         // When
-        Optional<Squad> found = squadRepository.findByReleaseIdAndSquadNumber("release-1", 1);
+        // release.getId() is populated by persist
+        Optional<Squad> found = squadRepository.findByReleaseIdAndSquadNumber(release.getId(), 1);
 
         // Then
         assertThat(found).isPresent();
@@ -102,8 +100,7 @@ class SquadRepositoryTest {
 
         // When
         List<Squad> completed = squadRepository.findByReleaseIdAndIsCompletedOrderBySquadNumberAsc(
-            "release-1", true
-        );
+                release.getId(), true);
 
         // Then
         assertThat(completed).hasSize(1);
@@ -113,8 +110,12 @@ class SquadRepositoryTest {
 
     @Test
     void shouldReturnEmptyWhenSquadNotFound() {
+        // Given - need a release ID to search for
+        entityManager.persist(release);
+        entityManager.flush();
+
         // When
-        Optional<Squad> found = squadRepository.findByReleaseIdAndSquadNumber("release-1", 99);
+        Optional<Squad> found = squadRepository.findByReleaseIdAndSquadNumber(release.getId(), 99);
 
         // Then
         assertThat(found).isEmpty();

@@ -1,0 +1,2 @@
+ALTER TABLE absence MODIFY COLUMN type VARCHAR(50);
+UPDATE absence SET type = 'ABSENCE' WHERE type = 'CONGES';

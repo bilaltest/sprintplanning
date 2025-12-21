@@ -29,7 +29,6 @@ class EventRepositoryTest {
     @BeforeEach
     void setUp() {
         event1 = new Event();
-        event1.setId("event-1");
         event1.setTitle("MEP v40.5");
         event1.setDate("2025-01-15");
         event1.setStartTime("09:00");
@@ -40,7 +39,6 @@ class EventRepositoryTest {
         event1.setDescription("Mise en production v40.5");
 
         event2 = new Event();
-        event2.setId("event-2");
         event2.setTitle("Hotfix 40.4.1");
         event2.setDate("2025-01-20");
         event2.setStartTime("14:00");
@@ -49,7 +47,6 @@ class EventRepositoryTest {
         event2.setCategory("hotfix");
 
         event3 = new Event();
-        event3.setId("event-3");
         event3.setTitle("PI Planning Q1");
         event3.setDate("2025-02-10");
         event3.setEndDate("2025-02-11");
@@ -98,7 +95,6 @@ class EventRepositoryTest {
     void shouldFindEventsByDate() {
         // Given
         Event event4 = new Event();
-        event4.setId("event-4");
         event4.setTitle("Morning Event");
         event4.setDate("2025-01-15");
         event4.setStartTime("08:00");
@@ -129,8 +125,7 @@ class EventRepositoryTest {
 
         // When
         List<Event> mepInJanuary = eventRepository.findByCategoryAndDateRange(
-            "mep", "2025-01-01", "2025-01-31"
-        );
+                "mep", "2025-01-01", "2025-01-31");
 
         // Then
         assertThat(mepInJanuary).hasSize(1);
@@ -162,7 +157,7 @@ class EventRepositoryTest {
         entityManager.flush();
 
         // When
-        Event found = eventRepository.findById("event-3").orElse(null);
+        Event found = eventRepository.findById(event3.getId()).orElse(null);
 
         // Then
         assertThat(found).isNotNull();

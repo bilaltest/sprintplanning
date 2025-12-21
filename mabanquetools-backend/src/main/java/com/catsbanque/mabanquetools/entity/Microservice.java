@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.catsbanque.mabanquetools.util.Cuid;
 
 import java.time.LocalDateTime;
 
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 public class Microservice {
 
     @Id
+    @Cuid
     @Column(length = 25)
     private String id;
 
@@ -34,9 +36,11 @@ public class Microservice {
     @Column(length = 100)
     private String solution; // Solution name (free text)
 
+    @Builder.Default
     @Column(name = "display_order")
     private Integer displayOrder = 0;
 
+    @Builder.Default
     @Column(name = "is_active")
     private Boolean isActive = true;
 
@@ -51,7 +55,6 @@ public class Microservice {
 
     @PrePersist
     protected void onCreate() {
-        this.id = generateCuid();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         if (this.isActive == null) {
@@ -67,25 +70,4 @@ public class Microservice {
         this.updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * Generate CUID (Collision-resistant Unique Identifier)
-     * Format: 'c' + timestamp (base36) + 8 random chars
-     * Length: ~17 chars (fits in VARCHAR(25))
-     */
-    private String generateCuid() {
-        long timestamp = System.currentTimeMillis();
-        String timestampBase36 = Long.toString(timestamp, 36);
-        String randomPart = generateRandomString(8);
-        return "c" + timestampBase36 + randomPart;
-    }
-
-    private String generateRandomString(int length) {
-        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            int index = (int) (Math.random() * chars.length());
-            result.append(chars.charAt(index));
-        }
-        return result.toString();
-    }
 }

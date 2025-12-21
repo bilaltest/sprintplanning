@@ -10,23 +10,21 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.catsbanque.mabanquetools.util.Cuid;
 
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Random;
 
 @Entity
 @Table(name = "action", indexes = {
-    @Index(name = "idx_action_squad_id", columnList = "squad_id"),
-    @Index(name = "idx_action_phase", columnList = "phase"),
-    @Index(name = "idx_action_type", columnList = "type")
+        @Index(name = "idx_action_squad_id", columnList = "squad_id"),
+        @Index(name = "idx_action_phase", columnList = "phase"),
+        @Index(name = "idx_action_type", columnList = "type")
 })
 @Data
 @NoArgsConstructor
@@ -34,6 +32,7 @@ import java.util.Random;
 public class Action {
 
     @Id
+    @Cuid
     @Column(length = 25)
     private String id;
 
@@ -44,7 +43,8 @@ public class Action {
     private String phase; // 'pre_mep' or 'post_mep'
 
     @Column(nullable = false, length = 50)
-    private String type; // 'topic_creation', 'database_update', 'vault_credentials', 'feature_flipping', 'other'
+    private String type; // 'topic_creation', 'database_update', 'vault_credentials', 'feature_flipping',
+                         // 'other'
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -75,23 +75,4 @@ public class Action {
     @OneToOne(mappedBy = "action", cascade = CascadeType.ALL, orphanRemoval = true)
     private FeatureFlipping flipping;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = generateCuid();
-        }
-    }
-
-    private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
-    private static final Random random = new SecureRandom();
-
-    private String generateCuid() {
-        long timestamp = System.currentTimeMillis();
-        StringBuilder cuid = new StringBuilder("c");
-        cuid.append(Long.toString(timestamp, 36));
-        for (int i = 0; i < 8; i++) {
-            cuid.append(ALPHABET.charAt(random.nextInt(ALPHABET.length())));
-        }
-        return cuid.toString();
-    }
 }

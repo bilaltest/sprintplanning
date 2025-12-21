@@ -33,10 +33,9 @@ public interface EventRepository extends JpaRepository<Event, String> {
      */
     @Query("SELECT e FROM Event e WHERE e.category = :category AND e.date >= :startDate AND e.date <= :endDate ORDER BY e.date ASC, e.startTime ASC")
     List<Event> findByCategoryAndDateRange(
-        @Param("category") String category,
-        @Param("startDate") String startDate,
-        @Param("endDate") String endDate
-    );
+            @Param("category") String category,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate);
 
     /**
      * Find all events ordered by date
@@ -53,7 +52,7 @@ public interface EventRepository extends JpaRepository<Event, String> {
      * Search events by title or description
      */
     @Query("SELECT e FROM Event e WHERE LOWER(e.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
-           "OR LOWER(e.description) LIKE LOWER(CONCAT('%', :search, '%')) ORDER BY e.date ASC")
+            "OR LOWER(e.description) LIKE LOWER(CONCAT('%', :search, '%')) ORDER BY e.date ASC")
     List<Event> searchByTitleOrDescription(@Param("search") String search);
 
     /**
@@ -73,4 +72,8 @@ public interface EventRepository extends JpaRepository<Event, String> {
      */
     @Query("SELECT e FROM Event e WHERE e.date <= :dateTo ORDER BY e.date ASC")
     List<Event> findByDateBefore(@Param("dateTo") String dateTo);
+
+    List<Event> findBySprintId(String sprintId);
+
+    void deleteBySprintId(String sprintId);
 }

@@ -7,6 +7,8 @@ import { ReleaseService } from '@services/release.service';
 import { AuthService } from '@services/auth.service';
 import { Event } from '@models/event.model';
 import { Release } from '@models/release.model';
+import { Absence, ABSENCE_LABELS } from '@models/absence.model';
+import { AbsenceService } from '@services/absence.service';
 import { format, isFuture, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { interval, Subscription } from 'rxjs';
@@ -14,7 +16,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 
 interface Widget {
   id: string;
-  type: 'events7days' | 'nextMep';
+  type: 'events7days' | 'nextMep' | 'userAbsences';
 }
 
 @Component({
@@ -33,7 +35,7 @@ interface Widget {
             </div>
 
             <!-- Navigation Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- Calendrier Card -->
               <div
                 (click)="navigateToCalendar()"
@@ -85,6 +87,37 @@ interface Widget {
                     </h2>
                     <p class="text-gray-600 dark:text-gray-400 text-lg">
                       Gérez vos mises en production et releases
+                    </p>
+                  </div>
+                  <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium">
+                    <span>Accéder</span>
+                    <span class="material-icons ml-2 group-hover:translate-x-2 transition-transform duration-300">
+                      arrow_forward
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Absences Card -->
+              <div
+                (click)="navigateToAbsences()"
+                class="group cursor-pointer bg-white dark:bg-gray-750 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
+              >
+                <!-- Effet de brillance au hover -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+
+                <div class="flex flex-col items-center text-center space-y-6 relative z-10">
+                  <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 dark:from-primary-600 dark:to-primary-800 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                    <span class="material-icons text-white" style="font-size: 48px;">
+                      beach_access
+                    </span>
+                  </div>
+                  <div>
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                      Absences
+                    </h2>
+                    <p class="text-gray-600 dark:text-gray-400 text-lg">
+                      Gérez vos congés, RTT et télétravail
                     </p>
                   </div>
                   <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium">
@@ -149,7 +182,7 @@ interface Widget {
                         </div>
                         <div class="flex-1 min-w-0">
                           <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">Événements</h2>
-                          <p class="text-xs text-gray-600 dark:text-gray-400">15 jours</p>
+                          <p class="text-xs text-gray-600 dark:text-gray-400">15 prochains jours</p>
                         </div>
                       </div>
                       <div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
@@ -162,8 +195,9 @@ interface Widget {
                            (click)="navigateToEvent(event, $event)">
                         <div class="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" [style.background-color]="event.color"></div>
                         <span class="material-icons text-xs flex-shrink-0" [style.color]="event.color">{{ event.icon }}</span>
-                        <div class="flex-1 min-w-0">
-                          <p class="text-xs font-medium text-gray-900 dark:text-white truncate">{{ event.title }}</p>
+                        <div class="flex-1 min-w-0 flex justify-between items-center text-xs">
+                          <span class="font-medium text-gray-900 dark:text-white truncate">{{ event.title }}</span>
+                          <span class="text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">{{ formatDate(event.date) }}</span>
                         </div>
                       </div>
                       <div *ngIf="eventsNext15Days.length > 3"
@@ -232,7 +266,51 @@ interface Widget {
                     <div class="flex flex-col items-center justify-center h-full" *ngIf="!nextMep">
                       <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">rocket</span>
                       <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucune MEP planifiée</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-500 text-center">À venir</p>
                     </div>
+                  </div>
+
+                  <!-- User Absences Widget -->
+                  <div *ngIf="widget.type === 'userAbsences' && userNextAbsences.length > 0"
+                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col cursor-move"
+                       (click)="handleWidgetClick($event, 'absence')">
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                          <span class="material-icons text-sm text-orange-600 dark:text-orange-400">beach_access</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">Mes Absences</h2>
+                          <p class="text-xs text-gray-600 dark:text-gray-400">15 prochains jours</p>
+                        </div>
+                      </div>
+                      <div class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        {{ userNextAbsences.length }}
+                      </div>
+                    </div>
+                    <div class="space-y-1 flex-1 overflow-y-auto custom-scrollbar-thin">
+                      <div *ngFor="let absence of userNextAbsences"
+                           class="flex items-center space-x-2 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
+                           (click)="navigateToAbsenceDate(absence.startDate, $event)">
+                        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" 
+                             [class.bg-orange-500]="absence.type === 'ABSENCE'"
+                             [class.bg-sky-500]="absence.type === 'FORMATION'"
+                             [class.bg-rose-500]="absence.type === 'TELETRAVAIL'"></div>
+                        <div class="flex-1 min-w-0 flex justify-between items-center text-xs">
+                           <span class="font-medium text-gray-900 dark:text-white truncate">{{ ABSENCE_LABELS[absence.type] }}</span>
+                           <span class="text-gray-500 dark:text-gray-400">{{ formatDate(absence.startDate) }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Empty state Absences -->
+                  <div *ngIf="widget.type === 'userAbsences' && userNextAbsences.length === 0"
+                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col items-center justify-center cursor-move"
+                       (click)="handleWidgetClick($event, 'absence')">
+                    <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">beach_access</span>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucune absence</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-500 text-center">15 prochains jours</p>
                   </div>
                 </div>
               </ng-container>
@@ -281,7 +359,9 @@ interface Widget {
 export class HomeComponent implements OnInit, OnDestroy {
   nextMep: Release | null = null;
   eventsNext15Days: Event[] = [];
+  userNextAbsences: Absence[] = [];
   orderedWidgets: Widget[] = [];
+  ABSENCE_LABELS = ABSENCE_LABELS;
 
   // Stats pour compteurs animés
   totalEvents = 0;
@@ -300,7 +380,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Default widget order
   private readonly DEFAULT_WIDGETS: Widget[] = [
     { id: 'events7days', type: 'events7days' },
-    { id: 'nextMep', type: 'nextMep' }
+    { id: 'nextMep', type: 'nextMep' },
+    { id: 'userAbsences', type: 'userAbsences' }
   ];
 
   constructor(
@@ -308,6 +389,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     public settingsService: SettingsService,
     private eventService: EventService,
     private releaseService: ReleaseService,
+    private absenceService: AbsenceService,
     private authService: AuthService
   ) { }
 
@@ -376,6 +458,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.navigateToCalendar();
     } else if (type === 'release' && release) {
       this.navigateToRelease(release);
+    } else if (type === 'absence') {
+      this.navigateToAbsences();
     }
   }
 
@@ -447,7 +531,26 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.animateCounter('releases', this.activeReleases);
       this.animateCounter('completion', this.completionRate);
       this.animateCounter('hotfix', this.hotfixCount);
+      this.animateCounter('hotfix', this.hotfixCount);
     });
+
+    // Load absences
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const fifteenDaysFromNow = new Date(today);
+      fifteenDaysFromNow.setDate(fifteenDaysFromNow.getDate() + 15);
+
+      const startStr = format(today, 'yyyy-MM-dd');
+      const endStr = format(fifteenDaysFromNow, 'yyyy-MM-dd');
+
+      this.absenceService.getAbsences(startStr, endStr).subscribe(absences => {
+        this.userNextAbsences = absences
+          .filter(a => a.userId === currentUser.id)
+          .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+      });
+    }
   }
 
   private animateCounter(type: 'events' | 'releases' | 'completion' | 'hotfix', target: number): void {
@@ -499,7 +602,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   formatDate(dateString: string): string {
-    return format(new Date(dateString), 'dd MMMM yyyy', { locale: fr });
+    return format(new Date(dateString), 'dd/MM/yyyy', { locale: fr });
   }
 
   getDaysUntilMep(dateString: string): number {
@@ -527,6 +630,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Utiliser l'ID pour l'URL
     const routeParam = release.id;
     this.router.navigate(['/releases', routeParam, 'preparation']);
+  }
+
+  navigateToAbsences(): void {
+    this.router.navigate(['/absences']);
+  }
+
+  navigateToAbsenceDate(dateStr: string, event: MouseEvent): void {
+    event.stopPropagation();
+    this.router.navigate(['/absences'], { queryParams: { date: dateStr } });
   }
 
   toggleTheme(): void {

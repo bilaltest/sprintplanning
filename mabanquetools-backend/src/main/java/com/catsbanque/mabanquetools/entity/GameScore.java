@@ -1,5 +1,7 @@
 package com.catsbanque.mabanquetools.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,9 +20,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "game_score", indexes = {
-    @Index(name = "idx_game_score_game_id", columnList = "game_id,score"),
-    @Index(name = "idx_game_score_user_id", columnList = "user_id"),
-    @Index(name = "idx_game_score_created_at", columnList = "created_at")
+        @Index(name = "idx_game_score_game_id", columnList = "game_id,score"),
+        @Index(name = "idx_game_score_user_id", columnList = "user_id"),
+        @Index(name = "idx_game_score_created_at", columnList = "created_at")
 })
 @Data
 @NoArgsConstructor
@@ -55,10 +57,12 @@ public class GameScore {
     private LocalDateTime createdAt;
 
     // Relationships
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "game_id", insertable = false, updatable = false)
     private Game game;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;

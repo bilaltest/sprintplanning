@@ -33,47 +33,41 @@ class GameScoreRepositoryTest {
     @BeforeEach
     void setUp() {
         game = new Game();
-        game.setId("game-1");
         game.setSlug("typing-fr");
         game.setName("Typing FR");
         game.setIcon("keyboard");
         game.setIsActive(true);
+        entityManager.persist(game); // Persist first to generate ID
 
         user = new User();
-        user.setId("user-1");
         user.setEmail("test@example.com");
         user.setPassword("hashed");
         user.setFirstName("John");
         user.setLastName("Doe");
         user.setThemePreference("light");
         user.setWidgetOrder("[]");
+        entityManager.persist(user); // Persist first to generate ID
 
         score1 = new GameScore();
-        score1.setId("score-1");
-        score1.setGameId("game-1");
-        score1.setUserId("user-1");
+        score1.setGameId(game.getId());
+        score1.setUserId(user.getId());
         score1.setScore(85);
         score1.setWpm(60);
         score1.setAccuracy(95.5);
 
         score2 = new GameScore();
-        score2.setId("score-2");
-        score2.setGameId("game-1");
-        score2.setUserId("user-1");
+        score2.setGameId(game.getId());
+        score2.setUserId(user.getId());
         score2.setScore(92);
         score2.setWpm(65);
         score2.setAccuracy(98.2);
 
         score3 = new GameScore();
-        score3.setId("score-3");
-        score3.setGameId("game-1");
+        score3.setGameId(game.getId());
         score3.setVisitorName("Anonymous");
         score3.setScore(78);
         score3.setWpm(55);
         score3.setAccuracy(92.0);
-
-        entityManager.persist(game);
-        entityManager.persist(user);
     }
 
     @Test
@@ -85,7 +79,7 @@ class GameScoreRepositoryTest {
         entityManager.flush();
 
         // When
-        List<GameScore> scores = gameScoreRepository.findByGameIdOrderByScoreDescCreatedAtDesc("game-1");
+        List<GameScore> scores = gameScoreRepository.findByGameIdOrderByScoreDescCreatedAtDesc(game.getId());
 
         // Then
         assertThat(scores).hasSize(3);
@@ -103,7 +97,7 @@ class GameScoreRepositoryTest {
         entityManager.flush();
 
         // When
-        List<GameScore> topScores = gameScoreRepository.findTopScoresByGameId("game-1");
+        List<GameScore> topScores = gameScoreRepository.findTopScoresByGameId(game.getId());
 
         // Then
         assertThat(topScores).hasSize(3);
@@ -119,7 +113,7 @@ class GameScoreRepositoryTest {
         entityManager.flush();
 
         // When
-        List<GameScore> userScores = gameScoreRepository.findByUserIdOrderByCreatedAtDesc("user-1");
+        List<GameScore> userScores = gameScoreRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
 
         // Then
         assertThat(userScores).hasSize(2);
@@ -134,7 +128,7 @@ class GameScoreRepositoryTest {
         entityManager.flush();
 
         // When
-        List<GameScore> bestScores = gameScoreRepository.findBestScoreByGameIdAndUserId("game-1", "user-1");
+        List<GameScore> bestScores = gameScoreRepository.findBestScoreByGameIdAndUserId(game.getId(), user.getId());
 
         // Then
         assertThat(bestScores).isNotEmpty();
@@ -148,7 +142,7 @@ class GameScoreRepositoryTest {
         entityManager.flush();
 
         // When
-        List<GameScore> scores = gameScoreRepository.findByGameIdOrderByScoreDescCreatedAtDesc("game-1");
+        List<GameScore> scores = gameScoreRepository.findByGameIdOrderByScoreDescCreatedAtDesc(game.getId());
 
         // Then
         assertThat(scores).hasSize(1);
@@ -163,7 +157,7 @@ class GameScoreRepositoryTest {
         entityManager.flush();
 
         // When
-        GameScore found = gameScoreRepository.findById("score-1").orElse(null);
+        GameScore found = gameScoreRepository.findById(score1.getId()).orElse(null);
 
         // Then
         assertThat(found).isNotNull();
@@ -179,7 +173,7 @@ class GameScoreRepositoryTest {
         entityManager.flush();
 
         // When
-        GameScore found = gameScoreRepository.findById("score-1").orElse(null);
+        GameScore found = gameScoreRepository.findById(score1.getId()).orElse(null);
 
         // Then
         assertThat(found).isNotNull();

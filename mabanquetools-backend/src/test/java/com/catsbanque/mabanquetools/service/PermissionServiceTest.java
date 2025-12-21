@@ -89,9 +89,10 @@ class PermissionServiceTest {
         Map<PermissionModule, PermissionLevel> result = permissionService.getUserPermissions("user123");
 
         // Then
-        assertThat(result).hasSize(3);
+        assertThat(result).hasSize(4);
         assertThat(result.get(PermissionModule.CALENDAR)).isEqualTo(PermissionLevel.WRITE);
         assertThat(result.get(PermissionModule.RELEASES)).isEqualTo(PermissionLevel.WRITE);
+        assertThat(result.get(PermissionModule.ABSENCE)).isEqualTo(PermissionLevel.WRITE);
         assertThat(result.get(PermissionModule.ADMIN)).isEqualTo(PermissionLevel.NONE);
     }
 
@@ -195,14 +196,15 @@ class PermissionServiceTest {
 
         // Then
         ArgumentCaptor<UserPermission> permissionCaptor = ArgumentCaptor.forClass(UserPermission.class);
-        verify(permissionRepository, times(3)).save(permissionCaptor.capture());
+        verify(permissionRepository, times(4)).save(permissionCaptor.capture());
 
         List<UserPermission> savedPermissions = permissionCaptor.getAllValues();
-        assertThat(savedPermissions).hasSize(3);
+        assertThat(savedPermissions).hasSize(4);
         assertThat(savedPermissions).extracting(UserPermission::getModule)
                 .containsExactlyInAnyOrder(
                         PermissionModule.CALENDAR,
                         PermissionModule.RELEASES,
+                        PermissionModule.ABSENCE,
                         PermissionModule.ADMIN
                 );
         assertThat(savedPermissions).allMatch(p -> p.getPermissionLevel() == PermissionLevel.WRITE);

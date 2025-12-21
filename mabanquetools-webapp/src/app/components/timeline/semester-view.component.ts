@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Event, CATEGORY_COLORS_DARK } from '@models/event.model';
+import { Event, CATEGORY_COLORS_DARK, CATEGORY_DEFAULTS } from '@models/event.model';
+import { Sprint } from '@models/sprint.model';
 import {
   format,
   addMonths,
@@ -26,6 +27,11 @@ interface DayCell {
   isToday: boolean;
   events: Event[];
   isValid: boolean; // false for days that don't exist in the month (e.g., Feb 30)
+  activeSprint?: Sprint;
+  sprintIndex?: number;
+  isSprintStart?: boolean;
+  isSprintEnd?: boolean;
+  isCurrentSprint?: boolean;
 }
 
 interface MonthColumn {
@@ -101,6 +107,38 @@ interface MonthColumn {
                    [ngClass]="getBgClass(cell)"
                    (click)="onCellClick(cell)"
               >
+                <!-- Sprint Visuals -->
+                <div *ngIf="cell.activeSprint"
+                     class="absolute inset-x-0 top-0 bottom-0 pointer-events-none transition-colors duration-200"
+
+
+                     [class.border-t-2]="cell.isSprintStart"
+                     [class.border-b-2]="cell.isSprintEnd"
+                     
+                     [class.border-l-[2px]]="true"
+                     [class.border-l-sky-400]="!cell.isCurrentSprint && cell.sprintIndex! % 2 === 0"
+                     [class.border-l-emerald-400]="!cell.isCurrentSprint && cell.sprintIndex! % 2 !== 0"
+                     [class.border-l-amber-500]="cell.isCurrentSprint"
+
+                     [class.border-sky-200]="!cell.isCurrentSprint && cell.sprintIndex! % 2 === 0"
+                     [class.border-emerald-200]="!cell.isCurrentSprint && cell.sprintIndex! % 2 !== 0"
+                     [class.border-amber-200]="cell.isCurrentSprint"
+                     style="z-index: 0"
+                >
+                  <!-- Sprint Name (Only on start) -->
+                  <div *ngIf="cell.isSprintStart"
+                       class="absolute left-1 top-1 text-[10px] font-bold uppercase tracking-wider leading-none z-10 truncate max-w-full pl-1"
+                       [class.text-sky-600]="!cell.isCurrentSprint && cell.sprintIndex! % 2 === 0"
+                       [class.text-emerald-600]="!cell.isCurrentSprint && cell.sprintIndex! % 2 !== 0"
+                       [class.text-amber-700]="cell.isCurrentSprint"
+                       
+                       [class.dark:text-sky-300]="!cell.isCurrentSprint && cell.sprintIndex! % 2 === 0"
+                       [class.dark:text-emerald-300]="!cell.isCurrentSprint && cell.sprintIndex! % 2 !== 0"
+                       [class.dark:text-amber-400]="cell.isCurrentSprint"
+                  >
+                    {{ cell.activeSprint.name }}
+                  </div>
+                </div>
                 
                 <!-- Day Content -->
                 <div class="absolute inset-0 flex items-center px-2">
@@ -135,12 +173,12 @@ interface MonthColumn {
                     <!-- Event Chips -->
                     <div *ngFor="let event of cell.events" 
                          class="relative group/event z-10 max-w-full flex-shrink overflow-hidden flex items-center bg-white dark:bg-gray-700/80 rounded-full border border-gray-100 dark:border-gray-600 shadow-sm hover:shadow-md transition-all cursor-pointer pr-3 mr-1 h-8"
-                         [style.border-left-color]="event.color"
+                         [style.border-left-color]="getEventColor(event)"
                          (click)="onEventClick($event, event)"
                     >
                       <!-- Icon -->
                       <div class="w-6 h-6 rounded-full flex items-center justify-center text-white flex-shrink-0 ml-0.5"
-                           [style.background-color]="event.color"
+                           [style.background-color]="getEventColor(event)"
                       >
                          <span class="material-icons text-[14px]">{{ event.icon || 'event' }}</span>
                       </div>
@@ -192,10 +230,19 @@ interface MonthColumn {
 
     .bg-holiday-custom { background-color: #FEE2E2; }
     :host-context(.dark) .bg-holiday-custom { background-color: rgba(154, 39, 39, 0.2); }
+
+    .dark\:bg-indigo-900-20 { background-color: rgba(49, 46, 129, 0.2); }
+    .dark\:bg-teal-900-20 { background-color: rgba(19, 78, 74, 0.2); }
+
+    /* New sprint background colors */
+    .dark\:bg-sky-900-20 { background-color: rgba(7, 89, 133, 0.2); }
+    .dark\:bg-emerald-900-20 { background-color: rgba(4, 120, 87, 0.2); }
+    .dark\:bg-amber-900-20 { background-color: rgba(120, 53, 15, 0.2); }
   `]
 })
 export class SemesterViewComponent implements OnInit, OnChanges {
   @Input() events: Event[] | null = [];
+  @Input() sprints: Sprint[] | null = [];
   @Output() eventClick = new EventEmitter<Event>();
   @Output() addEventClick = new EventEmitter<string>();
 
@@ -208,9 +255,16 @@ export class SemesterViewComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['events']) {
+    if (changes['events'] || changes['sprints']) {
       this.updateView();
     }
+  }
+
+  getEventColor(event: Event): string {
+    if (CATEGORY_DEFAULTS[event.category]) {
+      return CATEGORY_DEFAULTS[event.category].color;
+    }
+    return event.color;
   }
 
   updateView() {
@@ -223,6 +277,11 @@ export class SemesterViewComponent implements OnInit, OnChanges {
     const semesterEnd = endOfMonth(addMonths(semesterStart, 5));
 
     this.semesterLabel = `Semestre ${currentMonth < 6 ? '1' : '2'} - ${year}`;
+
+    // Sort sprints once
+    const sortedSprints = this.sprints
+      ? [...this.sprints].sort((a, b) => a.startDate.localeCompare(b.startDate))
+      : [];
 
     this.months = [];
 
@@ -238,7 +297,7 @@ export class SemesterViewComponent implements OnInit, OnChanges {
           const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
           const dayStr = format(date, 'yyyy-MM-dd');
 
-          cells.push({
+          const cell: DayCell = {
             date,
             dayNumber: day,
             dayLetter: format(date, 'EEEEE', { locale: fr }).toUpperCase(), // 'L', 'M', etc.
@@ -246,8 +305,20 @@ export class SemesterViewComponent implements OnInit, OnChanges {
             isHoliday: this.isHoliday(date),
             isToday: isToday(date),
             events: this.getEventsForDay(dayStr),
-            isValid: true
-          });
+            isValid: true,
+          };
+
+          // Sprint Logic
+          const sprintData = this.getSprintData(dayStr, sortedSprints);
+          if (sprintData) {
+            cell.activeSprint = sprintData.sprint;
+            cell.sprintIndex = sprintData.index;
+            cell.isSprintStart = sprintData.isStart;
+            cell.isSprintEnd = sprintData.isEnd;
+            cell.isCurrentSprint = sprintData.isCurrent;
+          }
+
+          cells.push(cell);
         } else {
           // Invalid days (e.g., Feb 30) - placeholder
           cells.push({
@@ -280,6 +351,34 @@ export class SemesterViewComponent implements OnInit, OnChanges {
       }
       return event.date === dateStr;
     });
+  }
+
+  getSprintData(dateStr: string, sortedSprints: Sprint[]): { sprint: Sprint, index: number, isStart: boolean, isEnd: boolean, isCurrent: boolean } | undefined {
+    const index = sortedSprints.findIndex(s => dateStr >= s.startDate && dateStr <= s.endDate);
+    if (index === -1) return undefined;
+
+    const sprint = sortedSprints[index];
+    const todayStr = new Date().toISOString().split('T')[0];
+    const isCurrent = todayStr >= sprint.startDate && todayStr <= sprint.endDate;
+
+    // Check if next day is a sprint start
+    const nextDate = new Date(dateStr);
+    nextDate.setDate(nextDate.getDate() + 1);
+    const nextDateStr = nextDate.toISOString().split('T')[0]; // simple format
+    const nextSprintIndex = sortedSprints.findIndex(s => nextDateStr >= s.startDate && nextDateStr <= s.endDate);
+
+    // If next day is start of a DIFFERENT sprint, we suppress the bottom border
+    // Actually, simpler: if next day is start of ANY sprint, we rely on its top border.
+    // But we only care if they are adjacent.
+    const isNextSprintStart = nextSprintIndex !== -1 && sortedSprints[nextSprintIndex].startDate === nextDateStr;
+
+    return {
+      sprint,
+      index,
+      isStart: sprint.startDate === dateStr,
+      isEnd: sprint.endDate === dateStr && !isNextSprintStart, // Only show end border if NOT followed by a start
+      isCurrent
+    };
   }
 
   prevSemester() {

@@ -4,7 +4,7 @@
     "description": "Application de planning événementiel pour DSI bancaire",
     "scripts": {
         "ng": "ng",
-        "start": "ng serve",
+        "start": "NODE_OPTIONS='--max-old-space-size=768' ng serve",
         "build": "ng build",
         "watch": "ng build --watch --configuration development",
         "test": "jest",

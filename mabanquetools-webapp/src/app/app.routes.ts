@@ -3,6 +3,7 @@ import { authGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 import { calendarGuard } from './guards/calendar.guard';
 import { releasesGuard } from './guards/releases.guard';
+import { absenceGuard } from './guards/absence.guard';
 
 export const routes: Routes = [
   {
@@ -159,6 +160,15 @@ export const routes: Routes = [
             m => m.FlappyDsiComponent
           ),
         data: { breadcrumb: 'Flappy DSI' }
+      },
+      {
+        path: 'absences',
+        loadComponent: () =>
+          import('./components/absence/absence.component').then(
+            m => m.AbsenceComponent
+          ),
+        canActivate: [absenceGuard],
+        data: { breadcrumb: 'Absences' }
       }
     ]
   }
