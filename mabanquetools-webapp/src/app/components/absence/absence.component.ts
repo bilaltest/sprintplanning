@@ -326,7 +326,7 @@ interface MonthMetadata {
                     <!-- Absences overlay -->
                     <ng-container *ngFor="let absence of getUserAbsences(user.id); trackBy: trackAbsenceById">
                        <ng-container *ngFor="let segment of getAbsenceSegments(absence); trackBy: trackSegment">
-                           <div class="absolute top-1 bottom-1 rounded shadow-sm cursor-pointer hover:brightness-110 transition-all z-20 flex items-center justify-center text-[10px] font-bold text-white overflow-hidden"
+                           <div class="absolute top-1 bottom-1 shadow-sm cursor-pointer hover:brightness-110 transition-all z-20 flex items-center justify-center text-[10px] font-bold text-white overflow-hidden"
                                 [style.left.px]="getDateLeft(segment.start)"
                                 [style.width.px]="getSegmentWidth(segment.start, segment.end)"
                                 [style.background]="getSegmentBackground(absence, segment.shape)"

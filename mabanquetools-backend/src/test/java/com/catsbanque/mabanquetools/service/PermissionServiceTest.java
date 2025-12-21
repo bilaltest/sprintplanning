@@ -89,10 +89,11 @@ class PermissionServiceTest {
         Map<PermissionModule, PermissionLevel> result = permissionService.getUserPermissions("user123");
 
         // Then
-        assertThat(result).hasSize(4);
+        assertThat(result).hasSize(5);
         assertThat(result.get(PermissionModule.CALENDAR)).isEqualTo(PermissionLevel.WRITE);
         assertThat(result.get(PermissionModule.RELEASES)).isEqualTo(PermissionLevel.WRITE);
         assertThat(result.get(PermissionModule.ABSENCE)).isEqualTo(PermissionLevel.WRITE);
+        assertThat(result.get(PermissionModule.PLAYGROUND)).isEqualTo(PermissionLevel.WRITE);
         assertThat(result.get(PermissionModule.ADMIN)).isEqualTo(PermissionLevel.NONE);
     }
 
@@ -196,17 +197,17 @@ class PermissionServiceTest {
 
         // Then
         ArgumentCaptor<UserPermission> permissionCaptor = ArgumentCaptor.forClass(UserPermission.class);
-        verify(permissionRepository, times(4)).save(permissionCaptor.capture());
+        verify(permissionRepository, times(5)).save(permissionCaptor.capture());
 
         List<UserPermission> savedPermissions = permissionCaptor.getAllValues();
-        assertThat(savedPermissions).hasSize(4);
+        assertThat(savedPermissions).hasSize(5);
         assertThat(savedPermissions).extracting(UserPermission::getModule)
                 .containsExactlyInAnyOrder(
                         PermissionModule.CALENDAR,
                         PermissionModule.RELEASES,
                         PermissionModule.ABSENCE,
-                        PermissionModule.ADMIN
-                );
+                        PermissionModule.ADMIN,
+                        PermissionModule.PLAYGROUND);
         assertThat(savedPermissions).allMatch(p -> p.getPermissionLevel() == PermissionLevel.WRITE);
     }
 
@@ -248,7 +249,7 @@ class PermissionServiceTest {
         UserPermission savedPermission = permissionCaptor.getValue();
         assertThat(savedPermission.getModule()).isEqualTo(PermissionModule.ADMIN);
         assertThat(savedPermission.getPermissionLevel()).isEqualTo(PermissionLevel.WRITE);
-        assertThat(savedPermission.getUser()).isEqualTo(testUser);
+        assertThat(savedPermission.getUserId()).isEqualTo(testUser.getId());
     }
 
     @Test

@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
-export type PermissionModule = 'CALENDAR' | 'RELEASES' | 'ADMIN' | 'ABSENCE';
+export type PermissionModule = 'CALENDAR' | 'RELEASES' | 'ADMIN' | 'ABSENCE' | 'PLAYGROUND';
 export type PermissionLevel = 'NONE' | 'READ' | 'WRITE';
 
 export interface UserPermissions {
@@ -11,6 +11,7 @@ export interface UserPermissions {
   RELEASES: PermissionLevel;
   ADMIN: PermissionLevel;
   ABSENCE: PermissionLevel;
+  PLAYGROUND: PermissionLevel;
 }
 
 export interface User {

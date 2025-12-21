@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { SettingsService } from '@services/settings.service';
 import { EventService } from '@services/event.service';
 import { ReleaseService } from '@services/release.service';
-import { AuthService } from '@services/auth.service';
+import { AuthService, PermissionModule } from '@services/auth.service';
 import { Event } from '@models/event.model';
 import { Release } from '@models/release.model';
 import { Absence, ABSENCE_LABELS } from '@models/absence.model';
@@ -24,298 +24,295 @@ interface Widget {
   standalone: true,
   imports: [CommonModule, DragDropModule],
   template: `
-    <div class="space-y-8">
-          <!-- Applications Section -->
-          <section class="space-y-6">
-            <div class="text-center mb-6">
-              <div class="inline-flex items-center space-x-2 px-4 py-2 bg-primary-100/60 dark:bg-primary-900/30 backdrop-blur-md border border-primary-200/50 dark:border-primary-700/50 rounded-full shadow-sm">
-                <span class="material-icons text-primary-600 dark:text-primary-400 text-sm">apps</span>
-                <span class="text-sm font-semibold text-primary-600 dark:text-primary-400 uppercase tracking-wider">Applications</span>
-              </div>
-            </div>
+    <div class="min-h-screen bg-slate-50 dark:bg-slate-950 relative overflow-hidden selection:bg-emerald-500/30 selection:text-emerald-900 dark:selection:text-emerald-100 transition-colors duration-300">
+      
+      <!-- Background Ambient Blobs -->
+      <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <!-- Light Mode Blobs -->
+        <div class="absolute top-[-5%] left-[-5%] w-[300px] h-[300px] rounded-full bg-emerald-800/10 blur-[80px] animate-blob mix-blend-multiply dark:hidden"></div>
+        <div class="absolute top-[20%] right-[-5%] w-[250px] h-[250px] rounded-full bg-teal-800/10 blur-[60px] animate-blob animation-delay-2000 mix-blend-multiply dark:hidden"></div>
+        <div class="absolute bottom-[-5%] left-[20%] w-[350px] h-[350px] rounded-full bg-emerald-800/10 blur-[80px] animate-blob animation-delay-4000 mix-blend-multiply dark:hidden"></div>
 
-            <!-- Navigation Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Dark Mode Blobs (Slightly more vibrant to show on dark bg) -->
+        <div class="hidden dark:block absolute top-[-5%] left-[-5%] w-[300px] h-[300px] rounded-full bg-emerald-800/20 blur-[80px] animate-blob mix-blend-screen"></div>
+        <div class="hidden dark:block absolute top-[20%] right-[-5%] w-[250px] h-[250px] rounded-full bg-teal-600/20 blur-[60px] animate-blob animation-delay-2000 mix-blend-screen"></div>
+        <div class="hidden dark:block absolute bottom-[-5%] left-[20%] w-[350px] h-[350px] rounded-full bg-emerald-800/20 blur-[80px] animate-blob animation-delay-4000 mix-blend-screen"></div>
+      </div>
+
+      <!-- Content Container -->
+      <div class="relative z-10 container mx-auto px-4 py-8 space-y-12">
+        
+        <!-- Header Section -->
+        <header class="flex items-center justify-between">
+          <div class="flex items-center space-x-4">
+             <!-- Optional: Add a user greeting or logo here if needed -->
+          </div>
+          <div class="flex items-center space-x-4">
+            <button (click)="toggleTheme()" class="p-2 rounded-full bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 hover:bg-white/60 dark:hover:bg-white/10 transition-colors backdrop-blur-md text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-sm">
+              <span class="material-icons text-xl">dark_mode</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Main Applications Section -->
+        <section class="space-y-8">
+          <div class="flex items-center space-x-4 mb-8">
+            <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-900/5 dark:via-white/10 to-transparent"></div>
+            <h2 class="text-xl font-light tracking-[0.2em] text-emerald-900/60 dark:text-emerald-100/60 uppercase">Applications</h2>
+            <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-900/5 dark:via-white/10 to-transparent"></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 perspective-1000">
             <!-- Calendrier Card -->
-              <div
-                (click)="navigateToCalendar()"
-                class="group cursor-pointer bg-white dark:bg-gray-750 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
-              >
-                <!-- Effet de brillance au hover -->
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
-
-                <div class="flex flex-col items-center text-center space-y-6 relative z-10">
-                  <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 dark:from-primary-600 dark:to-primary-800 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                    <span class="material-icons text-white" style="font-size: 48px;">
-                      calendar_month
-                    </span>
-                  </div>
-                  <div>
-                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-                      Calendrier
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-400 text-lg">
-                      Gérez vos événements et planifiez vos activités
-                    </p>
-                  </div>
-                  <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium">
-                    <span>Accéder</span>
-                    <span class="material-icons ml-2 group-hover:translate-x-2 transition-transform duration-300">
-                      arrow_forward
-                    </span>
-                  </div>
+            <div *ngIf="canAccess('CALENDAR')" (click)="navigateToCalendar()"
+                 class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
+              <!-- Glow Border -->
+              <div class="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-teal-500/20 dark:from-emerald-500/20 dark:to-teal-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <!-- Card Content -->
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+                <!-- Background decoration -->
+                <div class="absolute inset-0 bg-gradient-to-br from-emerald-100/20 to-teal-100/20 dark:from-emerald-500/10 dark:to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="relative z-10 mb-6 transform group-hover:scale-110 transition-transform duration-500 ease-out">
+                   <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/90 to-teal-600/90 dark:from-emerald-600 dark:to-teal-700 flex items-center justify-center shadow-lg shadow-emerald-500/10 dark:shadow-black/30 group-hover:shadow-emerald-500/20 transition-shadow duration-300">
+                      <span class="material-icons text-white text-4xl">calendar_month</span>
+                   </div>
                 </div>
-              </div>
-
-              <!-- Préparation des MEP Card -->
-              <div
-                (click)="navigateToReleases()"
-                class="group cursor-pointer bg-white dark:bg-gray-750 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
-              >
-                <!-- Effet de brillance au hover -->
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
-
-                <div class="flex flex-col items-center text-center space-y-6 relative z-10">
-                  <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 dark:from-primary-600 dark:to-primary-800 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                    <span class="material-icons text-white" style="font-size: 48px;">
-                      rocket_launch
-                    </span>
-                  </div>
-                  <div>
-                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-                      Préparation des MEP
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-400 text-lg">
-                      Gérez vos mises en production et releases
-                    </p>
-                  </div>
-                  <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium">
-                    <span>Accéder</span>
-                    <span class="material-icons ml-2 group-hover:translate-x-2 transition-transform duration-300">
-                      arrow_forward
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Absences Card -->
-              <div
-                (click)="navigateToAbsences()"
-                class="group cursor-pointer bg-white dark:bg-gray-750 rounded-2xl shadow-xl border-2 border-gray-200 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-[1.02] p-8 overflow-hidden relative"
-              >
-                <!-- Effet de brillance au hover -->
-                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
-
-                <div class="flex flex-col items-center text-center space-y-6 relative z-10">
-                  <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 dark:from-primary-600 dark:to-primary-800 flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                    <span class="material-icons text-white" style="font-size: 48px;">
-                      beach_access
-                    </span>
-                  </div>
-                  <div>
-                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-                      Absences
-                    </h2>
-                    <p class="text-gray-600 dark:text-gray-400 text-lg">
-                      Gérez vos congés, RTT et télétravail
-                    </p>
-                  </div>
-                  <div class="flex items-center text-primary-600 dark:text-primary-400 font-medium">
-                    <span>Accéder</span>
-                    <span class="material-icons ml-2 group-hover:translate-x-2 transition-transform duration-300">
-                      arrow_forward
-                    </span>
-                  </div>
-                </div>
+                
+                <h3 class="relative z-10 text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2 tracking-tight group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">Calendrier</h3>
+                <p class="relative z-10 text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">Planifiez vos événements et activités</p>
+                
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
               </div>
             </div>
-          </section>
 
-          <!-- Decorative Separator -->
-          <div class="relative py-4">
-            <div class="absolute inset-0 flex items-center" aria-hidden="true">
-              <div class="w-full border-t-2 border-gray-200 dark:border-gray-600"></div>
-            </div>
-            <div class="relative flex justify-center">
-              <div class="bg-gray-100 dark:bg-gray-800 px-6 py-2 rounded-full">
-                <div class="flex items-center space-x-2">
-                  <div class="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></div>
-                  <div class="w-2 h-2 rounded-full bg-primary-500 animate-pulse" style="animation-delay: 0.2s"></div>
-                  <div class="w-2 h-2 rounded-full bg-primary-600 animate-pulse" style="animation-delay: 0.4s"></div>
+            <!-- Absences Card -->
+            <div *ngIf="canAccess('ABSENCE')" (click)="navigateToAbsences()"
+                 class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
+              <div class="absolute inset-0 bg-gradient-to-br from-amber-400/20 to-orange-500/20 dark:from-amber-500/20 dark:to-orange-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-amber-100/20 to-orange-100/20 dark:from-amber-500/10 dark:to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="relative z-10 mb-6 transform group-hover:scale-110 transition-transform duration-500 ease-out">
+                   <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/90 to-orange-600/90 dark:from-amber-600 dark:to-orange-700 flex items-center justify-center shadow-lg shadow-amber-500/10 dark:shadow-black/30 group-hover:shadow-amber-500/20 transition-shadow duration-300">
+                      <span class="material-icons text-white text-4xl">beach_access</span>
+                   </div>
                 </div>
+                
+                <h3 class="relative z-10 text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2 tracking-tight group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">Absences</h3>
+                <p class="relative z-10 text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">Gérez votre activité et vos absences</p>
+                
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+              </div>
+            </div>
+
+                        <!-- MEP Card -->
+            <div *ngIf="canAccess('RELEASES')" (click)="navigateToReleases()"
+                 class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
+              <div class="absolute inset-0 bg-gradient-to-br from-teal-400/20 to-cyan-500/20 dark:from-teal-500/20 dark:to-cyan-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-teal-100/20 to-cyan-100/20 dark:from-teal-500/10 dark:to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="relative z-10 mb-6 transform group-hover:scale-110 transition-transform duration-500 ease-out">
+                   <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-teal-500/90 to-cyan-600/90 dark:from-teal-600 dark:to-cyan-700 flex items-center justify-center shadow-lg shadow-teal-500/10 dark:shadow-black/30 group-hover:shadow-teal-500/20 transition-shadow duration-300">
+                      <span class="material-icons text-white text-4xl">rocket_launch</span>
+                   </div>
+                </div>
+                
+                <h3 class="relative z-10 text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2 tracking-tight group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">Préparation MEP</h3>
+                <p class="relative z-10 text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">Gérez vos mises en production</p>
+                
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-cyan-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+              </div>
+            </div>
+            
+            <!-- Playground Card -->
+            <div *ngIf="canAccess('PLAYGROUND')" (click)="navigateToPlayground()"
+                 class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
+              <div class="absolute inset-0 bg-gradient-to-br from-violet-400/20 to-fuchsia-500/20 dark:from-violet-500/20 dark:to-fuchsia-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-violet-100/20 to-fuchsia-100/20 dark:from-violet-500/10 dark:to-fuchsia-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="relative z-10 mb-6 transform group-hover:scale-110 transition-transform duration-500 ease-out">
+                   <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500/90 to-fuchsia-600/90 dark:from-violet-600 dark:to-fuchsia-700 flex items-center justify-center shadow-lg shadow-violet-500/10 dark:shadow-black/30 group-hover:shadow-violet-500/20 transition-shadow duration-300">
+                      <span class="material-icons text-white text-4xl">sports_esports</span>
+                   </div>
+                </div>
+                
+                <h3 class="relative z-10 text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2 tracking-tight group-hover:text-violet-700 dark:group-hover:text-violet-400 transition-colors">Playground</h3>
+                <p class="relative z-10 text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">Jeux et détente</p>
+                
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-fuchsia-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+              </div>
+            </div>
+
+            <!-- Admin Card -->
+            <div *ngIf="canAccess('ADMIN')" (click)="navigateToAdmin()"
+                 class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
+              <div class="absolute inset-0 bg-gradient-to-br from-slate-400/20 to-slate-500/20 dark:from-slate-500/20 dark:to-slate-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+                <div class="absolute inset-0 bg-gradient-to-br from-slate-100/20 to-slate-200/20 dark:from-slate-500/10 dark:to-slate-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                
+                <div class="relative z-10 mb-6 transform group-hover:scale-110 transition-transform duration-500 ease-out">
+                   <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/90 to-slate-600/90 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center shadow-lg shadow-slate-500/10 dark:shadow-black/30 group-hover:shadow-slate-500/20 transition-shadow duration-300">
+                      <span class="material-icons text-white text-4xl">admin_panel_settings</span>
+                   </div>
+                </div>
+                
+                <h3 class="relative z-10 text-2xl font-bold text-slate-700 dark:text-slate-200 mb-2 tracking-tight group-hover:text-slate-700 dark:group-hover:text-slate-400 transition-colors">Administration</h3>
+                <p class="relative z-10 text-sm text-slate-500 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors">Gestion de l'application</p>
+                
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-500 to-slate-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
               </div>
             </div>
           </div>
+        </section>
 
-          <!-- Widgets Section -->
-          <section class="space-y-6">
-            <div class="text-center -mt-4 mb-4">
-              <div class="inline-flex items-center space-x-2 px-4 py-2 bg-orange-100/60 dark:bg-orange-900/30 backdrop-blur-md border border-orange-200/50 dark:border-orange-700/50 rounded-full shadow-sm">
-                <span class="material-icons text-orange-600 dark:text-orange-400 text-sm">dashboard</span>
-                <span class="text-sm font-semibold text-orange-600 dark:text-orange-400 uppercase tracking-wider">Widgets</span>
+        <!-- Widgets Section -->
+        <section class="space-y-8">
+          <div class="flex items-center space-x-4 mb-4">
+             <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-900/5 dark:via-white/10 to-transparent"></div>
+             <h2 class="text-xl font-light tracking-[0.2em] text-emerald-900/60 dark:text-emerald-100/60 uppercase">Tableau de bord</h2>
+             <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-900/5 dark:via-white/10 to-transparent"></div>
+          </div>
+
+          <div
+            cdkDropList
+            [cdkDropListAutoScrollDisabled]="false"
+            (cdkDropListDropped)="onWidgetDrop($event)"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <ng-container *ngFor="let widget of orderedWidgets">
+              <div cdkDrag class="relative group">
+                 <!-- Drag Handle -->
+                 <div class="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-move p-1.5 bg-slate-900/5 hover:bg-slate-900/10 dark:bg-white/5 dark:hover:bg-white/10 rounded-lg backdrop-blur-md">
+                   <span class="material-icons text-sm text-slate-500 dark:text-slate-400">drag_indicator</span>
+                 </div>
+
+                 <!-- Glass Widget Card Container -->
+                 <div class="h-full bg-white/70 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/60 dark:border-white/5 hover:border-emerald-500/20 dark:hover:border-white/10 rounded-2xl p-5 shadow-md dark:shadow-black/40 transition-all duration-300 hover:shadow-xl dark:hover:shadow-black/50 flex flex-col"
+                      [class.cursor-move]="true"
+                      (click)="handleWidgetClick($event, widget.type === 'events7days' ? 'calendar' : widget.type === 'userAbsences' ? 'absence' : null, widget.type === 'nextMep' ? nextMep : null)">
+                    
+                    <!-- Events Widget -->
+                    <ng-container *ngIf="widget.type === 'events7days'">
+                         <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                               <div class="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                  <span class="material-icons text-lg">calendar_today</span>
+                               </div>
+                               <div>
+                                  <h3 class="text-slate-800 dark:text-slate-200 font-medium">Événements</h3>
+                                  <p class="text-xs text-slate-500 dark:text-slate-400">15 prochains jours</p>
+                               </div>
+                            </div>
+                            <span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-xs font-mono text-slate-600 dark:text-slate-300">{{ eventsNext15Days.length }}</span>
+                         </div>
+                         
+                         <div class="space-y-2 flex-1 overflow-y-auto custom-scrollbar-thin">
+                            <div *ngFor="let event of eventsNext15Days.slice(0, 4)" 
+                                 class="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer group/item"
+                                 (click)="navigateToEvent(event, $event)">
+                               <div class="w-2 h-2 rounded-full shadow-sm" [style.background-color]="event.color"></div>
+                               <div class="flex-1 min-w-0">
+                                  <p class="text-sm text-slate-700 dark:text-slate-300 truncate group-hover/item:text-emerald-700 dark:group-hover/item:text-emerald-400 transition-colors">{{ event.title }}</p>
+                                  <p class="text-xs text-slate-400 dark:text-slate-500">{{ formatDate(event.date) }}</p>
+                               </div>
+                            </div>
+                            <div *ngIf="eventsNext15Days.length === 0" class="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+                               <span class="material-icons text-3xl mb-2 opacity-50">event_busy</span>
+                               <span class="text-xs">Aucun événement</span>
+                            </div>
+                         </div>
+                    </ng-container>
+
+                    <!-- MEP Widget -->
+                    <ng-container *ngIf="widget.type === 'nextMep'">
+                         <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                               <div class="p-2 rounded-lg bg-teal-100 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400">
+                                  <span class="material-icons text-lg">rocket_launch</span>
+                               </div>
+                               <div>
+                                  <h3 class="text-slate-800 dark:text-slate-200 font-medium">Prochaine MEP</h3>
+                               </div>
+                            </div>
+                         </div>
+
+                         <div *ngIf="nextMep; else noMep" class="flex-1 flex flex-col">
+                            <div class="text-center my-auto">
+                               <div class="inline-block p-3 rounded-full bg-teal-50 dark:bg-teal-500/10 mb-3 animate-pulse">
+                                  <span class="material-icons text-3xl text-teal-500 dark:text-teal-400">event</span>
+                               </div>
+                               <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1 truncate px-2">{{ nextMep.name }}</h3>
+                               <p class="text-sm text-teal-600 dark:text-teal-400 font-mono">{{ formatDate(nextMep.releaseDate) }}</p>
+                            </div>
+                            
+                            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
+                               <div class="flex items-center justify-between">
+                                  <span class="text-xs text-slate-400 dark:text-slate-500">J-{{ getDaysUntilMep(nextMep.releaseDate) }}</span>
+                                  <button class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium flex items-center transition-colors">
+                                    Détails <span class="material-icons text-xs ml-1">arrow_forward</span>
+                                  </button>
+                                </div>
+                            </div>
+                         </div>
+                         <ng-template #noMep>
+                            <div class="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+                               <span class="material-icons text-3xl mb-2 opacity-50">rocket</span>
+                               <span class="text-xs">Aucune MEP planifiée</span>
+                            </div>
+                         </ng-template>
+                    </ng-container>
+
+                    <!-- Absences Widget -->
+                    <ng-container *ngIf="widget.type === 'userAbsences'">
+                         <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                               <div class="p-2 rounded-lg bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400">
+                                  <span class="material-icons text-lg">beach_access</span>
+                               </div>
+                               <div>
+                                  <h3 class="text-slate-800 dark:text-slate-200 font-medium">Mes Absences</h3>
+                                  <p class="text-xs text-slate-500 dark:text-slate-400">15 prochains jours</p>
+                               </div>
+                            </div>
+                            <span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-xs font-mono text-slate-600 dark:text-slate-300">{{ userNextAbsences.length }}</span>
+                         </div>
+
+                         <div class="space-y-2 flex-1 overflow-y-auto custom-scrollbar-thin">
+                            <div *ngFor="let absence of userNextAbsences" 
+                                 class="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer group/item"
+                                 (click)="navigateToAbsenceDate(absence.startDate, $event)">
+                               <div class="w-1.5 h-1.5 rounded-full"
+                                    [class.bg-orange-400]="absence.type === 'ABSENCE'"
+                                    [class.bg-sky-400]="absence.type === 'FORMATION'"
+                                    [class.bg-rose-400]="absence.type === 'TELETRAVAIL'"></div>
+                               <div class="flex-1 min-w-0">
+                                  <div class="flex justify-between items-baseline">
+                                     <p class="text-sm text-slate-700 dark:text-slate-300 truncate group-hover/item:text-amber-700 dark:group-hover/item:text-amber-400 transition-colors">{{ ABSENCE_LABELS[absence.type] }}</p>
+                                     <span class="text-xs text-slate-400 dark:text-slate-500 font-mono">{{ formatDate(absence.startDate) }}</span>
+                                  </div>
+                                </div>
+                            </div>
+                            <div *ngIf="userNextAbsences.length === 0" class="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+                               <span class="material-icons text-3xl mb-2 opacity-50">beach_access</span>
+                               <span class="text-xs">Aucune absence</span>
+                            </div>
+                         </div>
+                    </ng-container>
+                 </div>
               </div>
-            </div>
+            </ng-container>
 
-            <!-- Widgets Grid avec Drag & Drop -->
-            <div
-              cdkDropList
-              [cdkDropListAutoScrollDisabled]="false"
-              (cdkDropListDropped)="onWidgetDrop($event)"
-              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-
-              <!-- Iterate through ordered widgets -->
-              <ng-container *ngFor="let widget of orderedWidgets">
-                <div cdkDrag class="relative group">
-                  <!-- Drag indicator (visible on hover) -->
-                  <div class="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none p-1 bg-primary-500/90 dark:bg-primary-600/90 rounded shadow-lg">
-                    <span class="material-icons text-xs text-white">open_with</span>
-                  </div>
-
-                  <!-- Events Next 7 Days Widget -->
-                  <div *ngIf="widget.type === 'events7days' && eventsNext15Days.length > 0"
-                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col cursor-move"
-                       (click)="handleWidgetClick($event, 'calendar')">
-                    <div class="flex items-center justify-between mb-3">
-                      <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                          <span class="material-icons text-sm text-blue-600 dark:text-blue-400">calendar_today</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                          <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">Événements</h2>
-                          <p class="text-xs text-gray-600 dark:text-gray-400">15 prochains jours</p>
-                        </div>
-                      </div>
-                      <div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                        {{ eventsNext15Days.length }}
-                      </div>
-                    </div>
-                    <div class="space-y-1 flex-1 overflow-y-auto custom-scrollbar-thin">
-                      <div *ngFor="let event of eventsNext15Days.slice(0, 3)"
-                           class="flex items-center space-x-2 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
-                           (click)="navigateToEvent(event, $event)">
-                        <div class="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0" [style.background-color]="event.color"></div>
-                        <span class="material-icons text-xs flex-shrink-0" [style.color]="event.color">{{ event.icon }}</span>
-                        <div class="flex-1 min-w-0 flex justify-between items-center text-xs">
-                          <span class="font-medium text-gray-900 dark:text-white truncate">{{ event.title }}</span>
-                          <span class="text-gray-500 dark:text-gray-400 ml-2 whitespace-nowrap">{{ formatDate(event.date) }}</span>
-                        </div>
-                      </div>
-                      <div *ngIf="eventsNext15Days.length > 3"
-                           class="text-xs text-center text-gray-500 dark:text-gray-400 pt-1">
-                        +{{ eventsNext15Days.length - 3 }} autres
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Empty state Events -->
-                  <div *ngIf="widget.type === 'events7days' && eventsNext15Days.length === 0"
-                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col items-center justify-center cursor-move">
-                    <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">event_available</span>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucun événement</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-500 text-center">15 prochains jours</p>
-                  </div>
-
-                  <!-- Next MEP Widget -->
-                  <div *ngIf="widget.type === 'nextMep'"
-                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col cursor-move"
-                       (click)="handleWidgetClick($event, nextMep ? 'release' : null, nextMep)">
-                    <div *ngIf="nextMep" class="flex flex-col h-full">
-                      <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center space-x-2 flex-1 min-w-0">
-                          <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <span class="material-icons text-sm text-emerald-600 dark:text-emerald-400">rocket_launch</span>
-                          </div>
-                          <div class="flex-1 min-w-0">
-                            <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">Prochaine MEP</h2>
-                          </div>
-                        </div>
-                        <span class="px-2 py-0.5 rounded-full text-xs font-bold flex-shrink-0"
-                              [class.bg-amber-100]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
-                              [class.text-amber-800]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
-                              [class.dark:bg-amber-900]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
-                              [class.dark:text-amber-200]="getDaysUntilMep(nextMep.releaseDate) <= 7 && getDaysUntilMep(nextMep.releaseDate) > 0"
-                              [class.bg-emerald-100]="getDaysUntilMep(nextMep.releaseDate) > 7"
-                              [class.text-emerald-800]="getDaysUntilMep(nextMep.releaseDate) > 7"
-                              [class.dark:bg-emerald-900]="getDaysUntilMep(nextMep.releaseDate) > 7"
-                              [class.dark:text-emerald-200]="getDaysUntilMep(nextMep.releaseDate) > 7">
-                          J-{{ getDaysUntilMep(nextMep.releaseDate) }}
-                        </span>
-                      </div>
-
-                      <div class="flex-1 flex flex-col items-center justify-center text-center min-h-0 space-y-2">
-                        <div class="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center mb-1">
-                           <span class="material-icons text-3xl text-emerald-500 dark:text-emerald-400">event</span>
-                        </div>
-                        <h3 class="text-base font-bold text-gray-900 dark:text-white truncate w-full px-2" [title]="nextMep.name">
-                          {{ nextMep.name }}
-                        </h3>
-                        <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                          <span class="material-icons text-[14px] mr-1">schedule</span>
-                          {{ formatDate(nextMep.releaseDate) }}
-                        </div>
-                      </div>
-                      
-                      <div class="mt-auto pt-2 border-t border-gray-100 dark:border-gray-700 w-full">
-                        <button class="w-full py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded transition-colors flex items-center justify-center">
-                          Voir le détail <span class="material-icons text-[14px] ml-1">arrow_forward</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Empty state -->
-                    <div class="flex flex-col items-center justify-center h-full" *ngIf="!nextMep">
-                      <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">rocket</span>
-                      <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucune MEP planifiée</p>
-                      <p class="text-xs text-gray-500 dark:text-gray-500 text-center">À venir</p>
-                    </div>
-                  </div>
-
-                  <!-- User Absences Widget -->
-                  <div *ngIf="widget.type === 'userAbsences' && userNextAbsences.length > 0"
-                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col cursor-move"
-                       (click)="handleWidgetClick($event, 'absence')">
-                    <div class="flex items-center justify-between mb-3">
-                      <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                          <span class="material-icons text-sm text-orange-600 dark:text-orange-400">beach_access</span>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                          <h2 class="text-sm font-bold text-gray-900 dark:text-white truncate">Mes Absences</h2>
-                          <p class="text-xs text-gray-600 dark:text-gray-400">15 prochains jours</p>
-                        </div>
-                      </div>
-                      <div class="bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                        {{ userNextAbsences.length }}
-                      </div>
-                    </div>
-                    <div class="space-y-1 flex-1 overflow-y-auto custom-scrollbar-thin">
-                      <div *ngFor="let absence of userNextAbsences"
-                           class="flex items-center space-x-2 p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer"
-                           (click)="navigateToAbsenceDate(absence.startDate, $event)">
-                        <div class="w-1.5 h-1.5 rounded-full flex-shrink-0" 
-                             [class.bg-orange-500]="absence.type === 'ABSENCE'"
-                             [class.bg-sky-500]="absence.type === 'FORMATION'"
-                             [class.bg-rose-500]="absence.type === 'TELETRAVAIL'"></div>
-                        <div class="flex-1 min-w-0 flex justify-between items-center text-xs">
-                           <span class="font-medium text-gray-900 dark:text-white truncate">{{ ABSENCE_LABELS[absence.type] }}</span>
-                           <span class="text-gray-500 dark:text-gray-400">{{ formatDate(absence.startDate) }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Empty state Absences -->
-                  <div *ngIf="widget.type === 'userAbsences' && userNextAbsences.length === 0"
-                       class="widget-card bg-white dark:bg-gray-750 rounded-2xl shadow-md p-4 border-2 border-gray-200 dark:border-gray-600 hover:shadow-xl hover:border-primary-400 dark:hover:border-primary-500 transition-all duration-300 aspect-[4/3] flex flex-col items-center justify-center cursor-move"
-                       (click)="handleWidgetClick($event, 'absence')">
-                    <span class="material-icons text-3xl text-gray-400 dark:text-gray-600 mb-2">beach_access</span>
-                    <p class="text-xs text-gray-600 dark:text-gray-400 text-center">Aucune absence</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-500 text-center">15 prochains jours</p>
-                  </div>
-                </div>
-              </ng-container>
-            </div>
-          </section>
+          </div>
+        </section>
+      </div>
     </div>
   `,
   styles: [`
@@ -324,35 +321,62 @@ interface Widget {
       height: 100vh;
     }
 
-    /* Widget cards styles */
-    .widget-card {
-      user-select: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      cursor: move;
+    /* Custom Scrollbar */
+    .custom-scrollbar-thin::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar-thin::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 4px;
+    }
+    .custom-scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .custom-scrollbar-thin::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.2);
     }
 
-    /* Preview du widget pendant le drag */
-    .cdk-drag-preview .widget-card {
-      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-      opacity: 0.9;
-      border: 2px solid #10b981 !important;
+    /* Animations */
+    @keyframes blob {
+      0% { transform: translate(0px, 0px) scale(1); }
+      33% { transform: translate(30px, -50px) scale(1.1); }
+      66% { transform: translate(-20px, 20px) scale(0.9); }
+      100% { transform: translate(0px, 0px) scale(1); }
+    }
+    .animate-blob {
+      animation: blob 7s infinite;
+    }
+    .animation-delay-2000 {
+      animation-delay: 2s;
+    }
+    .animation-delay-4000 {
+      animation-delay: 4s;
+    }
+    .perspective-1000 {
+      perspective: 1000px;
     }
 
-    /* Placeholder - zone où le widget sera déposé */
+    /* Drag & Drop Styles */
+    .cdk-drag-preview {
+      box-sizing: border-box;
+      border-radius: 1rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
     .cdk-drag-placeholder {
-      opacity: 0;
+      opacity: 0.3;
+      background: rgba(255,255,255,0.05);
+      border-radius: 1rem;
+      border: 2px dashed rgba(255,255,255,0.1);
     }
-
-    /* Animation fluide pendant le drag */
+    .cdk-drag-animating {
+      transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+    }
     .cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
-      transition: transform 250ms cubic-bezier(0.4, 0.0, 0.2, 1);
-    }
-
-    /* Cursor pendant le drag */
-    .cdk-drag-dragging {
-      cursor: grabbing !important;
+      transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
     }
   `]
 })
@@ -634,6 +658,24 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   navigateToAbsences(): void {
     this.router.navigate(['/absences']);
+  }
+
+  navigateToAdmin(): void {
+    this.router.navigate(['/admin']);
+  }
+
+  navigateToPlayground(): void {
+    this.router.navigate(['/playground']);
+  }
+
+  canAccess(module: PermissionModule): boolean {
+    const user = this.authService.getCurrentUser();
+    if (!user || !user.permissions) {
+      return false;
+    }
+
+    const permission = user.permissions[module];
+    return permission === 'READ' || permission === 'WRITE';
   }
 
   navigateToAbsenceDate(dateStr: string, event: MouseEvent): void {

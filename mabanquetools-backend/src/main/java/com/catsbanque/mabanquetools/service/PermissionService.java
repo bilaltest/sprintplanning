@@ -109,6 +109,7 @@ public class PermissionService {
         createOrUpdatePermission(user, PermissionModule.RELEASES, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.ADMIN, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.ABSENCE, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.PLAYGROUND, PermissionLevel.WRITE);
 
         log.info("Permissions par défaut vérifiées/créées pour l'utilisateur {}", user.getEmail());
     }
@@ -182,6 +183,7 @@ public class PermissionService {
         defaults.put(PermissionModule.RELEASES, PermissionLevel.WRITE);
         defaults.put(PermissionModule.ADMIN, PermissionLevel.NONE);
         defaults.put(PermissionModule.ABSENCE, PermissionLevel.WRITE);
+        defaults.put(PermissionModule.PLAYGROUND, PermissionLevel.WRITE);
         return defaults;
     }
 }

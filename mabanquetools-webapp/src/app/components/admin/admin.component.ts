@@ -1019,7 +1019,7 @@ export class AdminComponent implements OnInit {
 
   // Permissions management
   getPermissionModules(): PermissionModule[] {
-    return ['CALENDAR', 'RELEASES', 'ADMIN', 'ABSENCE'];
+    return ['CALENDAR', 'RELEASES', 'ADMIN', 'ABSENCE', 'PLAYGROUND'];
   }
 
   getModuleShortName(module: PermissionModule): string {
@@ -1027,7 +1027,8 @@ export class AdminComponent implements OnInit {
       CALENDAR: 'CAL',
       RELEASES: 'REL',
       ADMIN: 'ADM',
-      ABSENCE: 'ABS'
+      ABSENCE: 'ABS',
+      PLAYGROUND: 'PLAY'
     };
     return names[module];
   }
@@ -1037,7 +1038,8 @@ export class AdminComponent implements OnInit {
       CALENDAR: 'Calendrier',
       RELEASES: 'Préparation des MEP',
       ADMIN: 'Administration',
-      ABSENCE: 'Absence'
+      ABSENCE: 'Absence',
+      PLAYGROUND: 'Playground'
     };
     return names[module];
   }
@@ -1047,7 +1049,8 @@ export class AdminComponent implements OnInit {
       CALENDAR: 'event',
       RELEASES: 'rocket_launch',
       ADMIN: 'admin_panel_settings',
-      ABSENCE: 'beach_access'
+      ABSENCE: 'beach_access',
+      PLAYGROUND: 'science'
     };
     return icons[module];
   }
@@ -1057,7 +1060,8 @@ export class AdminComponent implements OnInit {
       CALENDAR: 'Gestion des événements du calendrier trimestriel',
       RELEASES: 'Gestion des releases, squads, features et actions',
       ADMIN: 'Accès à l\'administration (gestion des utilisateurs, export/import)',
-      ABSENCE: 'Gestion des congés, formations et télétravail'
+      ABSENCE: 'Gestion des congés, formations et télétravail',
+      PLAYGROUND: 'Accès au Playground'
     };
     return descriptions[module];
   }

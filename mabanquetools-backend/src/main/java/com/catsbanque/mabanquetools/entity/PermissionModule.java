@@ -29,5 +29,10 @@ public enum PermissionModule {
      * Module Absences - Gestion des congés et absences
      * Visualisation timeline et demande de congés
      */
-    ABSENCE
+    ABSENCE,
+
+    /**
+     * Module Playground - Jeux et expérimentations
+     */
+    PLAYGROUND
 }

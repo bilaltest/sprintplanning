@@ -156,7 +156,7 @@ export class MainLayoutComponent implements OnInit {
     private sidebarService: SidebarService,
     private router: Router,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Récupérer les infos utilisateur depuis l'API pour avoir les préférences à jour

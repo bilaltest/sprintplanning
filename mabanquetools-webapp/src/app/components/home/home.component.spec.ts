@@ -5,7 +5,8 @@ import { SettingsService } from '@services/settings.service';
 import { EventService } from '@services/event.service';
 import { ReleaseService } from '@services/release.service';
 import { AuthService } from '@services/auth.service';
-import { BehaviorSubject } from 'rxjs';
+import { AbsenceService } from '@services/absence.service';
+import { BehaviorSubject, of } from 'rxjs';
 
 describe('HomeComponent', () => {
     let component: HomeComponent;
@@ -15,6 +16,7 @@ describe('HomeComponent', () => {
     let eventService: any;
     let releaseService: any;
     let authService: any;
+    let absenceService: any;
 
     beforeEach(async () => {
         router = {
@@ -36,7 +38,12 @@ describe('HomeComponent', () => {
 
         authService = {
             getWidgetOrder: jest.fn().mockReturnValue([]),
-            updateWidgetOrder: jest.fn()
+            updateWidgetOrder: jest.fn(),
+            getCurrentUser: jest.fn().mockReturnValue({ id: '123', firstName: 'John' })
+        };
+
+        absenceService = {
+            getAbsences: jest.fn().mockReturnValue(of([]))
         };
 
         await TestBed.configureTestingModule({
@@ -46,7 +53,8 @@ describe('HomeComponent', () => {
                 { provide: SettingsService, useValue: settingsService },
                 { provide: EventService, useValue: eventService },
                 { provide: ReleaseService, useValue: releaseService },
-                { provide: AuthService, useValue: authService }
+                { provide: AuthService, useValue: authService },
+                { provide: AbsenceService, useValue: absenceService }
             ]
         }).compileComponents();
 
