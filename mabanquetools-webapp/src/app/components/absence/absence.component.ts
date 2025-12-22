@@ -13,6 +13,7 @@ import { startWith, switchMap } from 'rxjs/operators';
 import { SprintService } from '@services/sprint.service';
 import { Sprint } from '@models/sprint.model';
 import { ToastService } from '@services/toast.service';
+import { MultiSelectFilterComponent } from '@components/shared/multi-select-filter.component';
 
 interface DayMetadata {
   date: Date;
@@ -39,7 +40,7 @@ interface MonthMetadata {
 @Component({
   selector: 'app-absence',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MultiSelectFilterComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="h-[calc(100vh-64px)] flex flex-col bg-gray-50 dark:bg-gray-900">
@@ -101,35 +102,26 @@ interface MonthMetadata {
                     >
                 </div>
                 <div class="w-[95px] relative flex-shrink-0 px-1">
-                    <select 
-                        [(ngModel)]="selectedSquad" 
-                        (change)="filterUsers()"
-                        class="w-full text-[10px] py-1 pl-1 pr-5 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-primary-500 appearance-none cursor-pointer">
-                        <option value="">Toutes</option>
-                        <option *ngFor="let s of uniqueSquads" [value]="s">{{ s }}</option>
-                    </select>
-                     <span class="material-icons absolute right-0.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[16px]">expand_more</span>
+                    <app-multi-select-filter
+                        [options]="uniqueSquads"
+                        [(selectedValues)]="selectedSquads"
+                        (selectedValuesChange)="filterUsers()">
+                    </app-multi-select-filter>
                 </div>
                 <div class="w-28 relative flex-shrink-0 px-1">
-                    <select 
-                        [(ngModel)]="selectedMetier" 
-                        (change)="filterUsers()"
-                        class="w-full text-[10px] py-1 pl-1 pr-5 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-primary-500 appearance-none cursor-pointer">
-                        <option value="">Tous</option>
-                        <option *ngFor="let m of uniqueMetiers" [value]="m">{{ m }}</option>
-                    </select>
-                     <span class="material-icons absolute right-0.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[16px]">expand_more</span>
+                    <app-multi-select-filter
+                        [options]="uniqueMetiers"
+                        [(selectedValues)]="selectedMetiers"
+                        (selectedValuesChange)="filterUsers()">
+                    </app-multi-select-filter>
                 </div>
                 <!-- Tribu Filter -->
                  <div *ngIf="showUserDetails" class="w-28 relative flex-shrink-0 px-1">
-                    <select 
-                        [(ngModel)]="selectedTribu" 
-                        (change)="filterUsers()"
-                        class="w-full text-[10px] py-1 pl-1 pr-5 border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:ring-1 focus:ring-primary-500 appearance-none cursor-pointer">
-                        <option value="">Toutes</option>
-                        <option *ngFor="let t of uniqueTribus" [value]="t">{{ t }}</option>
-                    </select>
-                     <span class="material-icons absolute right-0.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[16px]">expand_more</span>
+                    <app-multi-select-filter
+                        [options]="uniqueTribus"
+                        [(selectedValues)]="selectedTribus"
+                        (selectedValuesChange)="filterUsers()">
+                    </app-multi-select-filter>
                  </div>
                  <!-- Status Filter -->
                  <div *ngIf="showUserDetails" class="w-20 relative flex-shrink-0 px-1">
@@ -487,9 +479,9 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
   uniqueMetiers: string[] = [];
   uniqueSquads: string[] = [];
   uniqueTribus: string[] = [];
-  selectedMetier = '';
-  selectedSquad = '';
-  selectedTribu = '';
+  selectedMetiers: string[] = [];
+  selectedSquads: string[] = [];
+  selectedTribus: string[] = [];
   selectedStatus: 'ALL' | 'INTERNAL' | 'EXTERNAL' = 'ALL';
   searchQuery = '';
 
@@ -724,12 +716,14 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
       const matchesSearch = !this.searchQuery ||
         (u.firstName + ' ' + u.lastName).toLowerCase().includes(this.searchQuery.toLowerCase());
 
-      const matchesMetier = !this.selectedMetier || u.metier === this.selectedMetier;
+      const matchesMetier = this.selectedMetiers.length === 0 ||
+        (u.metier && this.selectedMetiers.includes(u.metier));
 
-      const matchesSquad = !this.selectedSquad ||
-        (u.squads && u.squads.includes(this.selectedSquad));
+      const matchesSquad = this.selectedSquads.length === 0 ||
+        (u.squads && u.squads.some(s => this.selectedSquads.includes(s)));
 
-      const matchesTribu = !this.selectedTribu || u.tribu === this.selectedTribu;
+      const matchesTribu = this.selectedTribus.length === 0 ||
+        (u.tribu && this.selectedTribus.includes(u.tribu));
 
       const matchesStatus = this.selectedStatus === 'ALL' ||
         (this.selectedStatus === 'INTERNAL' && u.interne) ||
