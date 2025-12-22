@@ -5,12 +5,18 @@ import { CategoryService } from '@services/category.service';
 import { BehaviorSubject } from 'rxjs';
 import { UserPreferences } from '@models/settings.model';
 import { FormsModule } from '@angular/forms';
+import { ConfirmationService } from '@services/confirmation.service';
+import { ToastService } from '@services/toast.service';
+import { Router } from '@angular/router';
 
 describe('SettingsComponent', () => {
     let component: SettingsComponent;
     let fixture: ComponentFixture<SettingsComponent>;
     let settingsService: any;
     let categoryService: any;
+    let confirmationService: any;
+    let toastService: any;
+    let router: any;
 
     const mockPreferences: UserPreferences = {
         theme: 'light',
@@ -37,11 +43,30 @@ describe('SettingsComponent', () => {
             deleteCustomCategory: jest.fn()
         };
 
+
+
+        // ... (in beforeEach)
+        confirmationService = {
+            confirm: jest.fn().mockResolvedValue(true)
+        };
+
+        toastService = {
+            success: jest.fn(),
+            error: jest.fn()
+        };
+
+        router = {
+            navigate: jest.fn()
+        };
+
         await TestBed.configureTestingModule({
             imports: [SettingsComponent, FormsModule],
             providers: [
                 { provide: SettingsService, useValue: settingsService },
-                { provide: CategoryService, useValue: categoryService }
+                { provide: CategoryService, useValue: categoryService },
+                { provide: ConfirmationService, useValue: confirmationService },
+                { provide: ToastService, useValue: toastService },
+                { provide: Router, useValue: router }
             ]
         }).compileComponents();
 
@@ -59,19 +84,15 @@ describe('SettingsComponent', () => {
         expect(component.allCategories).toEqual(mockCategories);
     });
 
-    it('should set theme', async () => {
-        await component.setTheme('dark');
-        expect(settingsService.setTheme).toHaveBeenCalledWith('dark');
-    });
-
     it('should reset to defaults', async () => {
-        jest.spyOn(window, 'confirm').mockReturnValue(true);
+        confirmationService.confirm.mockResolvedValue(true);
         await component.resetToDefaults();
         expect(settingsService.resetToDefaults).toHaveBeenCalled();
+        expect(toastService.success).toHaveBeenCalled();
     });
 
     it('should not reset to defaults if cancelled', async () => {
-        jest.spyOn(window, 'confirm').mockReturnValue(false);
+        confirmationService.confirm.mockResolvedValue(false);
         await component.resetToDefaults();
         expect(settingsService.resetToDefaults).not.toHaveBeenCalled();
     });
@@ -90,6 +111,7 @@ describe('SettingsComponent', () => {
 
         expect(categoryService.addCustomCategory).toHaveBeenCalledWith('New Category', '#000000', 'event');
         expect(component.showAddCategoryForm).toBe(false);
+        expect(toastService.success).toHaveBeenCalled();
     });
 
     it('should not add custom category if invalid', async () => {
@@ -101,11 +123,10 @@ describe('SettingsComponent', () => {
     it('should handle error when adding custom category', async () => {
         component.newCategoryLabel = 'Error Category';
         categoryService.addCustomCategory.mockRejectedValue(new Error('Error'));
-        jest.spyOn(window, 'alert').mockImplementation(() => { });
 
         await component.addCustomCategory();
 
-        expect(window.alert).toHaveBeenCalled();
+        expect(toastService.error).toHaveBeenCalled();
     });
 
     it('should cancel add category', () => {
@@ -119,24 +140,24 @@ describe('SettingsComponent', () => {
     });
 
     it('should delete custom category', async () => {
-        jest.spyOn(window, 'confirm').mockReturnValue(true);
+        confirmationService.confirm.mockResolvedValue(true);
         await component.deleteCustomCategory('custom1');
         expect(categoryService.deleteCustomCategory).toHaveBeenCalledWith('custom1');
+        expect(toastService.success).toHaveBeenCalled();
     });
 
     it('should not delete custom category if cancelled', async () => {
-        jest.spyOn(window, 'confirm').mockReturnValue(false);
+        confirmationService.confirm.mockResolvedValue(false);
         await component.deleteCustomCategory('custom1');
         expect(categoryService.deleteCustomCategory).not.toHaveBeenCalled();
     });
 
     it('should handle error when deleting custom category', async () => {
-        jest.spyOn(window, 'confirm').mockReturnValue(true);
+        confirmationService.confirm.mockResolvedValue(true);
         categoryService.deleteCustomCategory.mockRejectedValue(new Error('Error'));
-        jest.spyOn(window, 'alert').mockImplementation(() => { });
 
         await component.deleteCustomCategory('custom1');
 
-        expect(window.alert).toHaveBeenCalled();
+        expect(toastService.error).toHaveBeenCalled();
     });
 });

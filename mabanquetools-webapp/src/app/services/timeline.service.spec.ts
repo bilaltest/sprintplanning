@@ -16,8 +16,16 @@ describe('TimelineService', () => {
 
     it('should have default state', () => {
         const state = service.getCurrentState();
-        expect(state.view).toBe('quarter');
+        expect(state.view).toBe('semester');
         expect(state.currentDate).toBeInstanceOf(Date);
+    });
+
+    it('should emit state changes via state$ observable', (done) => {
+        service.state$.subscribe(state => {
+            expect(state.view).toBe('semester');
+            expect(state.currentDate).toBeInstanceOf(Date);
+            done();
+        });
     });
 
     it('should set view', () => {

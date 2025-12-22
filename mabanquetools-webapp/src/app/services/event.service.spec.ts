@@ -53,6 +53,25 @@ describe('EventService', () => {
         });
     });
 
+    it('should handle load events error', async () => {
+        // Trigger load via refreshEvents
+        const promise = service.refreshEvents();
+
+        const req = httpMock.expectOne(apiUrl);
+        req.error(new ErrorEvent('Network error'));
+
+        try {
+            await promise;
+        } catch (e) {
+            // Expected error
+        }
+
+        service.loading$.subscribe(loading => {
+            // Should be false after error
+            expect(loading).toBe(false);
+        });
+    });
+
     it('should create event', async () => {
         const newEventData = {
             title: 'New Event',
@@ -63,7 +82,7 @@ describe('EventService', () => {
             color: '#ffffff',
             icon: 'new-icon',
             description: 'new desc'
-        };
+        } as any;
 
         const createdEvent: Event = { ...newEventData, id: '2', createdAt: 'date', updatedAt: 'date' };
 

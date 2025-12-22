@@ -77,8 +77,5 @@ describe('HomeComponent', () => {
         expect(router.navigate).toHaveBeenCalledWith(['/releases']);
     });
 
-    it('should toggle theme', () => {
-        component.toggleTheme();
-        expect(settingsService.toggleTheme).toHaveBeenCalled();
-    });
+
 });

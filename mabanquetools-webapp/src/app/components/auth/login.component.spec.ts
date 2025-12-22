@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed, fakeAsync, tick, flush } from '@angular/core/testing';
 import { LoginComponent } from './login.component';
 import { AuthService } from '@services/auth.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { of, BehaviorSubject } from 'rxjs';
 
 describe('LoginComponent', () => {
     let component: LoginComponent;
@@ -16,14 +17,23 @@ describe('LoginComponent', () => {
         };
 
         router = {
-            navigate: jest.fn()
+            navigate: jest.fn(),
+            createUrlTree: jest.fn(),
+            serializeUrl: jest.fn(),
+            events: new BehaviorSubject(null)
         };
 
         await TestBed.configureTestingModule({
             imports: [LoginComponent, FormsModule],
             providers: [
                 { provide: AuthService, useValue: authService },
-                { provide: Router, useValue: router }
+                { provide: Router, useValue: router },
+                {
+                    provide: ActivatedRoute,
+                    useValue: {
+                        queryParams: of({})
+                    }
+                }
             ]
         }).compileComponents();
 
@@ -44,8 +54,9 @@ describe('LoginComponent', () => {
 
     it('should login successfully', async () => {
         jest.useFakeTimers();
+        component.email = 'test@example.com';
         component.password = 'password';
-        authService.login.mockResolvedValue(true);
+        authService.login.mockResolvedValue({ success: true });
 
         const promise = component.onSubmit();
 
@@ -58,7 +69,7 @@ describe('LoginComponent', () => {
 
         await promise;
 
-        expect(authService.login).toHaveBeenCalledWith('password');
+        expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password');
         expect(component.isLoading).toBe(false);
         expect(router.navigate).toHaveBeenCalledWith(['/']);
 
@@ -67,8 +78,9 @@ describe('LoginComponent', () => {
 
     it('should handle login failure', async () => {
         jest.useFakeTimers();
+        component.email = 'test@example.com';
         component.password = 'wrong';
-        authService.login.mockResolvedValue(false);
+        authService.login.mockResolvedValue({ success: false, message: 'Invalid credentials' });
 
         const promise = component.onSubmit();
 
@@ -77,10 +89,11 @@ describe('LoginComponent', () => {
 
         await promise;
 
-        expect(authService.login).toHaveBeenCalledWith('wrong');
+        expect(authService.login).toHaveBeenCalledWith('test@example.com', 'wrong');
         expect(component.isLoading).toBe(false);
         expect(router.navigate).not.toHaveBeenCalled();
         expect(component.showError).toBe(true);
+        expect(component.errorMessage).toBe('Invalid credentials');
         expect(component.password).toBe('');
 
         jest.useRealTimers();

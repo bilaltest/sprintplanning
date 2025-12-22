@@ -3,6 +3,7 @@ import { ReleasesListComponent } from './releases-list.component';
 import { ReleaseService } from '@services/release.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
+import { PermissionService } from '@services/permission.service';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { Release } from '@models/release.model';
@@ -49,13 +50,19 @@ describe('ReleasesListComponent', () => {
             navigate: jest.fn()
         } as any;
 
+        const permissionServiceMock = {
+            hasWriteAccess: jest.fn().mockReturnValue(true),
+            permissions$: of({})
+        } as any;
+
         await TestBed.configureTestingModule({
             imports: [ReleasesListComponent, FormsModule],
             providers: [
                 { provide: ReleaseService, useValue: releaseServiceMock },
                 { provide: ToastService, useValue: toastServiceMock },
                 { provide: ConfirmationService, useValue: confirmationServiceMock },
-                { provide: Router, useValue: routerMock }
+                { provide: Router, useValue: routerMock },
+                { provide: PermissionService, useValue: permissionServiceMock }
             ]
         }).compileComponents();
 
@@ -138,8 +145,13 @@ describe('ReleasesListComponent', () => {
         confirmationService.confirm.mockResolvedValue(true);
         releaseService.deleteRelease.mockRejectedValue(new Error('Error'));
         const event = { stopPropagation: jest.fn() } as any;
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
+
         await component.deleteRelease(event, mockReleases[0]);
+
         expect(toastService.error).toHaveBeenCalled();
+        expect(consoleSpy).toHaveBeenCalled();
+        consoleSpy.mockRestore();
     });
 
     it('should navigate to release note', () => {

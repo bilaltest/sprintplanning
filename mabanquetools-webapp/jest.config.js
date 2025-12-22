@@ -25,6 +25,7 @@ module.exports = {
     '^@models/(.*)$': '<rootDir>/src/app/models/$1',
     '^@services/(.*)$': '<rootDir>/src/app/services/$1',
     '^@components/(.*)$': '<rootDir>/src/app/components/$1',
+    '^@directives/(.*)$': '<rootDir>/src/app/directives/$1',
   },
   transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$)']
 };

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FilterBarComponent } from './filter-bar.component';
 import { FilterService } from '@services/filter.service';
 import { CategoryService } from '@services/category.service';
+import { PermissionService } from '@services/permission.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { EventCategory } from '@models/event.model';
 
@@ -9,7 +10,9 @@ describe('FilterBarComponent', () => {
     let component: FilterBarComponent;
     let fixture: ComponentFixture<FilterBarComponent>;
     let filterService: any;
+
     let categoryService: any;
+    let permissionService: any;
 
     const mockCategories = [
         { id: 'mep', label: 'MEP', color: '#000000', icon: 'icon' },
@@ -28,11 +31,18 @@ describe('FilterBarComponent', () => {
             allCategories$: new BehaviorSubject(mockCategories)
         };
 
+        permissionService = {
+            hasWriteAccess: jest.fn().mockReturnValue(true),
+            permissions$: of({})
+        };
+
         await TestBed.configureTestingModule({
             imports: [FilterBarComponent],
             providers: [
                 { provide: FilterService, useValue: filterService },
-                { provide: CategoryService, useValue: categoryService }
+                { provide: FilterService, useValue: filterService },
+                { provide: CategoryService, useValue: categoryService },
+                { provide: PermissionService, useValue: permissionService }
             ]
         }).compileComponents();
 
@@ -76,8 +86,8 @@ describe('FilterBarComponent', () => {
     });
 
     it('should check category selection', () => {
-        filterService.category$ = of('mep');
-        component.ngOnInit();
+        filterService.filter$.next({ categories: ['mep'] });
+        fixture.detectChanges();
         expect(component.isCategorySelected('mep')).toBe(true);
         expect(component.isCategorySelected('hotfix')).toBe(false);
     });

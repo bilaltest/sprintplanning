@@ -149,13 +149,12 @@ describe('ReleaseNoteComponent', () => {
 
         component.applyFilters();
 
-        const grouped = component.groupedEntries;
+        const filtered = component.filteredEntries;
 
-        const squadA = grouped.find(g => g.squad === 'Squad A');
-        const ms1Entry = squadA?.entries.find(e => e.microserviceId === 'ms1');
+        const ms1Entry = filtered.find(e => e.microserviceId === 'ms1');
         expect(ms1Entry?.solution).toBe('SOL-001');
 
-        const ms2Entry = squadA?.entries.find(e => e.microserviceId === 'ms2');
+        const ms2Entry = filtered.find(e => e.microserviceId === 'ms2');
         expect(ms2Entry?.solution).toBe('SOL-002');
     });
 
@@ -166,23 +165,23 @@ describe('ReleaseNoteComponent', () => {
         component.entries = [...mockEntries];
         component.release = mockRelease;
 
-        // Initial state: show all (2 squads, 3 entries)
+        // Initial state: show all (3 entries)
         component.applyFilters();
-        let total = component.groupedEntries.reduce((acc, g) => acc + g.entries.length, 0);
+        let total = component.filteredEntries.length;
         expect(total).toBe(3);
 
         // Filter ON
         component.showOnlyPartEnMep = true;
         component.applyFilters();
 
-        total = component.groupedEntries.reduce((acc, g) => acc + g.entries.length, 0);
+        total = component.filteredEntries.length;
         expect(total).toBe(1); // Only ms1
-        expect(component.groupedEntries[0].entries[0].microserviceId).toBe('ms1');
+        expect(component.filteredEntries[0].microserviceId).toBe('ms1');
 
         // Filter OFF
         component.showOnlyPartEnMep = false;
         component.applyFilters();
-        total = component.groupedEntries.reduce((acc, g) => acc + g.entries.length, 0);
+        total = component.filteredEntries.length;
         expect(total).toBe(3);
     });
 
@@ -200,19 +199,17 @@ describe('ReleaseNoteComponent', () => {
         component.searchQuery = 'ALPHA';
         component.applyFilters();
 
-        let grouped = component.groupedEntries;
-        let squadA = grouped.find(g => g.squad === 'Squad A');
-        expect(squadA?.entries.length).toBe(1);
-        expect(squadA?.entries[0].solution).toBe('ALPHA');
+        let filtered = component.filteredEntries;
+        expect(filtered.length).toBe(1);
+        expect(filtered[0].solution).toBe('ALPHA');
 
         // Search for "Microservice 2" (name)
         component.searchQuery = 'Microservice 2';
         component.applyFilters();
 
-        grouped = component.groupedEntries;
-        squadA = grouped.find(g => g.squad === 'Squad A');
-        expect(squadA?.entries.length).toBe(1);
-        expect(squadA?.entries[0].microservice).toBe('Microservice 2');
+        filtered = component.filteredEntries;
+        expect(filtered.length).toBe(1);
+        expect(filtered[0].microservice).toBe('Microservice 2');
     });
 
     it('should create new entry when toggling partEnMep on placeholder', () => {
@@ -228,8 +225,14 @@ describe('ReleaseNoteComponent', () => {
 
         component.release = mockRelease;
 
-        // Switch to true
-        placeholderEntry.partEnMep = true;
+        // Switch to true happens inside the component logic usually, mainly we test the service call
+        // BUT component.onPartEnMepToggle modifies the entry BEFORE calling service IF it was false -> true? 
+        // Actually looking at component code: 
+        // entry.partEnMep = !entry.partEnMep;
+        // if (!entry.partEnMep) clears fields
+        // calls service
+
+        // So for test, we pass entry as is (false), component flips it to true.
 
         releaseNoteService.createEntry.mockReturnValue(of({
             ...placeholderEntry,
@@ -237,7 +240,7 @@ describe('ReleaseNoteComponent', () => {
             partEnMep: true
         } as ReleaseNoteEntry));
 
-        component.togglePartEnMep(placeholderEntry);
+        component.onPartEnMepToggle(placeholderEntry);
 
         expect(releaseNoteService.createEntry).toHaveBeenCalledWith('1', expect.objectContaining({
             microserviceId: 'ms2',
@@ -246,8 +249,7 @@ describe('ReleaseNoteComponent', () => {
     });
 
     it('should update existing entry when toggling partEnMep', () => {
-        const existingEntry = mockEntries[0]; // ms1, partEnMep: true
-        existingEntry.partEnMep = false;
+        const existingEntry = { ...mockEntries[0] }; // ms1, partEnMep: true
 
         component.release = mockRelease;
 
@@ -256,14 +258,15 @@ describe('ReleaseNoteComponent', () => {
             partEnMep: false
         }));
 
-        component.togglePartEnMep(existingEntry);
+        // Toggling from true to false
+        component.onPartEnMepToggle(existingEntry);
 
         expect(releaseNoteService.updateEntry).toHaveBeenCalledWith('1', 'e1', expect.objectContaining({
             partEnMep: false
         }));
     });
 
-    it('should update field via updateField method', () => {
+    it('should update field via onFieldUpdate method', () => {
         const existingEntry: ReleaseNoteEntry = {
             id: 'e1',
             releaseId: '1',
@@ -282,7 +285,11 @@ describe('ReleaseNoteComponent', () => {
             tag: 'v1.1'
         }));
 
-        component.updateField(existingEntry, 'tag', 'v1.1');
+        component.onFieldUpdate({
+            entry: existingEntry,
+            field: 'tag',
+            value: 'v1.1'
+        });
 
         expect(releaseNoteService.updateEntry).toHaveBeenCalledWith('1', 'e1', expect.objectContaining({
             microserviceId: 'ms1',

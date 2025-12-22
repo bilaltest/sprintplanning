@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute } from '@angular/router';
 import { TimelineContainerComponent } from './timeline-container.component';
 import { TimelineService } from '@services/timeline.service';
 import { EventService } from '@services/event.service';
@@ -6,14 +7,16 @@ import { FilterService } from '@services/filter.service';
 import { CategoryService } from '@services/category.service';
 import { ExportService } from '@services/export.service';
 import { ToastService } from '@services/toast.service';
+import { SprintService } from '@services/sprint.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { TimelineState } from '@models/timeline.model';
 import { Event } from '@models/event.model';
+import { Sprint } from '@models/sprint.model';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FilterBarComponent } from '../filters/filter-bar.component';
-import { AnnualViewComponent } from './annual-view.component';
-import { CalendarViewComponent } from './calendar-view.component';
+import { SemesterViewComponent } from './semester-view.component';
+import { NowViewComponent } from './now-view.component';
 import { EventModalComponent } from '../modals/event-modal.component';
 
 jest.mock('jspdf', () => ({
@@ -30,23 +33,23 @@ jest.mock('html2canvas', () => jest.fn());
 class MockFilterBarComponent { }
 
 @Component({
-    selector: 'app-annual-view',
+    selector: 'app-semester-view',
     standalone: true,
     template: ''
 })
-class MockAnnualViewComponent {
+class MockSemesterViewComponent {
     @Input() events: Event[] = [];
+    @Input() sprints: Sprint[] = [];
     @Output() eventClick = new EventEmitter<Event>();
     @Output() addEventClick = new EventEmitter<string>();
-    @Output() deleteEventClick = new EventEmitter<Event>();
 }
 
 @Component({
-    selector: 'app-calendar-view',
+    selector: 'app-now-view',
     standalone: true,
     template: ''
 })
-class MockCalendarViewComponent {
+class MockNowViewComponent {
     @Input() events: Event[] | null = [];
     @Output() eventClick = new EventEmitter<Event>();
     @Output() addEventClick = new EventEmitter<string>();
@@ -73,6 +76,7 @@ describe('TimelineContainerComponent', () => {
     let categoryService: any;
     let exportService: any;
     let toastService: any;
+    let sprintService: any;
 
     const mockTimelineState: TimelineState = {
         view: 'quarter',
@@ -102,11 +106,13 @@ describe('TimelineContainerComponent', () => {
             previousPeriod: jest.fn(),
             nextPeriod: jest.fn(),
             goToToday: jest.fn(),
-            getCurrentState: jest.fn().mockReturnValue(mockTimelineState)
+            getCurrentState: jest.fn().mockReturnValue(mockTimelineState),
+            setCurrentDate: jest.fn()
         };
 
         eventService = {
-            deleteEvent: jest.fn().mockResolvedValue(undefined)
+            deleteEvent: jest.fn().mockResolvedValue(undefined),
+            events$: new BehaviorSubject(mockEvents)
         };
 
         filterService = {
@@ -129,8 +135,15 @@ describe('TimelineContainerComponent', () => {
         toastService = {
             info: jest.fn(),
             success: jest.fn(),
-            error: jest.fn()
+            error: jest.fn(),
+            warning: jest.fn()
         };
+
+        sprintService = {
+            getAllSprints: jest.fn().mockReturnValue(of([]))
+        };
+
+
 
         await TestBed.configureTestingModule({
             imports: [TimelineContainerComponent, HttpClientTestingModule],
@@ -140,23 +153,30 @@ describe('TimelineContainerComponent', () => {
                 { provide: FilterService, useValue: filterService },
                 { provide: CategoryService, useValue: categoryService },
                 { provide: ExportService, useValue: exportService },
-                { provide: ToastService, useValue: toastService }
+                { provide: ToastService, useValue: toastService },
+                { provide: SprintService, useValue: sprintService },
+                {
+                    provide: ActivatedRoute,
+                    useValue: {
+                        queryParams: of({})
+                    }
+                }
             ]
         })
             .overrideComponent(TimelineContainerComponent, {
                 remove: {
                     imports: [
                         FilterBarComponent,
-                        AnnualViewComponent,
-                        CalendarViewComponent,
+                        SemesterViewComponent,
+                        NowViewComponent,
                         EventModalComponent
                     ]
                 },
                 add: {
                     imports: [
                         MockFilterBarComponent,
-                        MockAnnualViewComponent,
-                        MockCalendarViewComponent,
+                        MockSemesterViewComponent,
+                        MockNowViewComponent,
                         MockEventModalComponent
                     ]
                 }

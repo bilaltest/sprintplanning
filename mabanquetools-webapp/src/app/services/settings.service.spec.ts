@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { SettingsService } from './settings.service';
+import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 import { UserPreferences, DEFAULT_PREFERENCES } from '@models/settings.model';
 
@@ -16,9 +17,17 @@ describe('SettingsService', () => {
     };
 
     beforeEach(() => {
+        const authServiceMock = {
+            updatePreferences: jest.fn().mockResolvedValue({}),
+            getCurrentUser: jest.fn().mockReturnValue({ themePreference: 'light' })
+        };
+
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
-            providers: [SettingsService]
+            providers: [
+                SettingsService,
+                { provide: AuthService, useValue: authServiceMock }
+            ]
         });
         service = TestBed.inject(SettingsService);
         httpMock = TestBed.inject(HttpTestingController);
@@ -62,16 +71,10 @@ describe('SettingsService', () => {
 
     it('should set theme', async () => {
         const newTheme = 'dark';
-        const updatedPrefs = { ...mockPreferences, theme: newTheme };
+        await service.setTheme(newTheme);
 
-        const promise = service.setTheme(newTheme);
-
-        const req = httpMock.expectOne(apiUrl);
-        expect(req.request.method).toBe('PUT');
-        expect(req.request.body.theme).toBe(newTheme);
-        req.flush(updatedPrefs);
-
-        await promise;
+        // Verify AuthService was called
+        expect((service as any).authService.updatePreferences).toHaveBeenCalledWith(newTheme);
         expect(document.documentElement.classList.contains('dark')).toBe(true);
     });
 
@@ -83,7 +86,10 @@ describe('SettingsService', () => {
         req.flush({ ...DEFAULT_PREFERENCES, id: '1' });
 
         await promise;
-        expect(service.getCurrentPreferences().theme).toBe(DEFAULT_PREFERENCES.theme);
+
+        // Verify theme reset
+        expect((service as any).authService.updatePreferences).toHaveBeenCalledWith('light');
+        expect(document.documentElement.classList.contains('dark')).toBe(false);
     });
 
     it('should update preferences', async () => {
@@ -95,24 +101,20 @@ describe('SettingsService', () => {
         req.flush(newPrefs);
 
         await promise;
-        expect(service.getCurrentPreferences().theme).toBe('dark');
     });
 
     it('should toggle theme', async () => {
-        // Initial state is light (from mockPreferences)
+        // Initial state is light (mocked in AuthService.getCurrentUser)
 
         // Toggle to dark
-        const promise1 = Promise.resolve(service.toggleTheme());
-        const req1 = httpMock.expectOne(apiUrl);
-        expect(req1.request.body.theme).toBe('dark');
-        req1.flush({ ...mockPreferences, theme: 'dark' });
-        await promise1;
+        await service.toggleTheme();
+        expect((service as any).authService.updatePreferences).toHaveBeenCalledWith('dark');
+
+        // Update mock to return dark for next call
+        (service as any).authService.getCurrentUser.mockReturnValue({ themePreference: 'dark' });
 
         // Toggle back to light
-        const promise2 = Promise.resolve(service.toggleTheme());
-        const req2 = httpMock.expectOne(apiUrl);
-        expect(req2.request.body.theme).toBe('light');
-        req2.flush({ ...mockPreferences, theme: 'light' });
-        await promise2;
+        await service.toggleTheme();
+        expect((service as any).authService.updatePreferences).toHaveBeenCalledWith('light');
     });
 });

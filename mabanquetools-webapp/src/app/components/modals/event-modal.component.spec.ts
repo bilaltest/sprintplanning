@@ -4,7 +4,8 @@ import { EventService } from '@services/event.service';
 import { CategoryService } from '@services/category.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
-import { BehaviorSubject } from 'rxjs';
+import { PermissionService } from '@services/permission.service';
+import { BehaviorSubject, of } from 'rxjs';
 import { Event } from '@models/event.model';
 import { FormsModule } from '@angular/forms';
 
@@ -14,7 +15,9 @@ describe('EventModalComponent', () => {
     let eventService: any;
     let categoryService: any;
     let toastService: any;
+
     let confirmationService: any;
+    let permissionService: any;
 
     const mockCategories = [
         { id: 'mep', label: 'MEP', color: '#000000', icon: 'icon' },
@@ -56,13 +59,20 @@ describe('EventModalComponent', () => {
             confirm: jest.fn().mockResolvedValue(true)
         };
 
+        permissionService = {
+            hasWriteAccess: jest.fn().mockReturnValue(true),
+            permissions$: of({})
+        };
+
         await TestBed.configureTestingModule({
             imports: [EventModalComponent, FormsModule],
             providers: [
                 { provide: EventService, useValue: eventService },
                 { provide: CategoryService, useValue: categoryService },
                 { provide: ToastService, useValue: toastService },
-                { provide: ConfirmationService, useValue: confirmationService }
+                { provide: ToastService, useValue: toastService },
+                { provide: ConfirmationService, useValue: confirmationService },
+                { provide: PermissionService, useValue: permissionService }
             ]
         }).compileComponents();
 

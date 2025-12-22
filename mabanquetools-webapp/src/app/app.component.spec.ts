@@ -2,6 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ToastContainerComponent } from '@components/toast/toast-container.component';
 import { ConfirmationModalComponent } from '@components/confirmation/confirmation-modal.component';
 
@@ -25,7 +28,7 @@ describe('AppComponent', () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [AppComponent, RouterOutlet],
+            imports: [AppComponent, RouterOutlet, HttpClientTestingModule, RouterTestingModule, NoopAnimationsModule],
         })
             .overrideComponent(AppComponent, {
                 remove: { imports: [ToastContainerComponent, ConfirmationModalComponent] },
