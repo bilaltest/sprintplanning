@@ -24,21 +24,8 @@ interface Widget {
   standalone: true,
   imports: [CommonModule, DragDropModule],
   template: `
-    <div class="min-h-screen bg-slate-50 dark:bg-slate-950 relative overflow-hidden selection:bg-emerald-500/30 selection:text-emerald-900 dark:selection:text-emerald-100 transition-colors duration-300">
+    <div class="min-h-screen relative overflow-hidden selection:bg-emerald-500/30 selection:text-emerald-900 dark:selection:text-emerald-100 transition-colors duration-300">
       
-      <!-- Background Ambient Blobs -->
-      <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <!-- Light Mode Blobs -->
-        <div class="absolute top-[-5%] left-[-5%] w-[300px] h-[300px] rounded-full bg-emerald-800/10 blur-[80px] animate-blob mix-blend-multiply dark:hidden"></div>
-        <div class="absolute top-[20%] right-[-5%] w-[250px] h-[250px] rounded-full bg-teal-800/10 blur-[60px] animate-blob animation-delay-2000 mix-blend-multiply dark:hidden"></div>
-        <div class="absolute bottom-[-5%] left-[20%] w-[350px] h-[350px] rounded-full bg-emerald-800/10 blur-[80px] animate-blob animation-delay-4000 mix-blend-multiply dark:hidden"></div>
-
-        <!-- Dark Mode Blobs (Slightly more vibrant to show on dark bg) -->
-        <div class="hidden dark:block absolute top-[-5%] left-[-5%] w-[300px] h-[300px] rounded-full bg-emerald-800/20 blur-[80px] animate-blob mix-blend-screen"></div>
-        <div class="hidden dark:block absolute top-[20%] right-[-5%] w-[250px] h-[250px] rounded-full bg-teal-600/20 blur-[60px] animate-blob animation-delay-2000 mix-blend-screen"></div>
-        <div class="hidden dark:block absolute bottom-[-5%] left-[20%] w-[350px] h-[350px] rounded-full bg-emerald-800/20 blur-[80px] animate-blob animation-delay-4000 mix-blend-screen"></div>
-      </div>
-
       <!-- Content Container -->
       <div class="relative z-10 container mx-auto px-4 py-8 space-y-12">
         
@@ -48,9 +35,7 @@ interface Widget {
              <!-- Optional: Add a user greeting or logo here if needed -->
           </div>
           <div class="flex items-center space-x-4">
-            <button (click)="toggleTheme()" class="p-2 rounded-full bg-white/40 dark:bg-white/5 border border-white/60 dark:border-white/10 hover:bg-white/60 dark:hover:bg-white/10 transition-colors backdrop-blur-md text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white shadow-sm">
-              <span class="material-icons text-xl">dark_mode</span>
-            </button>
+
           </div>
         </header>
 
@@ -683,7 +668,5 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/absences'], { queryParams: { date: dateStr } });
   }
 
-  toggleTheme(): void {
-    this.settingsService.toggleTheme();
-  }
+
 }

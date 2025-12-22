@@ -203,6 +203,20 @@ public class AdminService {
     }
 
     /**
+     * Réinitialiser le mot de passe d'un utilisateur
+     */
+    @Transactional
+    public void resetUserPassword(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
+
+        // Mot de passe par défaut : "password"
+        user.setPassword(passwordEncoder.encode("password"));
+        userRepository.save(user);
+        log.info("Mot de passe réinitialisé pour l'utilisateur {}", id);
+    }
+
+    /**
      * Récupérer des statistiques
      * Référence: admin.controller.js:89-115
      */

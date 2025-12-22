@@ -233,26 +233,36 @@ public class AuthService {
     }
 
     /**
+     * Changement de mot de passe utilisateur
+     */
+    @Transactional
+    public void changePassword(String userId, String newPassword) {
+        log.info("Changement de mot de passe pour l'utilisateur: {}", userId);
+
+        // Valider le nouveau mot de passe
+        validatePassword(newPassword);
+
+        // Trouver utilisateur
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.catsbanque.mabanquetools.exception.ResourceNotFoundException(
+                        "Utilisateur non trouvé"));
+
+        // Mettre à jour le mot de passe
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    /**
      * Validation du mot de passe
      * Référence: auth.controller.js:44-78
      */
     private void validatePassword(String password) {
-        if (password.length() < 8) {
-            throw new BadRequestException("Le mot de passe doit contenir au moins 8 caractères");
+        if (password == null || password.isEmpty()) {
+            throw new BadRequestException("Le mot de passe est requis");
         }
 
-        boolean hasLetter = password.matches(".*[a-zA-Z].*");
-        boolean hasNumber = password.matches(".*[0-9].*");
-        boolean isAlphanumeric = password.matches("^[a-zA-Z0-9]+$");
-
-        if (!isAlphanumeric) {
-            throw new BadRequestException(
-                    "Le mot de passe doit être alphanumérique (lettres et chiffres uniquement)");
-        }
-
-        if (!hasLetter || !hasNumber) {
-            throw new BadRequestException(
-                    "Le mot de passe doit contenir au moins une lettre et un chiffre");
+        if (password.length() >= 50) {
+            throw new BadRequestException("Le mot de passe ne doit pas dépasser 50 caractères");
         }
     }
 

@@ -100,10 +100,12 @@ interface MonthColumn {
                    class="flex-1 min-h-[48px] relative rounded-md transition-all duration-200 group/cell"
                    [class.opacity-0]="!cell.isValid"
                    [class.pointer-events-none]="!cell.isValid"
-                   [class.bg-amber-500-10]="cell.isToday"
-                   [class.dark:bg-amber-500-20]="cell.isToday"
-                   [class.bg-holiday-custom]="cell.isHoliday && !cell.isToday"
-                   [class.bg-weekend-custom]="cell.isWeekend && !cell.isHoliday && !cell.isToday"
+                   [class.bg-amber-500\/10]="cell.isToday"
+                   [class.dark:bg-amber-500\/20]="cell.isToday"
+                   [class.bg-red-50]="cell.isHoliday && !cell.isToday"
+                   [class.dark:bg-red-900\/20]="cell.isHoliday && !cell.isToday"
+                   [class.bg-slate-50]="cell.isWeekend && !cell.isHoliday && !cell.isToday"
+                   [class.dark:bg-gray-800\/30]="cell.isWeekend && !cell.isHoliday && !cell.isToday"
                    [ngClass]="getBgClass(cell)"
                    (click)="onCellClick(cell)"
               >
@@ -149,14 +151,19 @@ interface MonthColumn {
                           [class.text-amber-600]="cell.isToday"
                           [class.dark:text-amber-400]="cell.isToday"
                           [class.text-red-500]="cell.isHoliday && !cell.isToday"
+                          [class.dark:text-red-400]="cell.isHoliday && !cell.isToday"
                           [class.text-gray-400]="!cell.isToday && !cell.isHoliday"
+                          [class.dark:text-gray-500]="!cell.isToday && !cell.isHoliday"
                     >
                       {{ cell.dayNumber }}
                     </span>
                     <span class="text-[9px] uppercase leading-none mt-0.5"
                           [class.text-amber-500]="cell.isToday"
+                          [class.dark:text-amber-500]="cell.isToday"
                           [class.text-red-400]="cell.isHoliday && !cell.isToday"
+                          [class.dark:text-red-400]="cell.isHoliday && !cell.isToday"
                           [class.text-gray-300]="!cell.isToday && !cell.isHoliday"
+                          [class.dark:text-gray-600]="!cell.isToday && !cell.isHoliday"
                     >
                       {{ cell.dayLetter }}
                     </span>
@@ -221,23 +228,6 @@ interface MonthColumn {
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: rgba(156, 163, 175, 0.5);
     }
-    
-    .bg-amber-500-10 { background-color: rgba(245, 158, 11, 0.1); }
-    .bg-amber-500-20 { background-color: rgba(245, 158, 11, 0.2); }
-    
-    .bg-weekend-custom { background-color: #EDF1F5; }
-    :host-context(.dark) .bg-weekend-custom { background-color: rgba(255, 255, 255, 0.02); }
-
-    .bg-holiday-custom { background-color: #FEE2E2; }
-    :host-context(.dark) .bg-holiday-custom { background-color: rgba(154, 39, 39, 0.2); }
-
-    .dark\:bg-indigo-900-20 { background-color: rgba(49, 46, 129, 0.2); }
-    .dark\:bg-teal-900-20 { background-color: rgba(19, 78, 74, 0.2); }
-
-    /* New sprint background colors */
-    .dark\:bg-sky-900-20 { background-color: rgba(7, 89, 133, 0.2); }
-    .dark\:bg-emerald-900-20 { background-color: rgba(4, 120, 87, 0.2); }
-    .dark\:bg-amber-900-20 { background-color: rgba(120, 53, 15, 0.2); }
   `]
 })
 export class SemesterViewComponent implements OnInit, OnChanges {

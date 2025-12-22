@@ -1,10 +1,12 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { SidebarService } from '@services/sidebar.service';
 import { AuthService, User } from '@services/auth.service';
 import { PermissionService, PermissionModule } from '@services/permission.service';
+import { ToastService } from '@services/toast.service';
 
 interface NavItem {
   label: string;
@@ -17,7 +19,7 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   template: `
     <!-- Mobile backdrop overlay -->
     <div
@@ -116,6 +118,17 @@ interface NavItem {
           </span>
         </button>
 
+        <!-- Change Password Button -->
+        <button
+          (click)="openPasswordModal()"
+          class="nav-item w-full"
+          [class.collapsed]="isCollapsed && !isMobile"
+          [title]="(isCollapsed && !isMobile) ? 'Modifier mot de passe' : ''"
+        >
+          <span class="material-icons">lock_reset</span>
+          <span *ngIf="!isCollapsed || isMobile" class="nav-label">Mot de passe</span>
+        </button>
+
         <!-- Logout Button -->
         <button
           (click)="logout()"
@@ -128,6 +141,42 @@ interface NavItem {
         </button>
       </div>
     </aside>
+
+    <!-- Password Change Modal -->
+    <div *ngIf="showPasswordModal" class="fixed inset-0 z-[1001] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-black bg-opacity-50" (click)="closePasswordModal()"></div>
+      <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Modifier mon mot de passe</h3>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nouveau mot de passe</label>
+          <input
+            type="password" 
+            [(ngModel)]="newPassword" 
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            placeholder="Nouveau mot de passe"
+            (keyup.enter)="changePassword()"
+          >
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <button 
+            (click)="closePasswordModal()" 
+            class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+            [disabled]="isLoading"
+          >
+            Annuler
+          </button>
+          <button 
+            (click)="changePassword()" 
+            class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md disabled:opacity-50"
+            [disabled]="!newPassword || isLoading"
+          >
+            {{ isLoading ? 'Modification...' : 'Enregistrer' }}
+          </button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     /* Base sidebar styles */
@@ -253,6 +302,11 @@ export class SidebarComponent implements OnInit {
   isMobile = false;
   isMobileMenuOpen = false;
 
+  // Password Modal
+  showPasswordModal = false;
+  newPassword = '';
+  isLoading = false;
+
   navItems: NavItem[] = [
     { label: 'Accueil', icon: 'home', route: '/home' },
     { label: 'Calendrier', icon: 'calendar_month', route: '/calendar', requiredModule: 'CALENDAR' },
@@ -266,7 +320,8 @@ export class SidebarComponent implements OnInit {
     private router: Router,
     private sidebarService: SidebarService,
     private authService: AuthService,
-    private permissionService: PermissionService
+    private permissionService: PermissionService,
+    private toastService: ToastService
   ) {
     this.checkScreenSize();
   }
@@ -384,5 +439,35 @@ export class SidebarComponent implements OnInit {
 
   isAdmin(): boolean {
     return this.permissionService.hasReadAccess('ADMIN');
+  }
+
+  openPasswordModal(): void {
+    this.showPasswordModal = true;
+    this.newPassword = '';
+  }
+
+  closePasswordModal(): void {
+    this.showPasswordModal = false;
+    this.newPassword = '';
+  }
+
+  async changePassword(): Promise<void> {
+    if (!this.newPassword) return;
+
+    this.isLoading = true;
+    const result = await this.authService.changePassword(this.newPassword);
+    this.isLoading = false;
+
+    if (result.success) {
+      this.toastService.success('Succès', 'Mot de passe modifié. Vous allez être déconnecté.');
+      this.closePasswordModal();
+
+      // Delay logout slightly to let user see the toast
+      setTimeout(() => {
+        this.logout();
+      }, 1500);
+    } else {
+      this.toastService.error('Erreur', result.message);
+    }
   }
 }

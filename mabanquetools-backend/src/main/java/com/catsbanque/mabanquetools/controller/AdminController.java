@@ -85,6 +85,19 @@ public class AdminController {
     }
 
     /**
+     * POST /api/admin/users/:id/reset-password
+     * Réinitialise le mot de passe d'un utilisateur à "password"
+     */
+    @PostMapping("/users/{id}/reset-password")
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).ADMIN)")
+    public ResponseEntity<Void> resetUserPassword(@PathVariable String id,
+            org.springframework.security.core.Authentication authentication) {
+        log.info("POST /api/admin/users/{}/reset-password", id);
+        adminService.resetUserPassword(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
      * GET /api/admin/stats
      * Récupère des statistiques générales
      * Référence: admin.controller.js:89-115

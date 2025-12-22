@@ -143,4 +143,20 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * POST /api/auth/change-password
+     * Permet à l'utilisateur de changer son mot de passe
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody com.catsbanque.mabanquetools.dto.ChangePasswordRequest request,
+            Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        log.info("POST /api/auth/change-password - User: {}", userId);
+
+        authService.changePassword(userId, request.getNewPassword());
+
+        return ResponseEntity.ok().build();
+    }
 }

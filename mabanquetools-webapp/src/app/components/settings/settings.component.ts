@@ -27,41 +27,7 @@ import { Theme, UserPreferences } from '@models/settings.model';
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Paramètres</h1>
       </div>
 
-      <!-- Theme -->
-      <div class="card p-6">
-        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Apparence
-        </h2>
 
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Thème
-            </label>
-            <div class="flex space-x-4">
-              <button
-                (click)="setTheme('light')"
-                [class.ring-2]="preferences.theme === 'light'"
-                [class.ring-primary-500]="preferences.theme === 'light'"
-                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
-              >
-                <span class="material-icons text-gray-700 dark:text-gray-300">light_mode</span>
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Clair</span>
-              </button>
-
-              <button
-                (click)="setTheme('dark')"
-                [class.ring-2]="preferences.theme === 'dark'"
-                [class.ring-primary-500]="preferences.theme === 'dark'"
-                class="flex items-center space-x-3 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex-1"
-              >
-                <span class="material-icons text-gray-700 dark:text-gray-300">dark_mode</span>
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Sombre</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Categories -->
       <div class="card p-6">
@@ -276,7 +242,7 @@ export class SettingsComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private toastService: ToastService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Subscriptions avec cleanup automatique
@@ -294,9 +260,7 @@ export class SettingsComponent implements OnInit {
       });
   }
 
-  async setTheme(theme: Theme): Promise<void> {
-    await this.settingsService.setTheme(theme);
-  }
+
 
   async resetToDefaults(): Promise<void> {
     const confirmed = await this.confirmationService.confirm({

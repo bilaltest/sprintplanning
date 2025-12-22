@@ -264,4 +264,31 @@ export class AuthService {
 
     return `${currentUser.firstName} ${currentUser.lastName.charAt(0)}.`;
   }
+
+  /**
+   * Change le mot de passe de l'utilisateur
+   */
+  async changePassword(password: string): Promise<{ success: boolean; message: string }> {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        return { success: false, message: 'Non authentifié' };
+      }
+
+      await firstValueFrom(
+        this.http.post<void>(`${this.API_URL}/change-password`,
+          { newPassword: password },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+      );
+
+      return { success: true, message: 'Mot de passe modifié avec succès' };
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.error?.error || 'Erreur lors du changement de mot de passe'
+      };
+    }
+  }
+
 }

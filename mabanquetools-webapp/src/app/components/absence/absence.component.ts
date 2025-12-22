@@ -234,21 +234,21 @@ interface MonthMetadata {
                       <div>{{ day.dayNum }}</div>
 
                       <!-- Code Freeze Icon -->
-                      <div *ngIf="day.isCodeFreeze" class="absolute top-0.8 left-1/2 -translate-x-1/2 z-20" title="Code Freeze">
+                      <div *ngIf="day.isCodeFreeze" class="absolute top-1.5 left-1/2 -translate-x-1/2 z-20" title="Code Freeze">
                         <div class="flex items-center justify-center px-1.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/50 border border-indigo-100 dark:border-indigo-800 shadow-sm">
                           <span class="material-icons text-[10px] text-indigo-500 dark:text-indigo-300">ac_unit</span>
                         </div>
                       </div>
 
                       <!-- MEP Back Icon (Cyan Rocket) -->
-                      <div *ngIf="day.isMepBack" class="absolute top-0.8 left-1/2 -translate-x-1/2 z-20" title="Mise en production Back">
+                      <div *ngIf="day.isMepBack" class="absolute top-1.5 left-1/2 -translate-x-1/2 z-20" title="Mise en production Back">
                          <div class="flex items-center justify-center px-1.5 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-900/50 border border-cyan-100 dark:border-cyan-800 shadow-sm">
                             <span class="material-icons text-[10px] text-cyan-600 dark:text-cyan-400">rocket_launch</span>
                          </div>
                       </div>
 
                       <!-- MEP Front Icon (Green Rocket) -->
-                      <div *ngIf="day.isMepFront" class="absolute top-0.8 left-1/2 -translate-x-1/2 z-20" title="Mise en production Front">
+                      <div *ngIf="day.isMepFront" class="absolute top-1.5 left-1/2 -translate-x-1/2 z-20" title="Mise en production Front">
                          <div class="flex items-center justify-center px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-100 dark:border-emerald-800 shadow-sm">
                             <span class="material-icons text-[10px] text-emerald-600 dark:text-emerald-400">rocket_launch</span>
                          </div>
@@ -1097,6 +1097,7 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
   closeModal() {
     this.showModal = false;
     this.editingAbsence = null;
+    this.cdr.markForCheck();
   }
 
   isSaving = false;
@@ -1123,8 +1124,8 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
       this.absenceService.updateAbsence(this.editingAbsence.id, request).subscribe(
         updated => {
           this.toastService.success('Absence modifiée avec succès');
-          this.refreshAbsences();
           this.closeModal();
+          this.refreshAbsences();
           finalize();
         },
         error => {
@@ -1137,8 +1138,8 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
       this.absenceService.createAbsence(request).subscribe(
         created => {
           this.toastService.success('Absence créée avec succès');
-          this.refreshAbsences();
           this.closeModal();
+          this.refreshAbsences();
           finalize();
         },
         error => {
@@ -1155,8 +1156,8 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
       this.absenceService.deleteAbsence(this.editingAbsence.id).subscribe(
         () => {
           this.toastService.success('Absence supprimée avec succès');
-          this.refreshAbsences();
           this.closeModal();
+          this.refreshAbsences();
         },
         error => {
           console.error(error);

@@ -386,6 +386,14 @@ import { environment } from '../../../environments/environment';
                     <span>Permissions</span>
                   </button>
                   <button
+                    (click)="resetUserPassword(user)"
+                    class="inline-flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-lg transition-colors"
+                    title="Réinitialiser à 'password'"
+                  >
+                    <span class="material-icons text-sm">lock_reset</span>
+                    <span>Reset</span>
+                  </button>
+                  <button
                     (click)="deleteUser(user)"
                     class="inline-flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   >
@@ -934,6 +942,29 @@ export class AdminComponent implements OnInit {
     } catch (error) {
       console.error('Erreur lors de la suppression:', error);
       this.toastService.error('Erreur', 'Impossible de supprimer l\'utilisateur');
+    }
+  }
+
+  async resetUserPassword(user: AdminUser): Promise<void> {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Réinitialiser le mot de passe ?',
+      message: `Voulez-vous vraiment réinitialiser le mot de passe de ${user.firstName} ${user.lastName} ?\n\nLe mot de passe sera défini sur "password".`,
+      confirmText: 'Réinitialiser',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.API_URL}/users/${user.id}/reset-password`, {})
+      );
+
+      this.toastService.success('Succès', 'Mot de passe réinitialisé à "password"');
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation:', error);
+      this.toastService.error('Erreur', 'Impossible de réinitialiser le mot de passe');
     }
   }
 

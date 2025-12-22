@@ -11,14 +11,16 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./components/auth/login.component').then(
         m => m.LoginComponent
-      )
+      ),
+    data: { animation: 'LoginPage' }
   },
   {
     path: 'register',
     loadComponent: () =>
       import('./components/auth/register.component').then(
         m => m.RegisterComponent
-      )
+      ),
+    data: { animation: 'RegisterPage' }
   },
   {
     path: '',
@@ -39,7 +41,7 @@ export const routes: Routes = [
           import('./components/home/home.component').then(
             m => m.HomeComponent
           ),
-        data: { breadcrumb: 'Accueil' }
+        data: { breadcrumb: 'Accueil', animation: 'HomePage' }
       },
       {
         path: 'calendar',
