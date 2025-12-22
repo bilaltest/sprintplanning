@@ -12,6 +12,8 @@ import { map } from 'rxjs/operators';
 import { Event } from '@models/event.model';
 import { Sprint } from '@models/sprint.model';
 import { SprintService } from '@services/sprint.service';
+import { ClosedDay } from '@models/closed-day.model';
+import { ClosedDayService } from '@services/closed-day.service';
 
 import { SemesterViewComponent } from './semester-view.component';
 import { NowViewComponent } from './now-view.component';
@@ -151,6 +153,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
           *ngIf="(currentView$ | async) === 'semester'"
           [events]="filteredEvents$ | async"
           [sprints]="sprints$ | async"
+          [closedDays]="closedDays$ | async"
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
         ></app-semester-view>
@@ -184,6 +187,7 @@ export class TimelineContainerComponent implements OnInit {
   currentView$!: Observable<TimelineView>;
   filteredEvents$!: Observable<Event[]>;
   sprints$!: Observable<Sprint[]>;
+  closedDays$!: Observable<ClosedDay[]>;
 
   showEventModal = false;
   selectedEvent?: Event;
@@ -195,6 +199,7 @@ export class TimelineContainerComponent implements OnInit {
     private timelineService: TimelineService,
     private eventService: EventService,
     private sprintService: SprintService,
+    private closedDayService: ClosedDayService,
     private filterService: FilterService,
     private exportService: ExportService,
     private toastService: ToastService,
@@ -208,6 +213,7 @@ export class TimelineContainerComponent implements OnInit {
     );
 
     this.sprints$ = this.sprintService.getAllSprints();
+    this.closedDays$ = this.closedDayService.getAllClosedDays();
   }
 
   ngOnInit(): void {

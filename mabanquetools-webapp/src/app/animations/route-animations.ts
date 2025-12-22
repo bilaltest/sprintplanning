@@ -1,6 +1,7 @@
 import { trigger, transition, style, query, animate, group } from '@angular/animations';
 
 export const routeAnimations = trigger('routeAnimations', [
+    transition('LoginPage <=> RegisterPage', []),
     transition('* <=> *', [
         // Initial state of new route
         query(':enter, :leave', [

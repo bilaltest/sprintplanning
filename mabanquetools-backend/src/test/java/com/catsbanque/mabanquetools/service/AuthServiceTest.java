@@ -79,10 +79,8 @@ class AuthServiceTest {
         assertEquals("Jean", response.getUser().getFirstName());
         assertEquals("DUPONT", response.getUser().getLastName());
 
-        verify(userRepository).save(argThat(user ->
-                user.getFirstName().equals("Jean") &&
-                        user.getLastName().equals("DUPONT")
-        ));
+        verify(userRepository).save(argThat(user -> user.getFirstName().equals("Jean") &&
+                user.getLastName().equals("DUPONT")));
     }
 
     @Test
@@ -126,46 +124,43 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("Register - Mot de passe trop court")
-    void testRegister_WeakPassword() {
+    @DisplayName("Register - Mot de passe simple accepté")
+    void testRegister_SimplePassword() {
         // Given
         RegisterRequest request = new RegisterRequest("pierre.martin@ca-ts.fr", "abc");
 
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.count()).thenReturn(50L);
+        when(passwordEncoder.encode(anyString())).thenReturn("hashedPassword");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            user.setId("test-user-id");
+            return user;
+        });
+        when(jwtUtil.generateToken(anyString(), anyString(), anyString(), anyString())).thenReturn("eyJtest.token.jwt");
+
+        // When
+        AuthResponse response = authService.register(request);
+
+        // Then
+        assertNotNull(response);
+        assertEquals("Compte créé avec succès", response.getMessage());
+    }
+
+    @Test
+    @DisplayName("Register - Mot de passe trop long (> 50 chars)")
+    void testRegister_PasswordTooLong() {
+        // Given
+        String longPassword = "a".repeat(51);
+        RegisterRequest request = new RegisterRequest("sophie.bernard@ca-ts.fr", longPassword);
+
         // When & Then
         BadRequestException exception = assertThrows(BadRequestException.class, () -> {
             authService.register(request);
         });
 
-        assertTrue(exception.getMessage().contains("8 caractères"));
+        assertTrue(exception.getMessage().contains("50 caractères"));
         verify(userRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Register - Mot de passe sans chiffre")
-    void testRegister_PasswordNoNumber() {
-        // Given
-        RegisterRequest request = new RegisterRequest("sophie.bernard@ca-ts.fr", "PasswordOnly");
-
-        // When & Then
-        BadRequestException exception = assertThrows(BadRequestException.class, () -> {
-            authService.register(request);
-        });
-
-        assertTrue(exception.getMessage().contains("lettre") && exception.getMessage().contains("chiffre"));
-    }
-
-    @Test
-    @DisplayName("Register - Mot de passe avec caractères spéciaux")
-    void testRegister_PasswordSpecialChars() {
-        // Given
-        RegisterRequest request = new RegisterRequest("lucas.petit@ca-ts.fr", "Pass@word123");
-
-        // When & Then
-        BadRequestException exception = assertThrows(BadRequestException.class, () -> {
-            authService.register(request);
-        });
-
-        assertTrue(exception.getMessage().contains("alphanumérique"));
     }
 
     @Test

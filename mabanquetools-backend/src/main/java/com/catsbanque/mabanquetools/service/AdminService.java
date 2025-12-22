@@ -14,6 +14,7 @@ import com.catsbanque.mabanquetools.dto.ExportMetadata;
 import com.catsbanque.mabanquetools.dto.ImportDatabaseResponse;
 import com.catsbanque.mabanquetools.dto.TotalRecords;
 import com.catsbanque.mabanquetools.entity.Absence;
+import com.catsbanque.mabanquetools.entity.ClosedDay;
 import com.catsbanque.mabanquetools.entity.Event;
 import com.catsbanque.mabanquetools.entity.Game;
 import com.catsbanque.mabanquetools.entity.GameScore;
@@ -31,6 +32,7 @@ import com.catsbanque.mabanquetools.entity.UserPermission;
 import com.catsbanque.mabanquetools.exception.BadRequestException;
 import com.catsbanque.mabanquetools.exception.ResourceNotFoundException;
 import com.catsbanque.mabanquetools.repository.AbsenceRepository;
+import com.catsbanque.mabanquetools.repository.ClosedDayRepository;
 import com.catsbanque.mabanquetools.repository.ActionRepository;
 import com.catsbanque.mabanquetools.repository.EventRepository;
 import com.catsbanque.mabanquetools.repository.FeatureFlippingRepository;
@@ -78,6 +80,7 @@ public class AdminService {
     private final ActionRepository actionRepository;
     private final FeatureFlippingRepository featureFlippingRepository;
     private final AbsenceRepository absenceRepository;
+    private final ClosedDayRepository closedDayRepository;
     private final SprintRepository sprintRepository;
     private final MicroserviceRepository microserviceRepository;
     private final GameRepository gameRepository;
@@ -263,6 +266,7 @@ public class AdminService {
         List<GameScore> gameScores = gameScoreRepository.findAll();
         List<UserPermission> userPermissions = userPermissionRepository.findAll();
         List<ReleaseNoteEntry> releaseNoteEntries = releaseNoteEntryRepository.findAll();
+        List<ClosedDay> closedDays = closedDayRepository.findAll();
 
         // Créer les métadonnées
         ExportMetadata metadata = new ExportMetadata();
@@ -283,6 +287,7 @@ public class AdminService {
         totalRecords.setGameScores(gameScores.size());
         totalRecords.setUserPermissions(userPermissions.size());
         totalRecords.setReleaseNoteEntries(releaseNoteEntries.size());
+        totalRecords.setClosedDays(closedDays.size());
         metadata.setTotalRecords(totalRecords);
 
         // Créer les données d'export
@@ -300,6 +305,7 @@ public class AdminService {
         exportData.setGameScores(gameScores);
         exportData.setUserPermissions(userPermissions);
         exportData.setReleaseNoteEntries(releaseNoteEntries);
+        exportData.setClosedDays(closedDays);
 
         DatabaseExportDto export = new DatabaseExportDto();
         export.setMetadata(metadata);
@@ -333,6 +339,7 @@ public class AdminService {
             gameScoreRepository.deleteAll();
             userPermissionRepository.deleteAll();
             absenceRepository.deleteAll();
+            closedDayRepository.deleteAll();
             sprintRepository.deleteAll();
             historyRepository.deleteAll();
             releaseHistoryRepository.deleteAll();
@@ -454,6 +461,12 @@ public class AdminService {
                     && !request.getData().getReleaseNoteEntries().isEmpty()) {
                 releaseNoteEntryRepository.saveAll(request.getData().getReleaseNoteEntries());
                 log.info("Imported {} release note entries", request.getData().getReleaseNoteEntries().size());
+            }
+
+            // Closed Days
+            if (request.getData().getClosedDays() != null && !request.getData().getClosedDays().isEmpty()) {
+                closedDayRepository.saveAll(request.getData().getClosedDays());
+                log.info("Imported {} closed days", request.getData().getClosedDays().size());
             }
 
             return new ImportDatabaseResponse(

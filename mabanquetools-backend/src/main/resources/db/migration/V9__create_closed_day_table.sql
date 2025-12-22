@@ -1,0 +1,5 @@
+CREATE TABLE closed_day (
+    id VARCHAR(25) NOT NULL PRIMARY KEY,
+    date VARCHAR(10) NOT NULL UNIQUE,
+    reason VARCHAR(255) NOT NULL
+);

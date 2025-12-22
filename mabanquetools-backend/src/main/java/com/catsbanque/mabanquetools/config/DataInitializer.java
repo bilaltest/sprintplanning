@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Initialise les données par défaut au démarrage
@@ -25,9 +26,9 @@ public class DataInitializer implements CommandLineRunner {
     private final com.catsbanque.mabanquetools.service.ReleaseService releaseService;
 
     @Override
+    @Transactional
     public void run(String... args) {
         cleanUpObsoletePermissions();
-        createDefaultAdminUser();
         microserviceService.initDefaultMicroservices();
         releaseService.migrateSlugs();
     }

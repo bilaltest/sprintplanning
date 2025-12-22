@@ -21,4 +21,5 @@ public class TotalRecords {
     private int gameScores;
     private int userPermissions;
     private int releaseNoteEntries;
+    private int closedDays;
 }

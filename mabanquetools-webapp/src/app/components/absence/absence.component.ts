@@ -14,6 +14,8 @@ import { SprintService } from '@services/sprint.service';
 import { Sprint } from '@models/sprint.model';
 import { ToastService } from '@services/toast.service';
 import { MultiSelectFilterComponent } from '@components/shared/multi-select-filter.component';
+import { ClosedDay } from '@models/closed-day.model';
+import { ClosedDayService } from '@services/closed-day.service';
 
 interface DayMetadata {
   date: Date;
@@ -471,6 +473,7 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
   filteredUsers: AbsenceUser[] = [];
   absences: Absence[] = [];
   sprints: Sprint[] = [];
+  closedDays: ClosedDay[] = [];
 
   // Maps for O(1) access
   private userAbsencesMap = new Map<string, Absence[]>();
@@ -550,7 +553,8 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private sprintService: SprintService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private closedDayService: ClosedDayService
   ) {
     // We delay generateTimeline until sprints are loaded or parallel? 
     // Sprints are visual, can be loaded whenever. 
@@ -617,6 +621,7 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.loadSprints(); // Load sprints first or parallel
+    this.loadClosedDays();
     this.loadUsers();
     this.startPolling();
   }
@@ -625,6 +630,14 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
     this.sprintService.getAllSprints().subscribe(sprints => {
       this.sprints = sprints.sort((a, b) => a.startDate.localeCompare(b.startDate));
       // Regenerate timeline metadata to apply sprint info
+      this.generateTimeline();
+      this.cdr.markForCheck();
+    });
+  }
+
+  loadClosedDays() {
+    this.closedDayService.getAllClosedDays().subscribe(closedDays => {
+      this.closedDays = closedDays;
       this.generateTimeline();
       this.cdr.markForCheck();
     });
@@ -985,6 +998,9 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
     const year = day.getFullYear();
     const month = day.getMonth() + 1;
     const date = day.getDate();
+
+    const dateStr = format(day, 'yyyy-MM-dd');
+    if (this.closedDays.some(d => d.date === dateStr)) return true;
 
     const fixedHolidays = [
       { month: 1, date: 1 },

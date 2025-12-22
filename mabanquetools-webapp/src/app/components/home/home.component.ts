@@ -182,7 +182,7 @@ interface Widget {
                  <!-- Glass Widget Card Container -->
                  <div class="h-full bg-white/70 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/60 dark:border-white/5 hover:border-emerald-500/20 dark:hover:border-white/10 rounded-2xl p-5 shadow-md dark:shadow-black/40 transition-all duration-300 hover:shadow-xl dark:hover:shadow-black/50 flex flex-col"
                       [class.cursor-move]="true"
-                      (click)="handleWidgetClick($event, widget.type === 'events7days' ? 'calendar' : widget.type === 'userAbsences' ? 'absence' : null, widget.type === 'nextMep' ? nextMep : null)">
+                      (click)="handleWidgetClick($event, widget.type === 'events7days' ? 'calendar' : widget.type === 'userAbsences' ? 'absence' : widget.type === 'nextMep' ? 'release' : null, widget.type === 'nextMep' ? nextMep : null)">
                     
                     <!-- Events Widget -->
                     <ng-container *ngIf="widget.type === 'events7days'">

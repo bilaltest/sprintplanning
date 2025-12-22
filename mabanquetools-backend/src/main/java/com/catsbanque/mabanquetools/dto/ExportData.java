@@ -29,4 +29,5 @@ public class ExportData {
     private List<com.catsbanque.mabanquetools.entity.GameScore> gameScores;
     private List<com.catsbanque.mabanquetools.entity.UserPermission> userPermissions;
     private List<com.catsbanque.mabanquetools.entity.ReleaseNoteEntry> releaseNoteEntries;
+    private List<com.catsbanque.mabanquetools.entity.ClosedDay> closedDays;
 }

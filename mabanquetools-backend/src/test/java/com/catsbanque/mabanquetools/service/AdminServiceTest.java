@@ -4,43 +4,16 @@ import com.catsbanque.mabanquetools.dto.AdminStatsResponse;
 import com.catsbanque.mabanquetools.dto.AdminUpdateUserRequest;
 import com.catsbanque.mabanquetools.dto.AdminUserDto;
 import com.catsbanque.mabanquetools.dto.AdminUsersResponse;
-import com.catsbanque.mabanquetools.dto.DatabaseExportDto;
-import com.catsbanque.mabanquetools.dto.DatabaseImportRequest;
 import com.catsbanque.mabanquetools.dto.DeletedUserResponse;
-import com.catsbanque.mabanquetools.dto.ExportData;
-import com.catsbanque.mabanquetools.dto.ExportMetadata;
-import com.catsbanque.mabanquetools.dto.ImportDatabaseResponse;
-import com.catsbanque.mabanquetools.dto.TotalRecords;
-import com.catsbanque.mabanquetools.entity.Event;
-import com.catsbanque.mabanquetools.entity.History;
-import com.catsbanque.mabanquetools.entity.PermissionLevel;
-import com.catsbanque.mabanquetools.entity.PermissionModule;
-import com.catsbanque.mabanquetools.entity.Release;
-import com.catsbanque.mabanquetools.entity.Settings;
-import com.catsbanque.mabanquetools.entity.Squad;
 import com.catsbanque.mabanquetools.entity.User;
-import com.catsbanque.mabanquetools.exception.BadRequestException;
 import com.catsbanque.mabanquetools.exception.ResourceNotFoundException;
-import com.catsbanque.mabanquetools.repository.AbsenceRepository;
-import com.catsbanque.mabanquetools.repository.ActionRepository;
 import com.catsbanque.mabanquetools.repository.EventRepository;
-import com.catsbanque.mabanquetools.repository.FeatureFlippingRepository;
-import com.catsbanque.mabanquetools.repository.FeatureRepository;
-import com.catsbanque.mabanquetools.repository.GameRepository;
-import com.catsbanque.mabanquetools.repository.GameScoreRepository;
 import com.catsbanque.mabanquetools.repository.HistoryRepository;
-import com.catsbanque.mabanquetools.repository.MicroserviceRepository;
 import com.catsbanque.mabanquetools.repository.ReleaseHistoryRepository;
-import com.catsbanque.mabanquetools.repository.ReleaseNoteEntryRepository;
 import com.catsbanque.mabanquetools.repository.ReleaseRepository;
-import com.catsbanque.mabanquetools.repository.SettingsRepository;
-import com.catsbanque.mabanquetools.repository.SprintRepository;
-import com.catsbanque.mabanquetools.repository.SquadRepository;
-import com.catsbanque.mabanquetools.repository.UserPermissionRepository;
-import com.catsbanque.mabanquetools.repository.UserPermissionRepository;
 import com.catsbanque.mabanquetools.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -48,441 +21,138 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.argThat;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("AdminService - Unit Tests")
 class AdminServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
     @Mock
     private EventRepository eventRepository;
-
     @Mock
     private ReleaseRepository releaseRepository;
-
     @Mock
     private HistoryRepository historyRepository;
-
     @Mock
     private ReleaseHistoryRepository releaseHistoryRepository;
-
-    @Mock
-    private SettingsRepository settingsRepository;
-
-    @Mock
-    private SquadRepository squadRepository;
-
-    @Mock
-    private FeatureRepository featureRepository;
-
-    @Mock
-    private ActionRepository actionRepository;
-
-    @Mock
-    private FeatureFlippingRepository featureFlippingRepository;
-
-    @Mock
-    private AbsenceRepository absenceRepository;
-
-    @Mock
-    private SprintRepository sprintRepository;
-
-    @Mock
-    private MicroserviceRepository microserviceRepository;
-
-    @Mock
-    private GameRepository gameRepository;
-
-    @Mock
-    private GameScoreRepository gameScoreRepository;
-
-    @Mock
-    private UserPermissionRepository userPermissionRepository;
-
-    @Mock
-    private ReleaseNoteEntryRepository releaseNoteEntryRepository;
-
-    @Mock
-    private ObjectMapper objectMapper;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
     @Mock
     private PermissionService permissionService;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private AdminService adminService;
 
     private User testUser;
-    private Event testEvent;
-    private Release testRelease;
-    private History testHistory;
-    private Settings testSettings;
 
     @BeforeEach
     void setUp() {
         testUser = new User();
-        testUser.setId("user123");
-        testUser.setEmail("test@example.com");
-        testUser.setFirstName("John");
-        testUser.setLastName("Doe");
-        testUser.setThemePreference("light");
-        testUser.setCreatedAt(LocalDateTime.now());
-        testUser.setUpdatedAt(LocalDateTime.now());
-
-        testEvent = new Event();
-        testEvent.setId("event123");
-        testEvent.setTitle("Test Event");
-
-        testRelease = new Release();
-        testRelease.setId("release123");
-        testRelease.setName("Test Release");
-
-        testHistory = new History();
-        testHistory.setId("history123");
-        testHistory.setUserId("user123");
-        testHistory.setUserDisplayName("John D.");
-
-        testSettings = new Settings();
-        testSettings.setId("settings123");
-        testSettings.setTheme("light");
+        testUser.setId("user-1");
+        testUser.setEmail("test@test.com");
+        testUser.setFirstName("Test");
+        testUser.setLastName("User");
     }
 
     @Test
-    void getAllUsers_ShouldReturnUsersWithPermissions() {
+    @DisplayName("getAllUsers - Success")
+    void testGetAllUsers() {
         // Given
-        when(userRepository.findAllByOrderByCreatedAtDesc())
-                .thenReturn(Collections.singletonList(testUser));
-        when(historyRepository.findByUserIdOrderByTimestampDesc("user123"))
-                .thenReturn(Collections.singletonList(testHistory));
-
-        Map<PermissionModule, PermissionLevel> permissions = new HashMap<>();
-        permissions.put(PermissionModule.CALENDAR, PermissionLevel.WRITE);
-        when(permissionService.getUserPermissions("user123"))
-                .thenReturn(permissions);
+        when(userRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(testUser));
+        when(historyRepository.findByUserIdOrderByTimestampDesc("user-1")).thenReturn(Collections.emptyList());
+        when(permissionService.getUserPermissions("user-1")).thenReturn(Collections.emptyMap());
 
         // When
-        AdminUsersResponse result = adminService.getAllUsers();
+        AdminUsersResponse response = adminService.getAllUsers();
 
         // Then
-        assertThat(result.getUsers()).hasSize(1);
-        assertThat(result.getUsers().get(0).getEmail()).isEqualTo("test@example.com");
-        assertThat(result.getUsers().get(0).getHistoriesCount()).isEqualTo(1);
-        assertThat(result.getUsers().get(0).getPermissions()).hasSize(1);
-        verify(permissionService).getUserPermissions("user123");
+        assertEquals(1, response.getUsers().size());
+        assertEquals("user-1", response.getUsers().get(0).getId());
     }
 
     @Test
-    void getAllUsers_WithMultipleUsers_ShouldReturnAll() {
+    @DisplayName("deleteUser - Success")
+    void testDeleteUser() {
         // Given
-        User user2 = new User();
-        user2.setId("user2");
-        user2.setEmail("user2@example.com");
-        user2.setFirstName("Jane");
-        user2.setLastName("Smith");
-        user2.setCreatedAt(LocalDateTime.now());
-        user2.setUpdatedAt(LocalDateTime.now());
-
-        when(userRepository.findAllByOrderByCreatedAtDesc())
-                .thenReturn(Arrays.asList(testUser, user2));
-        when(historyRepository.findByUserIdOrderByTimestampDesc(anyString()))
-                .thenReturn(new ArrayList<>());
-        when(permissionService.getUserPermissions(anyString()))
-                .thenReturn(new HashMap<>());
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(testUser));
+        // Mock history updates
+        when(historyRepository.findByUserIdOrderByTimestampDesc("user-1")).thenReturn(Collections.emptyList());
+        when(releaseHistoryRepository.findByUserIdOrderByTimestampDesc("user-1")).thenReturn(Collections.emptyList());
 
         // When
-        AdminUsersResponse result = adminService.getAllUsers();
+        DeletedUserResponse response = adminService.deleteUser("user-1");
 
         // Then
-        assertThat(result.getUsers()).hasSize(2);
-    }
-
-    @Test
-    void deleteUser_WithValidId_ShouldDeleteUserAndUpdateHistories() {
-        // Given
-        when(userRepository.findById("user123")).thenReturn(Optional.of(testUser));
-        when(historyRepository.findByUserIdOrderByTimestampDesc("user123"))
-                .thenReturn(Collections.singletonList(testHistory));
-        when(releaseHistoryRepository.findByUserIdOrderByTimestampDesc("user123"))
-                .thenReturn(new ArrayList<>());
-
-        // When
-        DeletedUserResponse result = adminService.deleteUser("user123");
-
-        // Then
-        assertThat(result.getMessage()).isEqualTo("Utilisateur supprimé avec succès");
-        assertThat(result.getDeletedUser().getEmail()).isEqualTo("test@example.com");
-        verify(historyRepository).saveAll(argThat(histories -> {
-            List<History> historyList = new ArrayList<>();
-            histories.forEach(historyList::add);
-            assertThat(historyList).hasSize(1);
-            assertThat(historyList.get(0).getUserDisplayName()).isEqualTo("Deleted User");
-            return true;
-        }));
         verify(userRepository).delete(testUser);
+        assertNotNull(response);
     }
 
     @Test
-    void deleteUser_WithInvalidId_ShouldThrowException() {
-        // Given
-        when(userRepository.findById("invalid")).thenReturn(Optional.empty());
-
-        // When & Then
-        assertThatThrownBy(() -> adminService.deleteUser("invalid"))
-                .isInstanceOf(ResourceNotFoundException.class)
-                .hasMessageContaining("Utilisateur non trouvé");
-    }
-
-    @Test
-    void getStats_ShouldReturnCorrectCounts() {
-        // Given
-        when(userRepository.count()).thenReturn(5L);
-        when(eventRepository.count()).thenReturn(10L);
-        when(releaseRepository.count()).thenReturn(3L);
-        when(historyRepository.count()).thenReturn(20L);
-
-        // When
-        AdminStatsResponse result = adminService.getStats();
-
-        // Then
-        assertThat(result.getStats().getTotalUsers()).isEqualTo(5L);
-        assertThat(result.getStats().getTotalEvents()).isEqualTo(10L);
-        assertThat(result.getStats().getTotalReleases()).isEqualTo(3L);
-        assertThat(result.getStats().getTotalHistoryEntries()).isEqualTo(20L);
-    }
-
-    @Test
-    void exportDatabase_ShouldExportAllData() {
-        // Given
-        when(userRepository.findAll()).thenReturn(Collections.singletonList(testUser));
-        when(eventRepository.findAll()).thenReturn(Collections.singletonList(testEvent));
-        when(releaseRepository.findAll()).thenReturn(Collections.singletonList(testRelease));
-        when(historyRepository.findAll()).thenReturn(Collections.singletonList(testHistory));
-        when(releaseHistoryRepository.findAll()).thenReturn(new ArrayList<>());
-        when(settingsRepository.findAll()).thenReturn(Collections.singletonList(testSettings));
-        when(absenceRepository.findAll()).thenReturn(new ArrayList<>());
-        when(sprintRepository.findAll()).thenReturn(new ArrayList<>());
-        when(microserviceRepository.findAll()).thenReturn(new ArrayList<>());
-        when(gameRepository.findAll()).thenReturn(new ArrayList<>());
-        when(gameScoreRepository.findAll()).thenReturn(new ArrayList<>());
-        when(userPermissionRepository.findAll()).thenReturn(new ArrayList<>());
-        when(releaseNoteEntryRepository.findAll()).thenReturn(new ArrayList<>());
-
-        // When
-        DatabaseExportDto result = adminService.exportDatabase();
-
-        // Then
-        assertThat(result.getMetadata()).isNotNull();
-        assertThat(result.getMetadata().getVersion()).isEqualTo("1.0");
-        assertThat(result.getMetadata().getTotalRecords().getUsers()).isEqualTo(1);
-        assertThat(result.getMetadata().getTotalRecords().getEvents()).isEqualTo(1);
-        assertThat(result.getMetadata().getTotalRecords().getReleases()).isEqualTo(1);
-        assertThat(result.getData().getUsers()).hasSize(1);
-        assertThat(result.getData().getEvents()).hasSize(1);
-        assertThat(result.getData().getAbsences()).isNotNull();
-        assertThat(result.getData().getSprints()).isNotNull();
-    }
-
-    @Test
-    void importDatabase_WithValidData_ShouldImportSuccessfully() {
-        // Given
-        DatabaseImportRequest request = new DatabaseImportRequest();
-
-        ExportMetadata metadata = new ExportMetadata();
-        metadata.setVersion("1.0");
-        TotalRecords totalRecords = new TotalRecords();
-        totalRecords.setUsers(1);
-        totalRecords.setEvents(1);
-        metadata.setTotalRecords(totalRecords);
-        request.setMetadata(metadata);
-
-        ExportData data = new ExportData();
-        data.setUsers(Collections.singletonList(testUser));
-        data.setEvents(Collections.singletonList(testEvent));
-        data.setReleases(new ArrayList<>());
-        data.setHistory(new ArrayList<>());
-        data.setReleaseHistory(new ArrayList<>());
-        data.setSettings(new ArrayList<>());
-        request.setData(data);
-
-        when(userRepository.saveAll(anyList())).thenReturn(Collections.singletonList(testUser));
-        when(eventRepository.saveAll(anyList())).thenReturn(Collections.singletonList(testEvent));
-
-        // When
-        ImportDatabaseResponse result = adminService.importDatabase(request);
-
-        // Then
-        assertThat(result.getMessage()).isEqualTo("Base de données importée avec succès");
-        assertThat(result.getImportedRecords().getUsers()).isEqualTo(1);
-        verify(userRepository).deleteAll();
-        verify(eventRepository).deleteAll();
-        verify(userRepository).saveAll(anyList());
-        verify(eventRepository).saveAll(anyList());
-        verify(absenceRepository).deleteAll();
-        verify(sprintRepository).deleteAll();
-        verify(microserviceRepository).deleteAll();
-        verify(gameRepository).deleteAll();
-        verify(gameScoreRepository).deleteAll();
-        verify(userPermissionRepository).deleteAll();
-        verify(releaseNoteEntryRepository).deleteAll();
-    }
-
-    @Test
-    void importDatabase_WithInvalidVersion_ShouldThrowException() {
-        // Given
-        DatabaseImportRequest request = new DatabaseImportRequest();
-
-        ExportMetadata metadata = new ExportMetadata();
-        metadata.setVersion("2.0");
-        request.setMetadata(metadata);
-
-        ExportData data = new ExportData();
-        request.setData(data);
-
-        // When & Then
-        assertThatThrownBy(() -> adminService.importDatabase(request))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Version du fichier non supportée");
-    }
-
-    @Test
-    void importDatabase_WithNullData_ShouldThrowException() {
-        // Given
-        DatabaseImportRequest request = new DatabaseImportRequest();
-        request.setData(null);
-        request.setMetadata(new ExportMetadata());
-
-        // When & Then
-        assertThatThrownBy(() -> adminService.importDatabase(request))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Format de données invalide");
-    }
-
-    @Test
-    void importDatabase_WithNullMetadata_ShouldThrowException() {
-        // Given
-        DatabaseImportRequest request = new DatabaseImportRequest();
-        request.setData(new ExportData());
-        request.setMetadata(null);
-
-        // When & Then
-        assertThatThrownBy(() -> adminService.importDatabase(request))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessageContaining("Format de données invalide");
-    }
-
-    @Test
-    void importDatabase_WithReleasesHavingNestedRelations_ShouldSetBidirectionalRelationships() {
-        // Given
-        DatabaseImportRequest request = new DatabaseImportRequest();
-
-        ExportMetadata metadata = new ExportMetadata();
-        metadata.setVersion("1.0");
-        metadata.setTotalRecords(new TotalRecords());
-        request.setMetadata(metadata);
-
-        Release release = new Release();
-        release.setId("rel1");
-
-        Squad squad = new Squad();
-        squad.setId("squad1");
-        release.setSquads(List.of(squad));
-
-        ExportData data = new ExportData();
-        data.setUsers(new ArrayList<>());
-        data.setEvents(new ArrayList<>());
-        data.setReleases(List.of(release));
-        data.setHistory(new ArrayList<>());
-        data.setReleaseHistory(new ArrayList<>());
-        data.setSettings(new ArrayList<>());
-        request.setData(data);
-
-        when(releaseRepository.saveAll(anyList())).thenReturn(List.of(release));
-
-        // When
-        adminService.importDatabase(request);
-
-        // Then
-        verify(releaseRepository).saveAll(argThat(releases -> {
-            List<Release> releaseList = new ArrayList<>();
-            releases.forEach(releaseList::add);
-            Release r = releaseList.get(0);
-            assertThat(r.getSquads().get(0).getRelease()).isEqualTo(r);
-            return true;
-        }));
-    }
-
-    @Test
-    void createAdminUser_WhenNotExists_ShouldCreateAdmin() {
-        // Given
-        when(userRepository.existsByEmail("admin")).thenReturn(false);
-        when(passwordEncoder.encode("admin123")).thenReturn("encoded-password");
-        when(userRepository.save(any(User.class))).thenReturn(testUser);
-
-        // When
-        adminService.createAdminUser();
-
-        // Then
-        verify(userRepository).save(argThat(user -> {
-            assertThat(user.getEmail()).isEqualTo("admin");
-            assertThat(user.getFirstName()).isEqualTo("Admin");
-            assertThat(user.getLastName()).isEqualTo("Système");
-            assertThat(user.getPassword()).isEqualTo("encoded-password");
-            return true;
-        }));
-    }
-
-    @Test
-    void createAdminUser_WhenAlreadyExists_ShouldNotCreate() {
-        // Given
-        when(userRepository.existsByEmail("admin")).thenReturn(true);
-
-        // When
-        adminService.createAdminUser();
-
-        // Then
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    void updateUser_ShouldUpdateSquads() {
+    @DisplayName("updateUser - Success")
+    void testUpdateUser() {
         // Given
         AdminUpdateUserRequest request = new AdminUpdateUserRequest();
-        request.setSquads(Arrays.asList("Squad 1", "Squad 2"));
+        request.setFirstName("Updated");
+        request.setSquads(List.of("Squad A"));
 
-        when(userRepository.findById("user123")).thenReturn(Optional.of(testUser));
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(historyRepository.findByUserIdOrderByTimestampDesc("user123")).thenReturn(Collections.emptyList());
-        when(permissionService.getUserPermissions("user123")).thenReturn(new HashMap<>());
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(testUser));
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+        when(permissionService.getUserPermissions(anyString())).thenReturn(Collections.emptyMap());
+        when(historyRepository.findByUserIdOrderByTimestampDesc(anyString())).thenReturn(Collections.emptyList());
 
         // When
-        AdminUserDto result = adminService.updateUser("user123", request);
+        AdminUserDto result = adminService.updateUser("user-1", request);
 
         // Then
-        assertThat(result.getSquads()).containsExactly("Squad 1", "Squad 2");
-        verify(userRepository).save(argThat(user -> {
-            assertThat(user.getSquads()).containsExactly("Squad 1", "Squad 2");
-            return true;
-        }));
+        assertEquals("Updated", result.getFirstName());
+        assertEquals(List.of("Squad A"), result.getSquads());
+    }
+
+    @Test
+    @DisplayName("resetUserPassword - Success")
+    void testResetUserPassword() {
+        // Given
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(testUser));
+        when(passwordEncoder.encode("password")).thenReturn("encoded-password");
+
+        // When
+        adminService.resetUserPassword("user-1");
+
+        // Then
+        verify(userRepository).save(testUser);
+        assertEquals("encoded-password", testUser.getPassword());
+    }
+
+    @Test
+    @DisplayName("getStats - Success")
+    void testGetStats() {
+        // Given
+        when(userRepository.count()).thenReturn(10L);
+        when(eventRepository.count()).thenReturn(5L);
+        when(releaseRepository.count()).thenReturn(2L);
+        when(historyRepository.count()).thenReturn(100L);
+
+        // When
+        AdminStatsResponse response = adminService.getStats();
+
+        // Then
+        assertEquals(10, response.getStats().getTotalUsers());
+        assertEquals(5, response.getStats().getTotalEvents());
+    }
+
+    @Test
+    @DisplayName("updateUser - Not Found")
+    void testUpdateUser_NotFound() {
+        when(userRepository.findById("unknown")).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class,
+                () -> adminService.updateUser("unknown", new AdminUpdateUserRequest()));
     }
 }

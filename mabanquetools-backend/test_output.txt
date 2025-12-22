@@ -1,0 +1,673 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/opt/homebrew/Cellar/maven/3.9.10/libexec/lib/guice-5.1.0-classes.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< com.catsbanque:mabanquetools-backend >----------------
+[INFO] Building Ma Banque Tools API 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco:0.8.13:prepare-agent (default) @ mabanquetools-backend ---
+[INFO] argLine set to "-javaagent:/Users/bilal/.m2/repository/org/jacoco/org.jacoco.agent/0.8.13/org.jacoco.agent-0.8.13-runtime.jar=destfile=/Users/bilal/Documents/Projets perso/Claude/Planning/mabanquetools-backend/target/jacoco.exec"
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ mabanquetools-backend ---
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 9 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ mabanquetools-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ mabanquetools-backend ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ mabanquetools-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ mabanquetools-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.catsbanque.mabanquetools.controller.ClosedDayControllerTest
+21:14:28.481 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.catsbanque.mabanquetools.controller.ClosedDayControllerTest]: ClosedDayControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+21:14:28.595 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.catsbanque.mabanquetools.MaBanqueToolsApiApplication for test class com.catsbanque.mabanquetools.controller.ClosedDayControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.1)
+
+2025-12-22 21:14:28 - Starting ClosedDayControllerTest using Java 24.0.1 with PID 72431 (started by bilal in /Users/bilal/Documents/Projets perso/Claude/Planning/mabanquetools-backend)
+2025-12-22 21:14:28 - The following 1 profile is active: "test"
+2025-12-22 21:14:31 - HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-12-22 21:14:32 - 
+    drop table if exists absence cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists action cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists app_release cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists app_user cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists closed_day cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists event cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists feature cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists feature_flipping cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists game cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists game_score cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists history cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists microservice cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists release_history cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists release_note_entry cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists settings cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists sprint cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists squad cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists user_permissions cascade 
+2025-12-22 21:14:32 - 
+    drop table if exists user_squads cascade 
+2025-12-22 21:14:32 - 
+    create table absence (
+        end_date date not null,
+        start_date date not null,
+        user_id varchar(25),
+        id varchar(255) not null,
+        end_period enum ('AFTERNOON','MORNING') not null,
+        start_period enum ('AFTERNOON','MORNING') not null,
+        type enum ('ABSENCE','FORMATION','TELETRAVAIL') not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table action (
+        order_index integer not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        phase varchar(20) not null,
+        status varchar(20) not null,
+        id varchar(25) not null,
+        squad_id varchar(25) not null,
+        type varchar(50) not null,
+        description TEXT,
+        title varchar(255) not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table app_release (
+        created_at timestamp(6) not null,
+        release_date timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        status varchar(20) not null,
+        type varchar(20) not null,
+        id varchar(25) not null,
+        description TEXT,
+        name varchar(255) not null,
+        slug varchar(255) unique,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table app_user (
+        is_interne boolean not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        theme_preference varchar(20) not null,
+        id varchar(25) not null,
+        metier varchar(50),
+        tribu varchar(50),
+        first_name varchar(100) not null,
+        last_name varchar(100) not null,
+        email varchar(255) not null unique,
+        password varchar(255) not null,
+        widget_order TEXT not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table closed_day (
+        date varchar(10) not null unique,
+        id varchar(25) not null,
+        reason varchar(255) not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table event (
+        end_time varchar(5),
+        start_time varchar(5),
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        date varchar(10) not null,
+        end_date varchar(10),
+        color varchar(20) not null,
+        id varchar(25) not null,
+        sprint_id varchar(25),
+        category varchar(50) not null,
+        icon varchar(50) not null,
+        description TEXT,
+        title varchar(255) not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table feature (
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        id varchar(25) not null,
+        squad_id varchar(25) not null,
+        type varchar(50) not null,
+        description TEXT,
+        title varchar(255) not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table feature_flipping (
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        rule_state varchar(20),
+        action_id varchar(25) not null unique,
+        id varchar(25) not null,
+        flipping_type varchar(50) not null,
+        rule_action varchar(50) not null,
+        theme varchar(100),
+        rule_name varchar(255) not null,
+        target_caisses TEXT,
+        target_clients TEXT not null,
+        target_os TEXT not null,
+        target_versions TEXT not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table game (
+        is_active boolean not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        id varchar(25) not null,
+        icon varchar(50) not null,
+        slug varchar(100) not null unique,
+        name varchar(200) not null,
+        description TEXT,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table game_score (
+        accuracy float(53),
+        score integer not null,
+        wpm integer,
+        created_at timestamp(6) not null,
+        game_id varchar(25) not null,
+        id varchar(25) not null,
+        user_id varchar(25),
+        visitor_name varchar(100),
+        metadata TEXT,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table history (
+        timestamp timestamp(6) not null,
+        event_id varchar(25),
+        id varchar(25) not null,
+        user_id varchar(25),
+        action varchar(50) not null,
+        user_display_name varchar(100),
+        event_data TEXT not null,
+        previous_data TEXT,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table microservice (
+        display_order integer,
+        is_active boolean,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        squad varchar(20) not null,
+        id varchar(25) not null,
+        name varchar(100) not null unique,
+        solution varchar(100),
+        description TEXT,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table release_history (
+        timestamp timestamp(6) not null,
+        id varchar(25) not null,
+        release_id varchar(25),
+        user_id varchar(25),
+        action varchar(50) not null,
+        user_display_name varchar(100),
+        previous_data TEXT,
+        release_data TEXT not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table release_note_entry (
+        deploy_order integer,
+        part_en_mep boolean not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        id varchar(25) not null,
+        microservice_id varchar(25),
+        release_id varchar(25) not null,
+        parent_version varchar(50),
+        previous_tag varchar(50),
+        squad varchar(50) not null,
+        tag varchar(50),
+        microservice varchar(100),
+        changes JSON,
+        comment TEXT,
+        status enum ('DEPLOYED_PROD','HOM2','IN_PROGRESS_PROD','ROLLBACK'),
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table settings (
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        theme varchar(20) not null,
+        id varchar(25) not null,
+        custom_categories TEXT not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table sprint (
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        code_freeze_date varchar(10) not null,
+        end_date varchar(10) not null,
+        release_date_back varchar(10) not null,
+        release_date_front varchar(10) not null,
+        start_date varchar(10) not null,
+        id varchar(25) not null,
+        name varchar(100) not null,
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table squad (
+        features_empty_confirmed boolean not null,
+        is_completed boolean not null,
+        post_mep_empty_confirmed boolean not null,
+        pre_mep_empty_confirmed boolean not null,
+        squad_number integer not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        id varchar(25) not null,
+        release_id varchar(25) not null,
+        tonton_mep varchar(100),
+        primary key (id)
+    )
+2025-12-22 21:14:32 - 
+    create table user_permissions (
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        id varchar(25) not null,
+        user_id varchar(25),
+        module enum ('ABSENCE','ADMIN','CALENDAR','PLAYGROUND','RELEASES') not null,
+        permission_level enum ('NONE','READ','WRITE') not null,
+        primary key (id),
+        constraint uk_user_module unique (user_id, module)
+    )
+2025-12-22 21:14:32 - 
+    create table user_squads (
+        user_id varchar(25) not null,
+        squad varchar(255)
+    )
+2025-12-22 21:14:32 - 
+    create index idx_action_squad_id 
+       on action (squad_id)
+2025-12-22 21:14:32 - 
+    create index idx_action_phase 
+       on action (phase)
+2025-12-22 21:14:32 - 
+    create index idx_action_type 
+       on action (type)
+2025-12-22 21:14:32 - 
+    create index idx_release_date 
+       on app_release (release_date)
+2025-12-22 21:14:32 - 
+    create index idx_release_status 
+       on app_release (status)
+2025-12-22 21:14:32 - 
+    create index idx_release_type 
+       on app_release (type)
+2025-12-22 21:14:32 - 
+    create index idx_user_email 
+       on app_user (email)
+2025-12-22 21:14:32 - 
+    create index idx_event_date 
+       on event (date)
+2025-12-22 21:14:32 - 
+    create index idx_event_category 
+       on event (category)
+2025-12-22 21:14:32 - 
+    create index idx_feature_squad_id 
+       on feature (squad_id)
+2025-12-22 21:14:32 - 
+    create index idx_ff_action_id 
+       on feature_flipping (action_id)
+2025-12-22 21:14:32 - 
+    create index idx_ff_rule_name 
+       on feature_flipping (rule_name)
+2025-12-22 21:14:32 - 
+    create index idx_game_slug 
+       on game (slug)
+2025-12-22 21:14:32 - 
+    create index idx_game_is_active 
+       on game (is_active)
+2025-12-22 21:14:32 - 
+    create index idx_game_score_game_id 
+       on game_score (game_id, score)
+2025-12-22 21:14:32 - 
+    create index idx_game_score_user_id 
+       on game_score (user_id)
+2025-12-22 21:14:32 - 
+    create index idx_game_score_created_at 
+       on game_score (created_at)
+2025-12-22 21:14:32 - 
+    create index idx_history_timestamp 
+       on history (timestamp)
+2025-12-22 21:14:32 - 
+    create index idx_history_user_id 
+       on history (user_id)
+2025-12-22 21:14:32 - 
+    create index idx_release_history_timestamp 
+       on release_history (timestamp)
+2025-12-22 21:14:32 - 
+    create index idx_release_history_user_id 
+       on release_history (user_id)
+2025-12-22 21:14:32 - 
+    create index idx_release_history_release_id 
+       on release_history (release_id)
+2025-12-22 21:14:32 - 
+    create index idx_release_note_release_id 
+       on release_note_entry (release_id)
+2025-12-22 21:14:32 - 
+    create index idx_release_note_squad 
+       on release_note_entry (squad)
+2025-12-22 21:14:32 - 
+    create index idx_release_note_deploy_order 
+       on release_note_entry (deploy_order)
+2025-12-22 21:14:32 - 
+    create index idx_sprint_dates 
+       on sprint (start_date, end_date)
+2025-12-22 21:14:32 - 
+    create index idx_squad_release_id 
+       on squad (release_id)
+2025-12-22 21:14:32 - 
+    create index idx_user_permission_user_id 
+       on user_permissions (user_id)
+2025-12-22 21:14:32 - 
+    create index idx_user_permission_module 
+       on user_permissions (module)
+2025-12-22 21:14:32 - 
+    alter table if exists absence 
+       add constraint FKlhxf4qwxwvpmeftle2i5wd0ke 
+       foreign key (user_id) 
+       references app_user
+2025-12-22 21:14:32 - 
+    alter table if exists action 
+       add constraint FKf3cing1xnlpeg3lud080hw0t9 
+       foreign key (squad_id) 
+       references squad
+2025-12-22 21:14:32 - 
+    alter table if exists feature 
+       add constraint FKjx3n6i50kqqnhvw5tvyfih90x 
+       foreign key (squad_id) 
+       references squad
+2025-12-22 21:14:32 - 
+    alter table if exists feature_flipping 
+       add constraint FKlvvp11c4j0gqb94x6lm1s1jpi 
+       foreign key (action_id) 
+       references action
+2025-12-22 21:14:32 - 
+    alter table if exists game_score 
+       add constraint FKi6n7osvt9yxwwfltnmf76dgc0 
+       foreign key (game_id) 
+       references game
+2025-12-22 21:14:32 - 
+    alter table if exists game_score 
+       add constraint FKt2be92ygtkcihqj3uue4kfcoi 
+       foreign key (user_id) 
+       references app_user
+2025-12-22 21:14:32 - 
+    alter table if exists history 
+       add constraint FKo95dbvpqdosm8gd5w4yirw1kc 
+       foreign key (user_id) 
+       references app_user
+2025-12-22 21:14:32 - 
+    alter table if exists release_history 
+       add constraint FK863k8qypalf5c7oq1ok82aevd 
+       foreign key (user_id) 
+       references app_user
+2025-12-22 21:14:32 - 
+    alter table if exists release_note_entry 
+       add constraint FKln3o86fm0ng74ku88uy93c1je 
+       foreign key (microservice_id) 
+       references microservice
+2025-12-22 21:14:32 - 
+    alter table if exists release_note_entry 
+       add constraint FK8r6c0yqntof15uy23mfe8ycmx 
+       foreign key (release_id) 
+       references app_release
+2025-12-22 21:14:32 - 
+    alter table if exists squad 
+       add constraint FKnt5gjttwff9iywa3ov3giu0b1 
+       foreign key (release_id) 
+       references app_release
+2025-12-22 21:14:32 - 
+    alter table if exists user_permissions 
+       add constraint FK9ir9q1vwhap2jywi1lk3qq54c 
+       foreign key (user_id) 
+       references app_user
+2025-12-22 21:14:32 - 
+    alter table if exists user_squads 
+       add constraint FK2wimr7u3dxg1n4wleh455iufi 
+       foreign key (user_id) 
+       references app_user
+2025-12-22 21:14:35 - Started ClosedDayControllerTest in 6.567 seconds (process running for 7.646)
+2025-12-22 21:14:35 - 🧹 Nettoyage des permissions obsolètes (PI_PLANNING)...
+2025-12-22 21:14:35 - ⚠️ Erreur lors du nettoyage des permissions : StatementCallback; SQL [DELETE FROM user_permissions WHERE module = 'PI_PLANNING']; Valeur non permise pour la colonne "('ABSENCE', 'ADMIN', 'CALENDAR', 'PLAYGROUND', 'RELEASES')": "PI_PLANNING"
+Value not permitted for column "('ABSENCE', 'ADMIN', 'CALENDAR', 'PLAYGROUND', 'RELEASES')": "PI_PLANNING"; SQL statement:
+DELETE FROM user_permissions WHERE module = 'PI_PLANNING' [22030-240]
+2025-12-22 21:14:35 - 
+    select
+        count(*) 
+    from
+        microservice m1_0
+2025-12-22 21:14:35 - 
+    select
+        r1_0.id,
+        r1_0.created_at,
+        r1_0.description,
+        r1_0.name,
+        r1_0.release_date,
+        r1_0.slug,
+        r1_0.status,
+        r1_0.type,
+        r1_0.updated_at 
+    from
+        app_release r1_0
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-12-22 21:14:35 - 
+    insert 
+    into
+        microservice
+        (created_at, description, display_order, is_active, name, solution, squad, updated_at, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/Users/bilal/.m2/repository/net/bytebuddy/byte-buddy-agent/1.17.8/byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2025-12-22 21:14:35 - 
+    select
+        cd1_0.id,
+        cd1_0.date,
+        cd1_0.reason 
+    from
+        closed_day cd1_0
+2025-12-22 21:14:36 - 
+    select
+        cd1_0.id,
+        cd1_0.date,
+        cd1_0.reason 
+    from
+        closed_day cd1_0
+2025-12-22 21:14:36 - 
+    insert 
+    into
+        closed_day
+        (date, reason, id) 
+    values
+        (?, ?, ?)
+2025-12-22 21:14:36 - 
+    delete 
+    from
+        closed_day 
+    where
+        id=?
+2025-12-22 21:14:36 - 
+    select
+        cd1_0.id,
+        cd1_0.date,
+        cd1_0.reason 
+    from
+        closed_day cd1_0 
+    order by
+        cd1_0.date
+2025-12-22 21:14:36 - 
+    select
+        cd1_0.id,
+        cd1_0.date,
+        cd1_0.reason 
+    from
+        closed_day cd1_0
+2025-12-22 21:14:36 - 
+    insert 
+    into
+        closed_day
+        (date, reason, id) 
+    values
+        (?, ?, ?)
+2025-12-22 21:14:36 - 
+    select
+        cd1_0.id,
+        cd1_0.date,
+        cd1_0.reason 
+    from
+        closed_day cd1_0 
+    order by
+        cd1_0.date
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.786 s -- in com.catsbanque.mabanquetools.controller.ClosedDayControllerTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jacoco:0.8.13:report (report) @ mabanquetools-backend ---
+[INFO] Loading execution data file /Users/bilal/Documents/Projets perso/Claude/Planning/mabanquetools-backend/target/jacoco.exec
+[INFO] Analyzed bundle 'Ma Banque Tools API' with 81 classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.116 s
+[INFO] Finished at: 2025-12-22T21:14:36+01:00
+[INFO] ------------------------------------------------------------------------

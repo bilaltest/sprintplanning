@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChange
 import { CommonModule } from '@angular/common';
 import { Event, CATEGORY_COLORS_DARK, CATEGORY_DEFAULTS } from '@models/event.model';
 import { Sprint } from '@models/sprint.model';
+import { ClosedDay } from '@models/closed-day.model';
 import {
   format,
   addMonths,
@@ -233,6 +234,7 @@ interface MonthColumn {
 export class SemesterViewComponent implements OnInit, OnChanges {
   @Input() events: Event[] | null = [];
   @Input() sprints: Sprint[] | null = [];
+  @Input() closedDays: ClosedDay[] | null = [];
   @Output() eventClick = new EventEmitter<Event>();
   @Output() addEventClick = new EventEmitter<string>();
 
@@ -245,7 +247,7 @@ export class SemesterViewComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['events'] || changes['sprints']) {
+    if (changes['events'] || changes['sprints'] || changes['closedDays']) {
       this.updateView();
     }
   }
@@ -292,7 +294,7 @@ export class SemesterViewComponent implements OnInit, OnChanges {
             dayNumber: day,
             dayLetter: format(date, 'EEEEE', { locale: fr }).toUpperCase(), // 'L', 'M', etc.
             isWeekend: isWeekend(date),
-            isHoliday: this.isHoliday(date),
+            isHoliday: this.isHoliday(date) || this.isClosedDay(dayStr),
             isToday: isToday(date),
             events: this.getEventsForDay(dayStr),
             isValid: true,
@@ -461,5 +463,9 @@ export class SemesterViewComponent implements OnInit, OnChanges {
     const month = Math.floor((h + l - 7 * m + 114) / 31);
     const day = ((h + l - 7 * m + 114) % 31) + 1;
     return new Date(year, month - 1, day);
+  }
+
+  isClosedDay(dateStr: string): boolean {
+    return this.closedDays ? this.closedDays.some(d => d.date === dateStr) : false;
   }
 }
