@@ -124,8 +124,8 @@ class HistoryServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getAction()).isEqualTo("create");
-        assertThat(result.get(0).getEventId()).isEqualTo("event123");
+        assertThat(result.getFirst().getAction()).isEqualTo("create");
+        assertThat(result.getFirst().getEventId()).isEqualTo("event123");
     }
 
     @Test

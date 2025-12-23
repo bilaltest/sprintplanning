@@ -100,7 +100,7 @@ class GameServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getSlug()).isEqualTo("typing-fr");
+        assertThat(result.getFirst().getSlug()).isEqualTo("typing-fr");
     }
 
     @Test
@@ -153,9 +153,9 @@ class GameServiceTest {
 
         // Then
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getRank()).isEqualTo(1);
-        assertThat(result.get(0).getScore()).isEqualTo(100);
-        assertThat(result.get(0).getUser().getFirstName()).isEqualTo("John");
+        assertThat(result.getFirst().getRank()).isEqualTo(1);
+        assertThat(result.getFirst().getScore()).isEqualTo(100);
+        assertThat(result.getFirst().getUser().getFirstName()).isEqualTo("John");
         assertThat(result.get(1).getRank()).isEqualTo(2);
         assertThat(result.get(1).getScore()).isEqualTo(80);
     }

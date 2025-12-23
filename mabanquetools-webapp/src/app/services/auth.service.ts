@@ -56,11 +56,11 @@ export class AuthService {
   constructor(private http: HttpClient) { }
 
   private checkInitialAuth(): boolean {
-    return !!sessionStorage.getItem(this.STORAGE_KEY);
+    return !!localStorage.getItem(this.STORAGE_KEY);
   }
 
   private getStoredUser(): User | null {
-    const userJson = sessionStorage.getItem(this.USER_KEY);
+    const userJson = localStorage.getItem(this.USER_KEY);
     return userJson ? JSON.parse(userJson) : null;
   }
 
@@ -92,8 +92,8 @@ export class AuthService {
       );
 
       // Stocker le token et les infos utilisateur
-      sessionStorage.setItem(this.STORAGE_KEY, response.token);
-      sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      localStorage.setItem(this.STORAGE_KEY, response.token);
+      localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
 
       this.isAuthenticatedSubject.next(true);
       this.currentUserSubject.next(response.user);
@@ -111,8 +111,8 @@ export class AuthService {
    * Déconnecte l'utilisateur
    */
   logout(): void {
-    sessionStorage.removeItem(this.STORAGE_KEY);
-    sessionStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.STORAGE_KEY);
+    localStorage.removeItem(this.USER_KEY);
     this.isAuthenticatedSubject.next(false);
     this.currentUserSubject.next(null);
   }
@@ -128,7 +128,7 @@ export class AuthService {
    * Récupère le token actuel
    */
   getToken(): string | null {
-    return sessionStorage.getItem(this.STORAGE_KEY);
+    return localStorage.getItem(this.STORAGE_KEY);
   }
 
   /**
@@ -154,7 +154,7 @@ export class AuthService {
         })
       );
 
-      sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
       this.currentUserSubject.next(response.user);
 
       return response.user;
@@ -183,7 +183,7 @@ export class AuthService {
       );
 
       // Mettre à jour l'utilisateur stocké
-      sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
       this.currentUserSubject.next(response.user);
 
       // Appliquer le thème immédiatement
@@ -226,7 +226,7 @@ export class AuthService {
       );
 
       // Mettre à jour l'utilisateur stocké
-      sessionStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
       this.currentUserSubject.next(response.user);
 
       return true;

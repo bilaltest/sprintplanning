@@ -5,8 +5,8 @@ import { HttpInterceptorFn } from '@angular/common/http';
  * à toutes les requêtes HTTP sortantes.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // Récupérer le token depuis sessionStorage
-  const token = sessionStorage.getItem('planning_auth_token');
+  // Récupérer le token depuis localStorage
+  const token = localStorage.getItem('planning_auth_token');
 
   // Si pas de token, laisser passer la requête telle quelle
   if (!token) {

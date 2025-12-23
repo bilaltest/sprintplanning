@@ -65,7 +65,7 @@ class ReleaseRepositoryTest {
 
         // Then
         assertThat(draftReleases).hasSize(1);
-        assertThat(draftReleases.get(0).getName()).contains("v40.5");
+        assertThat(draftReleases.getFirst().getName()).contains("v40.5");
         assertThat(completedReleases).hasSize(1);
     }
 
@@ -84,7 +84,7 @@ class ReleaseRepositoryTest {
         // Then
         assertThat(releases).hasSize(2);
         assertThat(hotfixes).hasSize(1);
-        assertThat(hotfixes.get(0).getName()).contains("v40.4.1");
+        assertThat(hotfixes.getFirst().getName()).contains("v40.4.1");
     }
 
     @Test
@@ -100,7 +100,7 @@ class ReleaseRepositoryTest {
 
         // Then
         assertThat(upcoming).hasSize(2);
-        assertThat(upcoming.get(0).getReleaseDate()).isAfter(LocalDateTime.now());
+        assertThat(upcoming.getFirst().getReleaseDate()).isAfter(LocalDateTime.now());
     }
 
     @Test
@@ -116,7 +116,7 @@ class ReleaseRepositoryTest {
 
         // Then
         assertThat(past).hasSize(1);
-        assertThat(past.get(0).getName()).contains("v40.4.1");
+        assertThat(past.getFirst().getName()).contains("v40.4.1");
     }
 
     @Test
@@ -150,7 +150,7 @@ class ReleaseRepositoryTest {
 
         // Then
         assertThat(all).hasSize(3);
-        assertThat(all.get(0).getName()).contains("v41.0");
+        assertThat(all.getFirst().getName()).contains("v41.0");
         assertThat(all.get(2).getName()).contains("v40.4.1");
     }
 }

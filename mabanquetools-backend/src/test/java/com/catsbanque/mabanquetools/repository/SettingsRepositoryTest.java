@@ -55,7 +55,7 @@ class SettingsRepositoryTest {
 
         // Then
         assertThat(all).hasSize(1);
-        assertThat(all.get(0).getTheme()).isEqualTo("light");
+        assertThat(all.getFirst().getTheme()).isEqualTo("light");
     }
 
     @Test

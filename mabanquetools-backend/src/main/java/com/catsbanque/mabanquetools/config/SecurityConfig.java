@@ -26,7 +26,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configure(http)) // Active CORS avec la config par défaut
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Utiliser la configuration
+                                                                                   // personnalisée
                 .csrf(csrf -> csrf.disable()) // Désactivé pour compatibilité Angular
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.valueOf(sessionPolicy)) // Configurable (STATELESS
@@ -51,6 +52,21 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+        // Autoriser localhost:4200 (Angular dev) et 8080/8081 (http-server PWA demo)
+        configuration.setAllowedOrigins(
+                java.util.List.of("http://localhost:4200", "http://localhost:8080", "http://localhost:8081"));
+        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(java.util.List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowCredentials(true);
+
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean

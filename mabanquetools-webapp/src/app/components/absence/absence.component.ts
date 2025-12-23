@@ -1,4 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, HostListener, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,8 +9,8 @@ import { AuthService } from '@services/auth.service';
 import { PermissionService } from '@services/permission.service';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, isWeekend, getDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { interval, Subscription } from 'rxjs';
-import { startWith, switchMap } from 'rxjs/operators';
+import { interval, Subscription, Observable } from 'rxjs';
+import { startWith, switchMap, map } from 'rxjs/operators';
 import { SprintService } from '@services/sprint.service';
 import { Sprint } from '@models/sprint.model';
 import { ToastService } from '@services/toast.service';
@@ -73,6 +74,83 @@ interface MonthMetadata {
       <!-- Main Content (Timeline) -->
       <div class="flex-1 flex overflow-hidden relative">
         
+        <ng-container *ngIf="isMobile$ | async; else desktopView">
+          <!-- MOBILE VIEW -->
+          <div class="flex-1 bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
+             
+             <!-- Mobile Search Bar & Filter Toggle -->
+             <div class="px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-2 shrink-0">
+                <div class="relative flex-1">
+                    <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+                    <input 
+                        type="text" 
+                        [(ngModel)]="searchQuery" 
+                        (ngModelChange)="filterUsers()"
+                        placeholder="Rechercher..." 
+                        class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-primary-500 transition-all"
+                    >
+                </div>
+                <button (click)="showMobileFilters = !showMobileFilters" 
+                        [class.bg-primary-50]="showMobileFilters"
+                        [class.text-primary-600]="showMobileFilters"
+                        class="p-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <span class="material-icons">filter_list</span>
+                </button>
+             </div>
+
+             <!-- Mobile Filters (Collapsible) -->
+             <div *ngIf="showMobileFilters" class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 space-y-4 shadow-inner">
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Squads</label>
+                    <app-multi-select-filter [options]="uniqueSquads" [(selectedValues)]="selectedSquads" (selectedValuesChange)="filterUsers()"></app-multi-select-filter>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Métiers</label>
+                    <app-multi-select-filter [options]="uniqueMetiers" [(selectedValues)]="selectedMetiers" (selectedValuesChange)="filterUsers()"></app-multi-select-filter>
+                </div>
+             </div>
+
+             <!-- Mobile List -->
+             <div class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                <div *ngFor="let user of filteredUsers; trackBy: trackUserById" 
+                     (click)="editAbsenceOpenModal(user)"
+                     class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center justify-between active:scale-[0.98] transition-transform">
+                    
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-300 font-bold text-sm">
+                            {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white">{{ user.firstName }} {{ user.lastName }}</h3>
+                            <div class="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                                <span *ngIf="user.squads && user.squads.length" class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">{{ user.squads.join(', ') }}</span>
+                                <span *ngIf="user.metier">{{ user.metier }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Indicator -->
+                    <div *ngIf="getMobileUserStatus(user) as status" 
+                         [class]="'px-2 py-1 rounded-lg text-xs font-medium border flex items-center space-x-1 ' + status.color">
+                         <span class="w-1.5 h-1.5 rounded-full bg-current"></span>
+                         <span>{{ status.label }}</span>
+                    </div>
+                </div>
+                
+                <div *ngIf="filteredUsers.length === 0" class="text-center py-10 text-gray-500">
+                    Aucun utilisateur trouvé
+                </div>
+             </div>
+
+             <!-- Floating Action Button for Add -->
+             <button (click)="openCreateModalMobile()" class="absolute bottom-6 right-6 w-14 h-14 bg-primary-600 text-white rounded-full shadow-lg shadow-primary-600/30 flex items-center justify-center transform active:scale-90 transition-all hover:bg-primary-700 z-30">
+                <span class="material-icons text-2xl">add</span>
+             </button>
+
+          </div>
+        </ng-container>
+        
+        <ng-template #desktopView>
         <!-- Left Sidebar (Users Table) -->
         <div [style.width.px]="showUserDetails ? 740 : 350" class="flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col z-10 shadow-lg transition-all duration-300">
           <!-- Table Header -->
@@ -343,6 +421,79 @@ interface MonthMetadata {
           </div>
 
         </div>
+        </ng-template>
+      </div>
+
+      <!-- Mobile User Details Modal (List View) -->
+      <div *ngIf="showMobileDetails && selectedUser" class="fixed inset-0 z-50 bg-gray-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in" (click)="closeMobileDetails()">
+        <div class="w-full h-[85vh] bg-white dark:bg-gray-800 rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col transform transition-transform duration-300 animate-slide-up" (click)="$event.stopPropagation()">
+            
+            <!-- Handle bar for swipe feel -->
+            <div class="w-full flex justify-center pt-3 pb-1">
+                <div class="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+            </div>
+
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between shrink-0">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ selectedUser.metier }} <span *ngIf="selectedUser.squads?.length">• {{ selectedUser.squads.join(', ') }}</span></p>
+                </div>
+                <button (click)="closeMobileDetails()" class="p-2 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-500 dark:text-gray-300">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+
+            <!-- Content: List of Absences -->
+            <div class="flex-1 overflow-y-auto p-4 custom-scrollbar">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Absences prévues</h3>
+                
+                <div class="space-y-3">
+                    <div *ngFor="let absence of selectedUserAbsences" 
+                         (click)="editAbsence(absence, $event)"
+                         class="flex items-center p-4 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 active:scale-[0.98] transition-all">
+                        
+                        <!-- Icon -->
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center mr-4 shrink-0"
+                             [class.bg-orange-100]="absence.type === 'ABSENCE'" [class.text-orange-600]="absence.type === 'ABSENCE'"
+                             [class.bg-sky-100]="absence.type === 'FORMATION'" [class.text-sky-600]="absence.type === 'FORMATION'"
+                             [class.bg-rose-100]="absence.type === 'TELETRAVAIL'" [class.text-rose-600]="absence.type === 'TELETRAVAIL'">
+                             <span class="material-icons text-lg" *ngIf="absence.type === 'ABSENCE'">beach_access</span>
+                             <span class="material-icons text-lg" *ngIf="absence.type === 'FORMATION'">school</span>
+                             <span class="material-icons text-lg" *ngIf="absence.type === 'TELETRAVAIL'">wifi</span>
+                        </div>
+
+                        <!-- Info -->
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-900 dark:text-white text-sm">
+                                {{ ABSENCE_LABELS[absence.type] }}
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex flex-col">
+                                <span>Du {{ format(parseDate(absence.startDate), 'dd MMM', { locale: fr }) }} au {{ format(parseDate(absence.endDate), 'dd MMM', { locale: fr }) }}</span>
+                            </div>
+                        </div>
+
+                        <span class="material-icons text-gray-400 text-sm">chevron_right</span>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div *ngIf="selectedUserAbsences.length === 0" class="flex flex-col items-center justify-center py-10 text-center">
+                        <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-3">
+                            <span class="material-icons text-gray-400 text-2xl">event_busy</span>
+                        </div>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Aucune absence prévue</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="p-4 border-t border-gray-100 dark:border-gray-700 shrink-0 safe-area-bottom">
+                <button (click)="addAbsenceForSelectedUser()" class="w-full py-3 bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white rounded-xl font-bold shadow-lg shadow-primary-600/20 flex items-center justify-center space-x-2 transition-all">
+                    <span class="material-icons">add_circle_outline</span>
+                    <span>Ajouter une absence</span>
+                </button>
+            </div>
+        </div>
       </div>
 
       <!-- Add/Edit Modal -->
@@ -554,15 +705,56 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
     private ngZone: NgZone,
     private sprintService: SprintService,
     private toastService: ToastService,
-    private closedDayService: ClosedDayService
+    private closedDayService: ClosedDayService,
+    private breakpointObserver: BreakpointObserver
   ) {
-    // We delay generateTimeline until sprints are loaded or parallel? 
-    // Sprints are visual, can be loaded whenever. 
+    this.isMobile$ = this.breakpointObserver.observe([Breakpoints.Handset])
+      .pipe(map(result => result.matches));
+
     this.generateTimeline();
   }
 
+  isMobile$: Observable<boolean>;
+  showMobileFilters = false;
+  showMobileDetails = false;
+
+  get selectedUserAbsences(): Absence[] {
+    if (!this.selectedUser) return [];
+    const absences = this.getUserAbsences(this.selectedUser.id);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    // Sort by start date, most imminent first
+    return absences.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  }
+
+  getMobileUserStatus(user: AbsenceUser): { type: string, label: string, color: string } | null {
+    // Check if user is absent today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const absences = this.getUserAbsences(user.id);
+    const currentAbsence = absences.find(a => {
+      const start = new Date(a.startDate);
+      const end = new Date(a.endDate);
+      return today >= start && today <= end;
+    });
+
+    if (currentAbsence) {
+      return {
+        type: currentAbsence.type,
+        label: ABSENCE_LABELS[currentAbsence.type],
+        color: currentAbsence.type === 'ABSENCE' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+          currentAbsence.type === 'FORMATION' ? 'bg-sky-100 text-sky-800 border-sky-200' :
+            'bg-rose-100 text-rose-800 border-rose-200'
+      };
+    }
+    return null;
+  }
+
+
   format = format;
   fr = fr;
+  parseDate(dateStr: string): Date { return new Date(dateStr); }
 
   generateTimeline() {
     this.monthData = []; // Clear previous data
@@ -1175,5 +1367,53 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       );
     }
+  }
+
+  // Mobile Interactions
+  openCreateModalMobile() {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    this.selectedUser = this.users.find(u => u.id === currentUser.id) || null;
+    if (!this.selectedUser) return;
+
+    // Default next monday
+    const d = new Date();
+    d.setDate(d.getDate() + (1 + 7 - d.getDay()) % 7);
+
+    this.openCreateModal(d, d);
+  }
+
+  editAbsenceOpenModal(user: AbsenceUser) {
+    this.selectedUser = user;
+    this.showMobileDetails = true;
+    this.cdr.markForCheck();
+  }
+
+  closeMobileDetails() {
+    this.showMobileDetails = false;
+    this.selectedUser = null;
+    this.cdr.markForCheck();
+  }
+
+  // Helper to open create modal from details view
+  addAbsenceForSelectedUser() {
+    if (!this.selectedUser) return;
+
+    // Default next monday
+    const d = new Date();
+    d.setDate(d.getDate() + (1 + 7 - d.getDay()) % 7);
+
+    this.newAbsence = {
+      type: 'ABSENCE',
+      startPeriod: 'MORNING',
+      endPeriod: 'AFTERNOON',
+      startDate: format(d, 'yyyy-MM-dd'),
+      endDate: format(d, 'yyyy-MM-dd')
+    };
+
+    this.editingAbsence = null;
+    this.showModal = true;
+    // We keep showMobileDetails true so when we close modal we go back to details
   }
 }

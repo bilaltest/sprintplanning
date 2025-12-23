@@ -17,9 +17,7 @@ import { AuthService } from '@services/auth.service';
           
           <!-- Header / Logo -->
           <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 shadow-lg shadow-emerald-500/20 mb-6 transform hover:scale-105 transition-transform duration-300">
-              <span class="material-icons text-white text-4xl">calendar_month</span>
-            </div>
+            <img src="assets/logo.png" alt="Logo" class="mx-auto block w-24 h-24 mb-6 transform hover:scale-105 transition-transform duration-300 rounded-2xl shadow-lg shadow-emerald-500/20">
             <h1 class="text-3xl font-bold text-slate-800 dark:text-white mb-2 tracking-tight">Ma Banque Tools</h1>
             <p class="text-slate-500 dark:text-slate-400">Créer un compte</p>
           </div>

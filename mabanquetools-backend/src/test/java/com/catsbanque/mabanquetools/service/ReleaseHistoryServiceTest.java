@@ -82,7 +82,7 @@ class ReleaseHistoryServiceTest {
 
         // Then
         assertEquals(1, result.size());
-        assertEquals("hist-1", result.get(0).getId());
+        assertEquals("hist-1", result.getFirst().getId());
     }
 
     @Test

@@ -27,7 +27,7 @@ export class PlaygroundService {
   }
 
   private getAuthHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem(this.STORAGE_KEY);
+    const token = localStorage.getItem(this.STORAGE_KEY);
     return new HttpHeaders({
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {})

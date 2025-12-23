@@ -37,9 +37,7 @@ interface NavItem {
       <!-- Logo / Brand -->
       <div class="sidebar-header" [class.collapsed]="isCollapsed && !isMobile">
         <div class="flex items-center space-x-3" *ngIf="!isCollapsed || isMobile">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-            <span class="material-icons text-white">dashboard</span>
-          </div>
+          <img src="assets/logo.png" alt="Logo" class="w-10 h-10 rounded-lg shadow-sm">
           <div>
             <h1 class="text-lg font-bold text-gray-900 dark:text-white">Ma Banque</h1>
             <p class="text-xs text-gray-500 dark:text-gray-400">Tools</p>

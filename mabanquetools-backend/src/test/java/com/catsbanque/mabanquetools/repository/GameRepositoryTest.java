@@ -71,7 +71,7 @@ class GameRepositoryTest {
 
         // Then
         assertThat(activeGames).hasSize(1);
-        assertThat(activeGames.get(0).getSlug()).isEqualTo("typing-fr");
+        assertThat(activeGames.getFirst().getSlug()).isEqualTo("typing-fr");
         assertThat(inactiveGames).hasSize(1);
     }
 
@@ -106,7 +106,7 @@ class GameRepositoryTest {
 
         // Then
         assertThat(games).hasSize(2);
-        assertThat(games.get(0).getName()).isEqualTo("Alpha Game");
+        assertThat(games.getFirst().getName()).isEqualTo("Alpha Game");
         assertThat(games.get(1).getName()).isEqualTo("Zebra Game");
     }
 

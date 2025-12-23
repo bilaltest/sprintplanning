@@ -69,9 +69,9 @@ class EventRepositoryTest {
 
         // Then
         assertThat(mepEvents).hasSize(1);
-        assertThat(mepEvents.get(0).getTitle()).isEqualTo("MEP v40.5");
+        assertThat(mepEvents.getFirst().getTitle()).isEqualTo("MEP v40.5");
         assertThat(hotfixEvents).hasSize(1);
-        assertThat(hotfixEvents.get(0).getTitle()).isEqualTo("Hotfix 40.4.1");
+        assertThat(hotfixEvents.getFirst().getTitle()).isEqualTo("Hotfix 40.4.1");
     }
 
     @Test
@@ -87,7 +87,7 @@ class EventRepositoryTest {
 
         // Then
         assertThat(events).hasSize(2);
-        assertThat(events.get(0).getDate()).isEqualTo("2025-01-15");
+        assertThat(events.getFirst().getDate()).isEqualTo("2025-01-15");
         assertThat(events.get(1).getDate()).isEqualTo("2025-01-20");
     }
 
@@ -111,7 +111,7 @@ class EventRepositoryTest {
 
         // Then
         assertThat(eventsOnDate).hasSize(2);
-        assertThat(eventsOnDate.get(0).getStartTime()).isEqualTo("08:00");
+        assertThat(eventsOnDate.getFirst().getStartTime()).isEqualTo("08:00");
         assertThat(eventsOnDate.get(1).getStartTime()).isEqualTo("09:00");
     }
 
@@ -129,7 +129,7 @@ class EventRepositoryTest {
 
         // Then
         assertThat(mepInJanuary).hasSize(1);
-        assertThat(mepInJanuary.get(0).getTitle()).isEqualTo("MEP v40.5");
+        assertThat(mepInJanuary.getFirst().getTitle()).isEqualTo("MEP v40.5");
     }
 
     @Test
@@ -145,7 +145,7 @@ class EventRepositoryTest {
 
         // Then
         assertThat(allEvents).hasSize(3);
-        assertThat(allEvents.get(0).getDate()).isEqualTo("2025-01-15");
+        assertThat(allEvents.getFirst().getDate()).isEqualTo("2025-01-15");
         assertThat(allEvents.get(1).getDate()).isEqualTo("2025-01-20");
         assertThat(allEvents.get(2).getDate()).isEqualTo("2025-02-10");
     }

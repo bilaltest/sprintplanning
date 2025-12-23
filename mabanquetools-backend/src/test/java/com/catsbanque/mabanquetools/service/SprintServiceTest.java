@@ -59,7 +59,7 @@ class SprintServiceTest {
 
         // Then
         assertEquals(1, result.size());
-        assertEquals("S1-2024", result.get(0).getName());
+        assertEquals("S1-2024", result.getFirst().getName());
     }
 
     @Test

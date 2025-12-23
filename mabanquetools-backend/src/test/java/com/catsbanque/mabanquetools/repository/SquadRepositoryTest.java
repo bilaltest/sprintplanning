@@ -69,7 +69,7 @@ class SquadRepositoryTest {
 
         // Then
         assertThat(squads).hasSize(2);
-        assertThat(squads.get(0).getSquadNumber()).isEqualTo(1);
+        assertThat(squads.getFirst().getSquadNumber()).isEqualTo(1);
         assertThat(squads.get(1).getSquadNumber()).isEqualTo(2);
     }
 
@@ -104,8 +104,8 @@ class SquadRepositoryTest {
 
         // Then
         assertThat(completed).hasSize(1);
-        assertThat(completed.get(0).getSquadNumber()).isEqualTo(2);
-        assertThat(completed.get(0).getTontonMep()).isEqualTo("Marie L.");
+        assertThat(completed.getFirst().getSquadNumber()).isEqualTo(2);
+        assertThat(completed.getFirst().getTontonMep()).isEqualTo("Marie L.");
     }
 
     @Test

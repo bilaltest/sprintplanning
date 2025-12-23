@@ -75,7 +75,7 @@ class AbsenceServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals("absence-1", result.get(0).getId());
+        assertEquals("absence-1", result.getFirst().getId());
     }
 
     @Test
@@ -110,7 +110,7 @@ class AbsenceServiceTest {
 
         // Then
         assertEquals(1, result.size());
-        assertEquals("u1", result.get(0).getId());
+        assertEquals("u1", result.getFirst().getId());
     }
 
     @Test

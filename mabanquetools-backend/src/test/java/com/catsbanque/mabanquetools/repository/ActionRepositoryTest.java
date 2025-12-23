@@ -87,7 +87,7 @@ class ActionRepositoryTest {
 
         // Then
         assertThat(actions).hasSize(3);
-        assertThat(actions.get(0).getOrder()).isEqualTo(1);
+        assertThat(actions.getFirst().getOrder()).isEqualTo(1);
     }
 
     @Test
@@ -157,7 +157,7 @@ class ActionRepositoryTest {
 
         // Then
         assertThat(actions).hasSize(2);
-        assertThat(actions.get(0).getOrder()).isEqualTo(1);
+        assertThat(actions.getFirst().getOrder()).isEqualTo(1);
         assertThat(actions.get(1).getOrder()).isEqualTo(2);
     }
 }

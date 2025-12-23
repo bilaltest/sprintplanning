@@ -84,7 +84,7 @@ class MicroserviceServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getName()).isEqualTo("payment-service");
+        assertThat(result.getFirst().getName()).isEqualTo("payment-service");
         verify(microserviceRepository).findAllActive();
         verify(releaseNoteService, never()).getAllPreviousTags(any());
     }
@@ -105,7 +105,7 @@ class MicroserviceServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getPreviousTag()).isEqualTo("v1.2.2");
+        assertThat(result.getFirst().getPreviousTag()).isEqualTo("v1.2.2");
         verify(releaseNoteService).getAllPreviousTags("release123");
     }
 
@@ -120,7 +120,7 @@ class MicroserviceServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getPreviousTag()).isNull();
+        assertThat(result.getFirst().getPreviousTag()).isNull();
         verify(releaseNoteService, never()).getAllPreviousTags(any());
     }
 
@@ -157,7 +157,7 @@ class MicroserviceServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getSquad()).isEqualTo("Squad 3");
+        assertThat(result.getFirst().getSquad()).isEqualTo("Squad 3");
         verify(microserviceRepository).findActiveBySquad("Squad 3");
     }
 

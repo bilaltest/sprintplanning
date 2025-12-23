@@ -83,7 +83,7 @@ class GameScoreRepositoryTest {
 
         // Then
         assertThat(scores).hasSize(3);
-        assertThat(scores.get(0).getScore()).isEqualTo(92);
+        assertThat(scores.getFirst().getScore()).isEqualTo(92);
         assertThat(scores.get(1).getScore()).isEqualTo(85);
         assertThat(scores.get(2).getScore()).isEqualTo(78);
     }
@@ -101,7 +101,7 @@ class GameScoreRepositoryTest {
 
         // Then
         assertThat(topScores).hasSize(3);
-        assertThat(topScores.get(0).getScore()).isGreaterThanOrEqualTo(topScores.get(1).getScore());
+        assertThat(topScores.getFirst().getScore()).isGreaterThanOrEqualTo(topScores.get(1).getScore());
     }
 
     @Test
@@ -117,7 +117,7 @@ class GameScoreRepositoryTest {
 
         // Then
         assertThat(userScores).hasSize(2);
-        assertThat(userScores.get(0).getScore()).isIn(85, 92);
+        assertThat(userScores.getFirst().getScore()).isIn(85, 92);
     }
 
     @Test
@@ -132,7 +132,7 @@ class GameScoreRepositoryTest {
 
         // Then
         assertThat(bestScores).isNotEmpty();
-        assertThat(bestScores.get(0).getScore()).isEqualTo(92);
+        assertThat(bestScores.getFirst().getScore()).isEqualTo(92);
     }
 
     @Test
@@ -146,8 +146,8 @@ class GameScoreRepositoryTest {
 
         // Then
         assertThat(scores).hasSize(1);
-        assertThat(scores.get(0).getVisitorName()).isEqualTo("Anonymous");
-        assertThat(scores.get(0).getUserId()).isNull();
+        assertThat(scores.getFirst().getVisitorName()).isEqualTo("Anonymous");
+        assertThat(scores.getFirst().getUserId()).isNull();
     }
 
     @Test

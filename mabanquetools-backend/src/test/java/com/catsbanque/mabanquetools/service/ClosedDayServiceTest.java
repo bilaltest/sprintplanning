@@ -33,7 +33,7 @@ class ClosedDayServiceTest {
         List<ClosedDay> result = closedDayService.getAllClosedDays();
 
         assertEquals(2, result.size());
-        assertEquals("2024-01-01", result.get(0).getDate());
+        assertEquals("2024-01-01", result.getFirst().getDate());
         verify(closedDayRepository, times(1)).findAllByOrderByDateAsc();
     }
 

@@ -86,7 +86,7 @@ class EventServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getTitle()).isEqualTo("MEP v1.0");
+        assertThat(result.getFirst().getTitle()).isEqualTo("MEP v1.0");
     }
 
     @Test

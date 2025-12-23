@@ -75,7 +75,7 @@ class AdminServiceTest {
 
         // Then
         assertEquals(1, response.getUsers().size());
-        assertEquals("user-1", response.getUsers().get(0).getId());
+        assertEquals("user-1", response.getUsers().getFirst().getId());
     }
 
     @Test

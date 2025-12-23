@@ -76,7 +76,7 @@ class HistoryRepositoryTest {
 
         // Then
         assertThat(eventHistory).hasSize(2);
-        assertThat(eventHistory.get(0).getAction()).isIn("create", "update");
+        assertThat(eventHistory.getFirst().getAction()).isIn("create", "update");
     }
 
     @Test
@@ -145,7 +145,7 @@ class HistoryRepositoryTest {
         // Then
         assertThat(all).hasSize(3);
         // Most recent first
-        assertThat(all.get(0).getTimestamp()).isAfterOrEqualTo(all.get(1).getTimestamp());
+        assertThat(all.getFirst().getTimestamp()).isAfterOrEqualTo(all.get(1).getTimestamp());
         assertThat(all.get(1).getTimestamp()).isAfterOrEqualTo(all.get(2).getTimestamp());
     }
 
