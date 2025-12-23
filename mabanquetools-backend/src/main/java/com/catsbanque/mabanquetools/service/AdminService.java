@@ -183,6 +183,7 @@ public class AdminService {
             user.setSquads(request.getSquads());
 
         User savedUser = userRepository.save(user);
+        log.debug("Updated user: {}", savedUser);
 
         // Map permission
         Map<PermissionModule, PermissionLevel> permissions = permissionService.getUserPermissions(savedUser.getId());
@@ -240,6 +241,7 @@ public class AdminService {
      */
     @Transactional(readOnly = true)
     public DatabaseExportDto exportDatabase() {
+        log.debug("Starting database export...");
         List<User> users = userRepository.findAll();
         List<Event> events = eventRepository.findAll();
         List<Release> releases = releaseRepository.findAll();
@@ -324,6 +326,7 @@ public class AdminService {
      */
     @Transactional
     public ImportDatabaseResponse importDatabase(DatabaseImportRequest request) {
+        log.debug("Starting database import...");
         if (request.getData() == null || request.getMetadata() == null) {
             throw new BadRequestException("Format de données invalide");
         }

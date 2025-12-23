@@ -4,6 +4,7 @@ import { adminGuard } from './guards/admin.guard';
 import { calendarGuard } from './guards/calendar.guard';
 import { releasesGuard } from './guards/releases.guard';
 import { absenceGuard } from './guards/absence.guard';
+import { playgroundGuard } from './guards/playground.guard';
 
 export const routes: Routes = [
   {
@@ -121,6 +122,7 @@ export const routes: Routes = [
           import('./components/playground/playground.component').then(
             m => m.PlaygroundComponent
           ),
+        canActivate: [playgroundGuard],
         data: { breadcrumb: 'Playground' }
       },
       {
@@ -129,6 +131,7 @@ export const routes: Routes = [
           import('./components/playground/typing-game/typing-game.component').then(
             m => m.TypingGameComponent
           ),
+        canActivate: [playgroundGuard],
         data: { breadcrumb: 'Typing Challenge FR' }
       },
       {
@@ -137,6 +140,7 @@ export const routes: Routes = [
           import('./components/playground/typing-game/typing-game.component').then(
             m => m.TypingGameComponent
           ),
+        canActivate: [playgroundGuard],
         data: { breadcrumb: 'Typing Challenge EN' }
       },
       {
@@ -145,6 +149,7 @@ export const routes: Routes = [
           import('./components/playground/memory-game/memory-game.component').then(
             m => m.MemoryGameComponent
           ),
+        canActivate: [playgroundGuard],
         data: { breadcrumb: 'Memory Game' }
       },
       {
@@ -153,6 +158,7 @@ export const routes: Routes = [
           import('./components/playground/math-rush/math-rush.component').then(
             m => m.MathRushComponent
           ),
+        canActivate: [playgroundGuard],
         data: { breadcrumb: 'Math Rush' }
       },
       {
@@ -161,6 +167,7 @@ export const routes: Routes = [
           import('./components/playground/flappy-dsi/flappy-dsi.component').then(
             m => m.FlappyDsiComponent
           ),
+        canActivate: [playgroundGuard],
         data: { breadcrumb: 'Flappy DSI' }
       },
       {

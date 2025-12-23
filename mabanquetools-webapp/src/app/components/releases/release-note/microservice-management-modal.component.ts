@@ -35,13 +35,6 @@ interface DialogData {
             <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Le microservice sera créé et ajouté automatiquement au tableau de release note. Les autres champs (tag, ordre de déploiement, etc.) pourront être renseignés directement dans le tableau.
             </p>
-            <!-- Debug info (à retirer après test) -->
-            <div *ngIf="false" class="text-xs text-gray-500 dark:text-gray-400 mb-2 p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded">
-              <strong>Debug:</strong> Form valid: {{ form.valid }},
-              Name: {{ form.get('name')?.value || 'empty' }},
-              Squad: {{ form.get('squad')?.value || 'empty' }},
-              Solution: {{ form.get('solution')?.value || 'empty' }}
-            </div>
           </div>
 
           <!-- Nom -->
@@ -63,25 +56,6 @@ interface DialogData {
             </div>
           </div>
 
-          <!-- Squad -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Squad <span class="text-red-500">*</span>
-            </label>
-            <select
-              formControlName="squad"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                     focus:ring-2 focus:ring-emerald-500 focus:border-transparent
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="">Sélectionner une squad</option>
-              <option *ngFor="let squad of squadOptions" [value]="squad">{{ squad }}</option>
-            </select>
-            <div *ngIf="form.get('squad')?.invalid && form.get('squad')?.touched"
-                 class="text-red-500 text-sm mt-1">
-              La squad est requise
-            </div>
-          </div>
 
           <!-- Solution -->
           <div>
@@ -99,6 +73,26 @@ interface DialogData {
             <div *ngIf="form.get('solution')?.invalid && form.get('solution')?.touched"
                  class="text-red-500 text-sm mt-1">
               La solution est requise
+            </div>
+          </div>
+          
+          <!-- Squad -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Squad <span class="text-red-500">*</span>
+            </label>
+            <select
+              formControlName="squad"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
+                     focus:ring-2 focus:ring-emerald-500 focus:border-transparent
+                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="">Sélectionner une squad</option>
+              <option *ngFor="let squad of squadOptions" [value]="squad">{{ squad }}</option>
+            </select>
+            <div *ngIf="form.get('squad')?.invalid && form.get('squad')?.touched"
+                 class="text-red-500 text-sm mt-1">
+              La squad est requise
             </div>
           </div>
 

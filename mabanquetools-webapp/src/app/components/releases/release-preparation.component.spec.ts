@@ -44,7 +44,7 @@ describe('ReleasePreparationComponent', () => {
         type: 'release',
         slug: 'release-test',
         squads: [
-            { id: 'sq1', squadNumber: 1, actions: [] } as Squad
+            { id: 'sq1', releaseId: '1', squadNumber: 1, actions: [], isCompleted: false, features: [] } as Squad
         ]
     };
 

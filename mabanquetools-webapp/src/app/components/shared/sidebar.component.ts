@@ -310,7 +310,7 @@ export class SidebarComponent implements OnInit {
     { label: 'Calendrier', icon: 'calendar_month', route: '/calendar', requiredModule: 'CALENDAR' },
     { label: 'Absences', icon: 'beach_access', route: '/absences', requiredModule: 'ABSENCE' },
     { label: 'Prépa MEP', icon: 'rocket_launch', route: '/releases', requiredModule: 'RELEASES' },
-    { label: 'Playground', icon: 'sports_esports', route: '/playground' },
+    { label: 'Playground', icon: 'sports_esports', route: '/playground', requiredModule: 'PLAYGROUND' },
     { label: 'Admin', icon: 'admin_panel_settings', route: '/admin', requiredModule: 'ADMIN' }
   ];
 

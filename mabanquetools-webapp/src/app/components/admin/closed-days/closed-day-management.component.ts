@@ -23,9 +23,9 @@ import { ClosedDay } from '@models/closed-day.model';
           </div>
       </div>
       
-      <div class="flex items-center space-x-2 mb-4 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-          <input type="date" [(ngModel)]="newClosedDay.date" class="input py-1.5 text-sm flex-1">
-          <input type="text" [(ngModel)]="newClosedDay.reason" placeholder="Raison (ex: Pont)" class="input py-1.5 text-sm flex-[2]">
+      <div class="flex flex-wrap items-center gap-2 mb-4 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+          <input type="date" [(ngModel)]="newClosedDay.date" class="input py-1.5 text-sm flex-1 min-w-[130px]">
+          <input type="text" [(ngModel)]="newClosedDay.reason" placeholder="Raison (ex: Pont)" class="input py-1.5 text-sm flex-[2] min-w-[150px]">
           <button (click)="addClosedDay()" [disabled]="!newClosedDay.date || !newClosedDay.reason" class="btn btn-primary flex items-center justify-center w-8 h-8 p-0 rounded-lg flex-shrink-0 shadow-sm transition-all hover:scale-105 active:scale-95">
               <span class="material-icons text-sm">add</span>
           </button>

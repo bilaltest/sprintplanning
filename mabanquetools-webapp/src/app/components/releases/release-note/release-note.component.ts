@@ -12,6 +12,7 @@ import { ReleaseNoteEntry, ChangeItem, CreateReleaseNoteEntryRequest } from '@mo
 import { Microservice } from '@models/microservice.model';
 import { ReleaseNoteEntryModalComponent } from './release-note-entry-modal.component';
 import { MicroserviceManagementModalComponent } from './microservice-management-modal.component';
+import { MicroserviceDeleteModalComponent } from './microservice-delete-modal.component';
 import { MajorFeaturesComponent } from './major-features.component';
 import { FilterToolbarComponent, ColumnConfig } from './filter-toolbar.component';
 import { MicroservicesTableComponent } from './microservices-table.component';
@@ -23,7 +24,7 @@ import { fr } from 'date-fns/locale';
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
+    // RouterLink,
     MatDialogModule,
     MajorFeaturesComponent,
     FilterToolbarComponent,
@@ -52,7 +53,7 @@ import { fr } from 'date-fns/locale';
             <div class="flex-1">
               <div class="flex items-center space-x-3 mb-3">
                 <span class="material-icons text-4xl text-white">description</span>
-                <h1 class="text-4xl font-bold text-white tracking-tight">Release Note</h1>
+                <h1 class="text-4xl font-bold text-white tracking-tight">MEP Back</h1>
               </div>
               <h2 class="text-2xl font-semibold text-white/90 mb-3">{{ release.name }}</h2>
               <div class="flex items-center space-x-4 text-white/90">
@@ -124,13 +125,13 @@ import { fr } from 'date-fns/locale';
               </div>
 
               <!-- Link to Prépa MEP -->
-              <a
+              <!-- <a
                 [routerLink]="['/releases', release.id, 'preparation']"
                 class="flex items-center space-x-2 px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all duration-200 backdrop-blur-sm border border-white/20 hover:shadow-lg"
               >
                 <span class="material-icons">assignment</span>
                 <span class="font-medium">Voir Prépa MEP</span>
-              </a>
+              </a> -->
             </div>
           </div>
 
@@ -160,6 +161,7 @@ import { fr } from 'date-fns/locale';
         (searchChange)="onSearchChange($event)"
         (columnToggle)="onColumnToggle($event)"
         (addMicroservice)="openAddMicroserviceModal()"
+        (deleteMicroservice)="openDeleteMicroserviceModal()"
       ></app-filter-toolbar>
 
       <!-- Table des microservices (composant séparé) -->
@@ -344,7 +346,17 @@ export class ReleaseNoteComponent implements OnInit {
 
     // Include orphan entries
     const mappedIds = new Set(allEntries.map(e => e.id).filter(id => !!id));
-    const orphans = this.entries.filter(e => e.id && !mappedIds.has(e.id));
+    const orphans = this.entries.filter(e => {
+      // Must not be already mapped
+      if (e.id && mappedIds.has(e.id)) return false;
+
+      // If it has a microserviceId, it means it's linked to a microservice.
+      // Since it wasn't mapped above, that microservice is inactive/deleted.
+      // We should hide it.
+      if (e.microserviceId) return false;
+
+      return true;
+    });
     let filtered = [...allEntries, ...orphans];
 
     // Filter by squad
@@ -601,6 +613,21 @@ export class ReleaseNoteComponent implements OnInit {
     this.currentEditingEntry = null;
     this.currentEditingMicroservice = '';
     this.currentEditingChanges = [];
+  }
+
+  openDeleteMicroserviceModal(): void {
+    const dialogRef = this.dialog.open(MicroserviceDeleteModalComponent, {
+      width: '100%',
+      maxWidth: '600px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // If deletion occurred, refresh the microservices list
+        this.loadMicroservices(this.release!.id);
+      }
+    });
   }
 
   // Microservice modal

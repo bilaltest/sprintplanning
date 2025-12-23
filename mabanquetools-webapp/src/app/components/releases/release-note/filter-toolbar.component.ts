@@ -21,8 +21,8 @@ export interface ColumnConfig {
     }
   `],
   template: `
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 flex items-center justify-between">
-      <div class="flex items-center space-x-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 flex flex-col lg:flex-row items-center justify-between gap-4">
+      <div class="flex flex-wrap items-center gap-4 w-full lg:w-auto">
         <!-- Filter by squad -->
         <div class="flex items-center space-x-2">
           <span class="material-icons text-gray-500 dark:text-gray-400">filter_list</span>
@@ -51,19 +51,19 @@ export interface ColumnConfig {
         </div>
 
         <!-- Search -->
-        <div class="relative">
+        <div class="relative flex-grow lg:flex-grow-0">
           <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
           <input
             type="text"
             [value]="searchQuery"
             (input)="onSearchChange($event)"
             placeholder="Rechercher un microservice..."
-            class="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all w-80"
+            class="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all w-full sm:w-64 md:w-80"
           />
         </div>
       </div>
 
-      <div class="flex items-center space-x-3">
+      <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
         <!-- Column selector -->
         <div class="relative">
           <button
@@ -108,14 +108,25 @@ export interface ColumnConfig {
           </div>
         </div>
 
+        <!-- Delete microservice button -->
+        <button
+          *ngIf="hasWriteAccess()"
+          (click)="onDeleteMicroservice()"
+          class="flex items-center space-x-2 px-4 py-2 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 rounded-lg transition-all duration-200 border border-red-200 dark:border-red-800"
+          title="Supprimer des microservices"
+        >
+          <span class="material-icons text-sm">delete_sweep</span>
+          <span class="font-medium hidden sm:inline">Supprimer</span>
+        </button>
+
         <!-- Add microservice button -->
         <button
           *ngIf="hasWriteAccess()"
           (click)="onAddMicroservice()"
-          class="flex items-center space-x-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+          class="flex items-center space-x-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow-md border border-transparent"
         >
           <span class="material-icons text-sm">add</span>
-          <span class="font-medium">Ajouter un microservice</span>
+          <span class="font-medium">Ajouter</span>
         </button>
       </div>
     </div>
@@ -132,11 +143,12 @@ export class FilterToolbarComponent {
   @Output() searchChange = new EventEmitter<string>();
   @Output() columnToggle = new EventEmitter<ColumnConfig>();
   @Output() addMicroservice = new EventEmitter<void>();
+  @Output() deleteMicroservice = new EventEmitter<void>();
 
   squadOptions = SQUAD_OPTIONS;
   isColumnSelectorOpen = false;
 
-  constructor(private permissionService: PermissionService) {}
+  constructor(private permissionService: PermissionService) { }
 
   hasWriteAccess(): boolean {
     return this.permissionService.hasWriteAccess('RELEASES');
@@ -173,5 +185,9 @@ export class FilterToolbarComponent {
 
   onAddMicroservice(): void {
     this.addMicroservice.emit();
+  }
+
+  onDeleteMicroservice(): void {
+    this.deleteMicroservice.emit();
   }
 }

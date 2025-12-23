@@ -43,7 +43,7 @@ interface Stats {
       </div>
 
       <!-- Stats Cards & Export/Import -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Stats Card -->
         <div class="card p-6" *ngIf="stats">
           <div class="flex items-center justify-between">

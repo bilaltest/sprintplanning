@@ -42,31 +42,7 @@ public class MicroserviceService {
         }
 
         // Default microservices grouped by squad
-        List<MicroserviceData> defaultMicroservices = Arrays.asList(
-                // Squad 1
-                new MicroserviceData("api-gateway", "Squad 1", "Core Infrastructure", 0),
-                new MicroserviceData("auth-service", "Squad 1", "Core Infrastructure", 1),
-                new MicroserviceData("config-service", "Squad 1", "Core Infrastructure", 2),
-
-                // Squad 2
-                new MicroserviceData("user-service", "Squad 2", "User Management", 0),
-                new MicroserviceData("profile-service", "Squad 2", "User Management", 1),
-
-                // Squad 3
-                new MicroserviceData("payment-service", "Squad 3", "Financial Services", 0),
-                new MicroserviceData("transaction-service", "Squad 3", "Financial Services", 1),
-
-                // Squad 4
-                new MicroserviceData("notification-service", "Squad 4", "Communication", 0),
-                new MicroserviceData("email-service", "Squad 4", "Communication", 1),
-
-                // Squad 5
-                new MicroserviceData("analytics-service", "Squad 5", "Data & Analytics", 0),
-                new MicroserviceData("reporting-service", "Squad 5", "Data & Analytics", 1),
-
-                // Squad 6
-                new MicroserviceData("monitoring-service", "Squad 6", "DevOps", 0),
-                new MicroserviceData("logging-service", "Squad 6", "DevOps", 1));
+        List<MicroserviceData> defaultMicroservices = Arrays.asList();
 
         for (MicroserviceData data : defaultMicroservices) {
             Microservice microservice = Microservice.builder()
@@ -93,10 +69,12 @@ public class MicroserviceService {
         // Si releaseId fourni, charger les tags précédents en une seule query
         Map<String, String> previousTags = null;
         if (releaseId != null && !releaseId.isEmpty()) {
-            log.info("Loading previous tags for releaseId: {}", releaseId);
+            log.debug("Loading previous tags for releaseId: {}", releaseId);
             previousTags = releaseNoteService.getAllPreviousTags(releaseId);
-            log.info("Found {} previous tags", previousTags.size());
-            previousTags.forEach((msId, tag) -> log.info("  - {} -> {}", msId, tag));
+            log.debug("Found {} previous tags", previousTags.size());
+            if (log.isDebugEnabled()) {
+                previousTags.forEach((msId, tag) -> log.debug("  - {} -> {}", msId, tag));
+            }
         }
 
         // Convertir en DTO et enrichir avec previousTag
@@ -153,6 +131,7 @@ public class MicroserviceService {
                 .build();
 
         microservice = microserviceRepository.save(microservice);
+        log.debug("Created microservice: {}", microservice);
         return toDto(microservice);
     }
 
@@ -191,6 +170,7 @@ public class MicroserviceService {
         }
 
         microservice = microserviceRepository.save(microservice);
+        log.debug("Updated microservice: {}", microservice);
         return toDto(microservice);
     }
 
@@ -205,6 +185,7 @@ public class MicroserviceService {
         // Soft delete
         microservice.setIsActive(false);
         microserviceRepository.save(microservice);
+        log.debug("Soft deleted microservice: {}", id);
     }
 
     /**
@@ -216,6 +197,7 @@ public class MicroserviceService {
             throw new RuntimeException("Microservice non trouvé: " + id);
         }
         microserviceRepository.deleteById(id);
+        log.debug("Hard deleted microservice: {}", id);
     }
 
     /**

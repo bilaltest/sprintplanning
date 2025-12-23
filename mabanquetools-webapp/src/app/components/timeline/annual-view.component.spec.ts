@@ -16,7 +16,7 @@ describe.skip('AnnualViewComponent (DEPRECATED - component removed)', () => {
   let settingsService: any;
 
   const mockTimelineState: TimelineState = {
-    view: 'quarter',
+    view: 'semester',
     currentDate: new Date(2025, 0, 1) // January 1, 2025
   };
 

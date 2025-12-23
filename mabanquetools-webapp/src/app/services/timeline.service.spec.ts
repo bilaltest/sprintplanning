@@ -29,8 +29,8 @@ describe('TimelineService', () => {
     });
 
     it('should set view', () => {
-        service.setView('quarter');
-        expect(service.getCurrentState().view).toBe('quarter');
+        service.setView('now');
+        expect(service.getCurrentState().view).toBe('now');
     });
 
     it('should set current date', () => {

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -40,6 +41,7 @@ public class GameController {
      * Référence: game.controller.js:5-16
      */
     @GetMapping
+    @PreAuthorize("@permissionService.hasReadAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).PLAYGROUND)")
     public ResponseEntity<List<Game>> getAllGames() {
         log.info("GET /api/games");
         List<Game> games = gameService.getAllGames();
@@ -52,6 +54,7 @@ public class GameController {
      * Référence: game.controller.js:18-35
      */
     @GetMapping("/{slug}")
+    @PreAuthorize("@permissionService.hasReadAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).PLAYGROUND)")
     public ResponseEntity<Game> getGameBySlug(@PathVariable String slug) {
         log.info("GET /api/games/{}", slug);
         Game game = gameService.getGameBySlug(slug);
@@ -64,6 +67,7 @@ public class GameController {
      * Référence: game.controller.js:37-102
      */
     @GetMapping("/{slug}/leaderboard")
+    @PreAuthorize("@permissionService.hasReadAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).PLAYGROUND)")
     public ResponseEntity<List<LeaderboardEntry>> getLeaderboard(@PathVariable String slug) {
         log.info("GET /api/games/{}/leaderboard", slug);
         List<LeaderboardEntry> leaderboard = gameService.getLeaderboard(slug);
@@ -76,11 +80,11 @@ public class GameController {
      * Référence: game.controller.js:104-184
      */
     @PostMapping("/{slug}/scores")
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).PLAYGROUND)")
     public ResponseEntity<SubmitScoreResponse> submitScore(
             @PathVariable String slug,
             @RequestBody SubmitScoreRequest request,
-            HttpServletRequest httpRequest
-    ) {
+            HttpServletRequest httpRequest) {
         log.info("POST /api/games/{}/scores", slug);
 
         // Extract userId from JWT token
@@ -96,10 +100,10 @@ public class GameController {
      * Référence: game.controller.js:186-230
      */
     @GetMapping("/{slug}/my-scores")
+    @PreAuthorize("@permissionService.hasReadAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).PLAYGROUND)")
     public ResponseEntity<MyScoresResponse> getMyScores(
             @PathVariable String slug,
-            HttpServletRequest httpRequest
-    ) {
+            HttpServletRequest httpRequest) {
         log.info("GET /api/games/{}/my-scores", slug);
 
         // Extract userId from JWT token
@@ -115,6 +119,7 @@ public class GameController {
      * Référence: game.controller.js:232-281
      */
     @PostMapping("/init")
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).PLAYGROUND)")
     public ResponseEntity<List<Game>> initGames() {
         log.info("POST /api/games/init");
         List<Game> games = gameService.initGames();

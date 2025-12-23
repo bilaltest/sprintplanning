@@ -10,14 +10,11 @@ describe('CategoryService', () => {
 
     const initialPrefs: UserPreferences = {
         theme: 'light',
-        startOfWeek: 'monday',
-        defaultView: 'month',
-        showWeekNumbers: true,
-        workingDays: [1, 2, 3, 4, 5],
-        workingHours: { start: '09:00', end: '18:00' },
         customCategories: [
-            { id: 'custom1', label: 'Custom 1', color: '#123456', icon: 'star', isCustom: true }
-        ]
+            { id: 'custom1', label: 'Custom 1', name: 'Custom 1', color: '#123456', icon: 'star', createdAt: '2025-01-01' }
+        ],
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z'
     };
 
     const prefsSubject = new BehaviorSubject<UserPreferences>(initialPrefs);

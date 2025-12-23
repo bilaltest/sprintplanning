@@ -79,7 +79,7 @@ describe('TimelineContainerComponent', () => {
     let sprintService: any;
 
     const mockTimelineState: TimelineState = {
-        view: 'quarter',
+        view: 'semester',
         currentDate: new Date(2025, 0, 1)
     };
 

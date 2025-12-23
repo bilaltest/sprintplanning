@@ -17,18 +17,19 @@ describe('ReleaseActionsComponent', () => {
 
     const mockAction: Action = {
         id: '1',
-        title: 'Action 1',
         description: 'Description 1',
         type: 'other',
         phase: 'pre_mep',
         squadId: 'squad1',
         status: 'pending',
+        order: 0,
         createdAt: '2024-01-01T10:00:00Z',
         updatedAt: '2024-01-01T10:00:00Z'
     };
 
     const mockSquad: Squad = {
         id: 'squad1',
+        releaseId: '1',
         squadNumber: 1,
         tontonMep: 'Tonton',
         actions: [mockAction],

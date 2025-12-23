@@ -146,3 +146,4 @@ describe('AuthService', () => {
         expect(service.getUserDisplayName(user)).toBe('John D.');
         expect(service.getUserDisplayName(null)).toBe('Utilisateur');
     });
+});

@@ -14,6 +14,7 @@ describe('ReleaseTontonsComponent', () => {
 
     const mockSquad: Squad = {
         id: 'squad1',
+        releaseId: '1',
         squadNumber: 1,
         tontonMep: 'OldTonton',
         actions: [],

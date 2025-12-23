@@ -146,22 +146,22 @@ import { fr } from 'date-fns/locale';
 
 
           <!-- Footer - Main Actions -->
-          <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
-            <button
+          <div class="flex justify-center pt-4 border-t border-gray-200 dark:border-gray-600">
+            <!-- <button
               (click)="navigateToPreparation(release.slug, $event)"
               class="group flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98] border border-blue-400/30"
               title="Accéder à la préparation MEP"
             >
               <span class="material-icons text-lg group-hover:rotate-12 transition-transform">assignment_turned_in</span>
               <span>Prépa MEP</span>
-            </button>
+            </button> -->
             <button
               (click)="navigateToReleaseNote(release.slug, $event)"
-              class="group flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98] border border-emerald-400/30"
-              title="Accéder à la release note"
+              class="group flex items-center justify-center space-x-2 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98] border border-emerald-400/30 w-full md:w-auto"
+              title="Accéder à la MEP Back"
             >
               <span class="material-icons text-lg group-hover:scale-110 transition-transform">description</span>
-              <span>Release Note</span>
+              <span>MEP Back</span>
             </button>
           </div>
         </div>
@@ -265,22 +265,22 @@ import { fr } from 'date-fns/locale';
 
 
             <!-- Footer - Main Actions -->
-            <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-200 dark:border-gray-600">
-              <button
+            <div class="flex justify-center pt-4 border-t border-gray-200 dark:border-gray-600">
+              <!-- <button
                 (click)="navigateToPreparation(release.slug, $event)"
                 class="group flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98] border border-blue-400/30"
                 title="Accéder à la préparation MEP"
               >
                 <span class="material-icons text-lg group-hover:rotate-12 transition-transform">assignment_turned_in</span>
                 <span>Prépa MEP</span>
-              </button>
+              </button> -->
               <button
                 (click)="navigateToReleaseNote(release.slug, $event)"
-                class="group flex items-center justify-center space-x-2 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98] border border-emerald-400/30"
-                title="Accéder à la release note"
+                class="group flex items-center justify-center space-x-2 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/50 hover:scale-[1.02] active:scale-[0.98] border border-emerald-400/30 w-full md:w-auto"
+                title="Accéder à la MEP Back"
               >
                 <span class="material-icons text-lg group-hover:scale-110 transition-transform">description</span>
-                <span>Release Note</span>
+                <span>MEP Back</span>
               </button>
             </div>
           </div>
