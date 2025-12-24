@@ -1,7 +1,9 @@
 package com.catsbanque.mabanquetools.config;
 
+import com.catsbanque.mabanquetools.entity.Team;
 import com.catsbanque.mabanquetools.entity.User;
 import com.catsbanque.mabanquetools.repository.UserRepository;
+import com.catsbanque.mabanquetools.util.CsvUserParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -9,6 +11,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Initialise les données par défaut au démarrage
@@ -34,6 +41,7 @@ public class DataInitializer implements CommandLineRunner {
         cleanUpObsoletePermissions();
         createDefaultAdminUser();
         initDefaultSquads();
+        createDefaultUsers();  // ✅ Nouvelle méthode - charge utilisateurs depuis CSV
         microserviceService.initDefaultMicroservices();
         releaseService.migrateSlugs();
     }
@@ -53,6 +61,91 @@ public class DataInitializer implements CommandLineRunner {
             }
             log.info("✅ {} squads created.", defaultSquads.size());
         }
+    }
+
+    /**
+     * Initialise les utilisateurs depuis le fichier CSV
+     * Charge le fichier data/default-users.csv et crée chaque utilisateur
+     * avec ses teams et permissions par défaut.
+     *
+     * Idempotent: vérifie si les utilisateurs existent déjà (par email)
+     */
+    private void createDefaultUsers() {
+        // Vérifier si déjà initialisé (skip si plus d'un utilisateur)
+        long userCount = userRepository.count();
+        if (userCount > 1) {
+            log.info("✓ Users already initialized ({} users)", userCount);
+            return;
+        }
+
+        // Charger les données depuis le CSV
+        String csvPath = "data/default-users.csv";
+        log.info("Loading users from CSV: {}", csvPath);
+
+        List<CsvUserParser.UserCsvRow> csvUsers =
+            CsvUserParser.parseUsersFromCsv(csvPath);
+
+        if (csvUsers.isEmpty()) {
+            log.warn("⚠️  No users found in CSV file: {}", csvPath);
+            return;
+        }
+
+        log.info("Initializing {} users from CSV...", csvUsers.size());
+
+        int created = 0;
+        int skipped = 0;
+
+        for (CsvUserParser.UserCsvRow csvUser : csvUsers) {
+            try {
+                // Vérifier si existe déjà (idempotence)
+                if (userRepository.findByEmail(csvUser.getEmail()).isPresent()) {
+                    skipped++;
+                    continue;
+                }
+
+                // Créer l'utilisateur
+                User user = new User();
+                user.setEmail(csvUser.getEmail());
+                user.setPassword(csvUser.getPasswordHash());  // Déjà hashé en BCrypt
+                user.setFirstName(csvUser.getFirstName());
+                user.setLastName(csvUser.getLastName());
+                user.setMetier(csvUser.getMetier());
+                user.setTribu(csvUser.getTribu());
+                user.setInterne(csvUser.isInterne());
+                user.setThemePreference("light");
+                user.setWidgetOrder("[]");
+
+                // Assigner les teams (par nom)
+                Set<Team> teams = new HashSet<>();
+                for (String teamName : csvUser.getTeamNames()) {
+                    Team team = teamRepository.findByName(teamName)
+                        .orElseThrow(() -> new IllegalArgumentException(
+                            "Team not found: " + teamName + " for user " + csvUser.getEmail()));
+                    teams.add(team);
+                }
+                user.setTeams(teams);
+
+                // Sauvegarder (génère l'ID via @Cuid)
+                User savedUser = userRepository.save(user);
+
+                // Créer les permissions par défaut
+                permissionService.createDefaultPermissions(savedUser);
+
+                created++;
+                log.info("✓ Created user: {} (teams: {})",
+                    savedUser.getEmail(),
+                    savedUser.getTeams().stream()
+                        .map(Team::getName)
+                        .collect(Collectors.joining(", ")));
+
+            } catch (Exception e) {
+                log.error("✗ Failed to create user {}: {}",
+                    csvUser.getEmail(), e.getMessage());
+            }
+        }
+
+        log.info("✅ User initialization complete: {} created, {} skipped",
+            created, skipped);
     }
 
     private void createDefaultAdminUser() {

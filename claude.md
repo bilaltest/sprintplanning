@@ -1,5 +1,16 @@
 # Ma Banque Tools - Guide Technique Essentiel
 
+## ⚠️ Règles de Documentation
+
+**IMPORTANT** : Limiter au maximum le nombre de fichiers de documentation créés.
+
+- ✅ **Préférer** : Mise à jour de CLAUDE.md ou des fichiers existants
+- ✅ **Acceptable** : 1 seul fichier de documentation supplémentaire si vraiment nécessaire (ex: DATABASE_INFO.md pour la config MySQL)
+- ❌ **Éviter** : Multiplication des fichiers README, SUMMARY, GUIDE, etc.
+- ❌ **Interdire** : Création de fichiers redondants ou qui dupliquent l'information
+
+**Principe** : Toute information technique DOIT être dans CLAUDE.md ou dans le code source (commentaires Javadoc, README concis).
+
 ## Vue d'ensemble
 Application Angular 20 + Spring Boot pour la DSI d'une banque.
 - **Modules**: Calendrier (Timeline trimestrielle), Préparation des MEP (Squads, Features, Actions FF/MF), Release Notes (Gestion microservices par Squad)
@@ -1053,10 +1064,10 @@ npm start           # Démarre sur http://localhost:4200
 
 ### Backend (Spring Boot)
 ```bash
-cd event-planning-spring-boot/event-planning-api
+cd mabanquetools-backend
 
 # Prérequis: MySQL installé et démarré
-# Créer DB: eventplanning, user: eventplanning, password: eventplanning123
+# Créer DB: mabanquetools, user: mabanquetools, password: mabanquetools654321
 
 # Avec Maven Wrapper
 ./mvnw clean install          # Build & tests
@@ -1101,18 +1112,19 @@ mvn spring-boot:run
 
 ### Configuration MySQL
 ```sql
-CREATE DATABASE eventplanning CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'eventplanning'@'localhost' IDENTIFIED BY 'eventplanning123';
-GRANT ALL PRIVILEGES ON eventplanning.* TO 'eventplanning'@'localhost';
+CREATE DATABASE mabanquetools CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'mabanquetools'@'localhost' IDENTIFIED BY 'mabanquetools654321';
+GRANT ALL PRIVILEGES ON mabanquetools.* TO 'mabanquetools'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
 ### Variables d'environnement (application.properties)
 ```properties
 server.port=3000
-spring.datasource.url=jdbc:mysql://localhost:3306/eventplanning
-spring.datasource.username=eventplanning
-spring.datasource.password=eventplanning123
+server.servlet.context-path=/api
+spring.datasource.url=jdbc:mysql://localhost:3306/mabanquetools?createDatabaseIfNotExist=true
+spring.datasource.username=mabanquetools
+spring.datasource.password=mabanquetools654321
 spring.jpa.hibernate.ddl-auto=update
 ```
 

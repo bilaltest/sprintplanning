@@ -127,7 +127,10 @@
       "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/node /Users/bilal/.nvm/versions/node/v24.11.1/bin/npx tsc:*)",
       "Bash(TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjAwMSIsImVtYWlsIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiU3lzdMOobWUiLCJpYXQiOjE3NjU4MzYyMjUsImV4cCI6MTc2ODQyODIyNX0.MNZVoiWhHfjR28TLrwGPge5AFJl6DUuEsFRz9UR40xk)",
       "Bash(mvn test:*)",
-      "Bash(mvn clean test:*)"
+      "Bash(mvn clean test:*)",
+      "Bash(./verify_permissions.sh:*)",
+      "Bash(./check_teams.sh:*)",
+      "Bash(mvn clean compile:*)"
     ],
     "deny": [],
     "ask": []

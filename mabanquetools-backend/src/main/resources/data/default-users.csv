@@ -1,0 +1,74 @@
+email,passwordHash,firstName,lastName,metier,tribu,isInterne,teams
+Olivia.LOUIS@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Olivia,Louis,BA,Ma Banque,true,Transverse
+Valerie.PAQUIOT@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Valerie,Paquiot,BA,Ma Banque,true,Squad 4
+Romain.BOURSE@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Romain,Bourse,Back,Ma Banque,true,Transverse
+Antoine.LOORIUS@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Antoine,Loorius,Back,Ma Banque,true,Squad 3
+Brice.CESARIN@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Brice,Cesarin,SM,Ma Banque,true,"Squad 4,ADAM"
+Echat.BACAR@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Echat,Bacar,UI,ChUX,true,Squad 4
+Dorian.LIAUSSON-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Dorian,Liausson,Test,Ma Banque,false,Squad 3
+Florian.GOUDEY@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Florian,Goudey,Test,Ma Banque,true,Squad 4
+David.SISCAR@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,David,Siscar,iOS,ChDF,true,Transverse
+Abderrahim.ELGOMRI-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Abderrahim,Elgomri,Android,ChDF,false,Squad 1
+Luc.GIROUX@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Luc,Giroux,PO,Ma Banque,true,Squad 1
+Alexis.BRUNET@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Alexis,Brunet,Back,Ma Banque,true,Squad 2
+Quentin.ALESSANDRA@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Quentin,Alessandra,BA,Ma Banque,true,Squad 3
+Olivier.MAUREL-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Olivier,Maurel,UX/UI,ChUX,false,Transverse
+Julien.VELY@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Julien,Vely,Test,Ma Banque,true,Squad 2
+Guilhem.BOIRAL@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Guilhem,Boiral,RM,Ma Banque,true,Transverse
+Marie-Christine.LURON@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Marie-christine,Luron,Fonctionnement,Ma Banque,true,Transverse
+Xavier.TANNEAU@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Xavier,Tanneau,Test,Ma Banque,true,Transverse
+Pierrick.BERNARD@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Pierrick,Bernard,LP,Ma Banque,true,Transverse
+Aymane.ELASRI@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Aymane,Elasri,Back,Ma Banque,true,"Squad 1,Squad 5"
+Kendy.JEAN-MARIE-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Kendy,Jean-marie,Back,Ma Banque,false,Squad 3
+Arnaud.MAZENS@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Arnaud,Mazens,PO,Ma Banque,true,Squad 5
+Marjorie.RICO@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Marjorie,Rico,PO,Ma Banque,true,Squad 4
+Sandie.ROUSSELOT@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Sandie,Rousselot,BA,Ma Banque,true,Squad 2
+amine.elamri-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Amine,Elamri,Back,Ma Banque,false,ADAM
+Chelma.ELJ-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Chelma,Elj,iOS,ChDF,false,Squad 2
+Adeline.AUJOULAT-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Adeline,Aujoulat,UI,ChUX,false,Squad 4
+mathieu.cathalifaud@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Mathieu,Cathalifaud,BA,Ma Banque,true,Squad 1
+Mathis.SCHALLER-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Mathis,Schaller,iOS,ChDF,false,Squad 4
+laetitia.chataignere@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Laetitia,Chataignere,UX/UI,ChUX,true,Transverse
+Boris.DENIS@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Boris,Denis,Back,Ma Banque,true,Squad 5
+Damien.FERRY@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Damien,Ferry,Back,Ma Banque,true,Squad 4
+steve.campos-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Steve,Campos,Android,ChDF,false,Squad 4
+Jerome.PEREZ-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Jerome,Perez,Test,Ma Banque,false,Squad 1
+Jerome.DEZEUZE@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Jerome,Dezeuze,SM,Ma Banque,true,"Squad 2,Squad 3"
+nicolas.favre-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Nicolas,Favre,Test,Ma Banque,false,Squad 1
+kilian.cousein@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Kilian,Cousein,Back,Ma Banque,true,"Squad 2,Squad 3"
+mathieu.meunier-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Mathieu,Meunier,Android,ChDF,false,Squad 2
+jean-michel.gomez-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Jean-michel,Gomez,Test,Ma Banque,false,Squad 3
+mickael.calatraba-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Mickael,Calatraba,Android,ChDF,false,Squad 5
+marion.manen@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Marion,Manen,Test,Ma Banque,true,Squad 5
+Lucas.LEROUX@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Lucas,Leroux,Front,ChDF,true,ADAM
+cecile.grabit-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Cecile,Grabit,BA,Ma Banque,false,Squad 5
+tancrede.tibau-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Tancrede,Tibau,iOS,ChDF,false,Squad 5
+zakaria.afkir-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Zakaria,Afkir,Back,Ma Banque,false,Squad 1
+romain.boisselle-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Romain,Boisselle,Android,ChDF,false,Transverse
+jessica.eyamo-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Jessica,Eyamo,UX/UI,ChUX,false,"Squad 2,Squad 3"
+simon.lauron@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Simon,Lauron,Android,ChDF,true,Squad 3
+Christian.LAPENNA@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Christian,Lapenna,Suivi des 15F,Ma Banque,true,Transverse
+audrey.sobgou-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Audrey,Sobgou,iOS,ChDF,false,Squad 4
+Louis.ALARY@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Louis,Alary,Android,ChDF,true,Squad 3
+David.GAUTIER@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,David,Gautier,PO,Ma Banque,true,Squad 3
+Belhassen.LIMAM-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Belhassen,Limam,iOS,ChDF,false,Squad 3
+anne.grondin-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Anne,Grondin,Test,Ma Banque,false,Squad 2
+amaury.bocognano@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Amaury,Bocognano,PO,Ma Banque,true,Squad 2
+Bilal.DJEBBARI@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Bilal,Djebbari,Back,Ma Banque,true,Squad 4
+Adrian.CIFFRE-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Adrian,Ciffre,UX/UI,ChUX,false,"Squad 1,Squad 5"
+Ines.BENHDIA-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Ines,Benhdia,Test,Ma Banque,false,Squad 4
+Stephane.BUNOD-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Stephane,Bunod,Suivi des 15C,Ma Banque,false,Squad 5
+Oussama.BELLEL-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Oussama,Bellel,Back,Ma Banque,false,Squad 4
+jean-loup.picolo-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Jean-loup,Picolo,BA,Ma Banque,false,ADAM
+Olivier.ADIN@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Olivier,Adin,iOS,ChDF,true,Squad 1
+Clara.rebejac-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Clara,Rebejac,Test,Ma Banque,false,Squad 4
+Tarik.SADKHI@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Tarik,Sadkhi,Front,ChDF,true,Squad 5
+Laura.NEGRE-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Laura,Negre,UX/UI,ChUX,false,"Squad 4,ADAM"
+Thomas.SERRE-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Thomas,Serre,SM,Ma Banque,false,"Squad 1,Squad 5"
+Mickael.HAMOUMA-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Mickael,Hamouma,Back,Ma Banque,false,Squad 1
+Olivier.BUSIERE-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Olivier,Busiere,RM,Ma Banque,false,Transverse
+Dalila.AMRAOUI@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Dalila,Amraoui,AFN2,Ma Banque,true,Transverse
+Mikael.aubriot-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Mikael,Aubriot,BA,Ma Banque,false,Squad 4
+Mohammed.FATAH-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Mohammed,Fatah,Test,Ma Banque,false,Squad 5
+Katarzyna.SZEWCZAK@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Katarzyna,Szewczak,AFN2,Ma Banque,true,Transverse
+Meryem.DRISSI-ext@ca-ts.fr,$2a$10$81nZtPhGPHM/0jNwkvhkIO0P6w3lykqX9ejLuS5rVH6OOWNIXMTBy,Meryem,Drissi,Test,Ma Banque,false,Squad 5

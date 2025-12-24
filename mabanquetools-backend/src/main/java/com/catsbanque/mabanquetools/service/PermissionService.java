@@ -96,12 +96,12 @@ public class PermissionService {
      * Cette méthode est idempotente : elle vérifie si la permission existe avant de
      * la créer.
      *
-     * Permissions par défaut (WRITE pour tous les modules):
-     * - CALENDAR: WRITE
-     * - RELEASES: WRITE
-     * - ABSENCE: WRITE
-     * - PLAYGROUND: WRITE
-     * - ADMIN: NONE
+     * Permissions par défaut (accès standard utilisateur) :
+     * - CALENDAR: READ (lecture seule du calendrier)
+     * - RELEASES: WRITE (gestion complète des releases)
+     * - ABSENCE: WRITE (gestion complète des absences)
+     * - PLAYGROUND: NONE (pas d'accès au playground)
+     * - ADMIN: NONE (pas d'accès admin)
      *
      * @param user l'utilisateur pour lequel créer les permissions
      */
@@ -117,16 +117,18 @@ public class PermissionService {
     }
 
     /**
-     * Crée les permissions d'admin
+     * Crée les permissions d'admin (accès complet).
      * Cette méthode est idempotente : elle vérifie si la permission existe avant de
      * la créer.
      *
-     * Permissions par défaut (WRITE pour tous les modules):
-     * - CALENDAR: WRITE
-     * - RELEASES: WRITE
-     * - ADMIN: WRITE
+     * Permissions admin (WRITE pour tous les modules) :
+     * - CALENDAR: WRITE (gestion complète du calendrier)
+     * - RELEASES: WRITE (gestion complète des releases)
+     * - ABSENCE: WRITE (gestion complète des absences)
+     * - PLAYGROUND: WRITE (accès complet au playground)
+     * - ADMIN: WRITE (accès admin complet)
      *
-     * @param user l'utilisateur pour lequel créer les permissions
+     * @param user l'utilisateur pour lequel créer les permissions admin
      */
     @Transactional
     public void createAdminPermissions(User user) {
@@ -136,7 +138,7 @@ public class PermissionService {
         createOrUpdatePermission(user, PermissionModule.ABSENCE, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.PLAYGROUND, PermissionLevel.WRITE);
 
-        log.info("Permissions par défaut vérifiées/créées pour l'utilisateur {}", user.getEmail());
+        log.info("Permissions admin créées/vérifiées pour l'utilisateur {}", user.getEmail());
     }
 
     /**
