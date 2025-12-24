@@ -90,7 +90,7 @@ class AbsenceServiceTest {
     }
 
     @Test
-    @DisplayName("getAbsenceUsers - Content Check")
+    @DisplayName("getAbsenceUsers - Content Check (Filtered)")
     void testGetAbsenceUsers() {
         // Given
         when(permissionService.hasReadAccess(anyString(), eq(PermissionModule.ABSENCE))).thenReturn(true);
@@ -98,12 +98,19 @@ class AbsenceServiceTest {
         User user1 = new User();
         user1.setId("u1");
         user1.setTribu("TribuA");
+        user1.setHiddenFromAbsenceTable(false);
 
-        User user2 = new User(); // Should be filtered out
+        User user2 = new User(); // Should be filtered out (Tribu Autre)
         user2.setId("u2");
         user2.setTribu("Autre");
+        user2.setHiddenFromAbsenceTable(false);
 
-        when(userRepository.findAll()).thenReturn(Arrays.asList(user1, user2));
+        User user3 = new User(); // Should be filtered out (Hidden)
+        user3.setId("u3");
+        user3.setTribu("TribuB");
+        user3.setHiddenFromAbsenceTable(true);
+
+        when(userRepository.findAll()).thenReturn(Arrays.asList(user1, user2, user3));
 
         // When
         List<AbsenceUserDto> result = absenceService.getAbsenceUsers("admin");

@@ -1,0 +1,2 @@
+email,passwordHash,firstName,lastName,metier,tribu,isInterne,teams
+UPPER.case@ca-ts.fr,$2a$10$...,John,Doe,Back,Ma Banque,true,Squad 1

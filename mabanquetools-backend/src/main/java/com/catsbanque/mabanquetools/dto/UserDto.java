@@ -23,6 +23,7 @@ public class UserDto {
     private String lastName;
     private String themePreference;
     private String widgetOrder;
+    private Boolean cannotChangePassword;
     private Map<PermissionModule, PermissionLevel> permissions;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -35,6 +36,7 @@ public class UserDto {
                 .lastName(user.getLastName())
                 .themePreference(user.getThemePreference())
                 .widgetOrder(user.getWidgetOrder())
+                .cannotChangePassword(user.getCannotChangePassword())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
@@ -48,6 +50,7 @@ public class UserDto {
                 .lastName(user.getLastName())
                 .themePreference(user.getThemePreference())
                 .widgetOrder(user.getWidgetOrder())
+                .cannotChangePassword(user.getCannotChangePassword())
                 .permissions(permissions)
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())

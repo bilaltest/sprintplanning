@@ -390,6 +390,11 @@ public class AdminService {
 
             // Users
             if (request.getData().getUsers() != null && !request.getData().getUsers().isEmpty()) {
+                request.getData().getUsers().forEach(u -> {
+                    if (u.getEmail() != null) {
+                        u.setEmail(u.getEmail().toLowerCase());
+                    }
+                });
                 userRepository.saveAll(request.getData().getUsers());
                 log.info("Imported {} users", request.getData().getUsers().size());
             }
@@ -515,7 +520,7 @@ public class AdminService {
     @Transactional
     public void createAdminUser() {
         // Vérifier si l'utilisateur admin existe déjà
-        if (userRepository.existsByEmail("admin")) {
+        if (userRepository.existsByEmail("admin".toLowerCase())) {
             log.info("L'utilisateur admin existe déjà");
             return;
         }
@@ -524,7 +529,7 @@ public class AdminService {
         // (minimum 8 caractères, alphanumérique, avec lettres et chiffres)
         User adminUser = new User();
         adminUser.setId("cadmin001");
-        adminUser.setEmail("admin");
+        adminUser.setEmail("admin".toLowerCase());
         adminUser.setPassword(passwordEncoder.encode("admin123"));
         adminUser.setFirstName("Admin");
         adminUser.setLastName("Système");

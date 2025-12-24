@@ -61,6 +61,12 @@ public class User {
     @Column(name = "is_interne", nullable = false)
     private Boolean interne = true;
 
+    @Column(name = "cannot_change_password", nullable = false)
+    private Boolean cannotChangePassword = false;
+
+    @Column(name = "hidden_from_absence_table", nullable = false)
+    private Boolean hiddenFromAbsenceTable = false;
+
     @jakarta.persistence.ManyToMany(fetch = jakarta.persistence.FetchType.EAGER)
     @jakarta.persistence.JoinTable(name = "user_teams", joinColumns = @jakarta.persistence.JoinColumn(name = "user_id"), inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "team_id"))
     private java.util.Set<Team> teams = new java.util.HashSet<>();

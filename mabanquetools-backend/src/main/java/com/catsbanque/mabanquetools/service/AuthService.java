@@ -247,6 +247,11 @@ public class AuthService {
                 .orElseThrow(() -> new com.catsbanque.mabanquetools.exception.ResourceNotFoundException(
                         "Utilisateur non trouvé"));
 
+        if (Boolean.TRUE.equals(user.getCannotChangePassword())) {
+            throw new com.catsbanque.mabanquetools.exception.BadRequestException(
+                    "Vous ne pouvez pas modifier le mot de passe de cet utilisateur");
+        }
+
         // Mettre à jour le mot de passe
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);

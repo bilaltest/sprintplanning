@@ -11,7 +11,7 @@ import { OnboardingService } from '@services/onboarding.service';
 import { MatDialog } from '@angular/material/dialog';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { of } from 'rxjs';
-import { NO_Errors_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 
 describe('AbsenceComponent', () => {
     let component: AbsenceComponent;
@@ -70,7 +70,7 @@ describe('AbsenceComponent', () => {
                 { provide: MatDialog, useValue: mockDialog },
                 { provide: BreakpointObserver, useValue: mockBreakpointObserver }
             ],
-            schemas: [NO_Errors_SCHEMA]
+            schemas: [NO_ERRORS_SCHEMA]
         })
             .compileComponents();
 
@@ -103,4 +103,50 @@ describe('AbsenceComponent', () => {
         expect(component.newAbsence.endPeriod).toBe('AFTERNOON');
         expect(component.newAbsence.type).toBe('ABSENCE');
     });
+
+    it('should pin current user to the top of the filtered list', () => {
+        // Arrange
+        const user1 = { id: 'user1', firstName: 'John', lastName: 'Doe', metier: 'Dev', tribu: 'T1', interne: true, email: 'john@example.com', squads: ['S1'] };
+        const user2 = { id: 'user2', firstName: 'Alice', lastName: 'Smith', metier: 'PO', tribu: 'T1', interne: true, email: 'alice@example.com', squads: ['S1'] };
+        const user3 = { id: 'user3', firstName: 'Bob', lastName: 'Jones', metier: 'Dev', tribu: 'T1', interne: true, email: 'bob@example.com', squads: ['S1'] };
+
+        // Setup initial list where user1 (current user) is NOT first
+        component.users = [user2, user3, user1];
+
+        // Act
+        component.filterUsers();
+
+        // Assert
+        expect(component.filteredUsers.length).toBe(3);
+        expect(component.filteredUsers[0].id).toBe('user1'); // Should be first
+        expect(component.filteredUsers).toContain(user2);
+        expect(component.filteredUsers).toContain(user3);
+    });
+    it('should highlight today with amber color', () => {
+        // Arrange: manually set monthData with one day that is today
+        const today = new Date();
+        const dayMetadata: any = {
+            date: today,
+            isToday: true,
+            isWeekend: false,
+            isHoliday: false,
+            label: 'L',
+            dayNum: '01'
+        };
+
+        component.monthData = [{
+            date: today,
+            days: [dayMetadata],
+            width: 100
+        }];
+
+        // Act
+        fixture.detectChanges();
+
+        // Assert
+        const todayElement = fixture.nativeElement.querySelector('.text-vibrant-700');
+        expect(todayElement).toBeTruthy();
+        expect(todayElement.classList).toContain('bg-vibrant-100');
+    });
 });
+

@@ -118,6 +118,7 @@ interface NavItem {
 
         <!-- Change Password Button -->
         <button
+          *ngIf="!currentUser?.cannotChangePassword"
           (click)="openPasswordModal()"
           class="nav-item w-full"
           [class.collapsed]="isCollapsed && !isMobile"

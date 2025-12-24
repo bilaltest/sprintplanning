@@ -22,6 +22,7 @@ export interface User {
   themePreference: 'light' | 'dark';
   widgetOrder: string; // JSON string containing widget order array
   permissions?: UserPermissions;
+  cannotChangePassword?: boolean;
   createdAt: string;
   updatedAt: string;
 }

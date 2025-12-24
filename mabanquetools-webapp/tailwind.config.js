@@ -130,6 +130,21 @@ module.exports = {
           release: '#10b981',   // Emerald - Release
           hotfix: '#dc2626',    // Rouge foncé - Hotfix
           planning: '#8b5cf6',  // Violet - Planning
+        },
+
+        // Nouvelle couleur Vibrante (Fuchsia) pour remplacer le Gold/Amber
+        vibrant: {
+          50: '#fdf4ff',
+          100: '#fae8ff',
+          200: '#f5d0fe',
+          300: '#f0abfc',
+          400: '#e879f9',
+          500: '#d946ef', // FUCHSIA VIBRANT - Principal
+          600: '#c026d3',
+          700: '#a21caf',
+          800: '#86198f',
+          900: '#701a75',
+          950: '#4a044e',
         }
       },
 

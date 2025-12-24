@@ -43,6 +43,7 @@ public class AbsenceService {
 
         return userRepository.findAll().stream()
                 .filter(u -> !"Autre".equalsIgnoreCase(u.getTribu())) // Filtrer Tribu != Autre
+                .filter(u -> !Boolean.TRUE.equals(u.getHiddenFromAbsenceTable())) // Filtrer hidden users
                 .map(u -> AbsenceUserDto.builder()
                         .id(u.getId())
                         .firstName(u.getFirstName())

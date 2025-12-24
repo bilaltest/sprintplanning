@@ -58,10 +58,10 @@ interface DayCard {
                 [class.card-weekend]="day.isWeekend && !day.isToday"
                 [class.card-holiday]="day.isHoliday && !day.isToday"
                 class="day-card h-full rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border-2"
-                [class.border-amber-400]="day.isToday"
+                [class.border-vibrant-400]="day.isToday"
                 [class.border-gray-300]="!day.isToday && !day.isWeekend && !day.isHoliday"
                 [class.border-gray-400]="!day.isToday && (day.isWeekend || day.isHoliday)"
-                [class.dark:border-amber-500]="day.isToday"
+                [class.dark:border-vibrant-500]="day.isToday"
                 [class.dark:border-gray-600]="!day.isToday && !day.isWeekend && !day.isHoliday"
                 [class.dark:border-gray-500]="!day.isToday && (day.isWeekend || day.isHoliday)"
                 [class.dark:border-gray-500]="!day.isToday && (day.isWeekend || day.isHoliday)"
@@ -71,8 +71,8 @@ interface DayCard {
                 <!-- Header de la carte -->
                 <div
                   [class.bg-gradient-to-br]="true"
-                  [class.from-amber-400]="day.isToday"
-                  [class.to-amber-600]="day.isToday"
+                  [class.from-vibrant-400]="day.isToday"
+                  [class.to-vibrant-600]="day.isToday"
                   [class.from-red-400]="day.isHoliday && !day.isToday"
                   [class.to-red-500]="day.isHoliday && !day.isToday"
                   [class.from-slate-400]="day.isWeekend && !day.isHoliday && !day.isToday"

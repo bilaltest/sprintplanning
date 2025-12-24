@@ -44,9 +44,11 @@ public class CsvUserParser {
     }
 
     /**
-     * Parse un fichier CSV depuis le classpath et retourne la liste des utilisateurs
+     * Parse un fichier CSV depuis le classpath et retourne la liste des
+     * utilisateurs
      *
-     * @param resourcePath Chemin relatif depuis src/main/resources (ex: "data/default-users.csv")
+     * @param resourcePath Chemin relatif depuis src/main/resources (ex:
+     *                     "data/default-users.csv")
      * @return Liste des utilisateurs parsés (liste vide en cas d'erreur)
      */
     public static List<UserCsvRow> parseUsersFromCsv(String resourcePath) {
@@ -55,8 +57,8 @@ public class CsvUserParser {
         try (InputStream is = CsvUserParser.class
                 .getClassLoader()
                 .getResourceAsStream(resourcePath);
-             BufferedReader reader = new BufferedReader(
-                 new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(is, StandardCharsets.UTF_8))) {
 
             if (is == null) {
                 log.error("CSV file not found in classpath: {}", resourcePath);
@@ -75,7 +77,7 @@ public class CsvUserParser {
             while ((line = reader.readLine()) != null) {
                 lineNumber++;
                 if (line.trim().isEmpty()) {
-                    continue;  // Skip empty lines
+                    continue; // Skip empty lines
                 }
 
                 try {
@@ -98,7 +100,7 @@ public class CsvUserParser {
     /**
      * Parse une ligne CSV et retourne un UserCsvRow
      *
-     * @param line Ligne CSV brute
+     * @param line       Ligne CSV brute
      * @param lineNumber Numéro de ligne (pour les logs d'erreur)
      * @return UserCsvRow parsé
      * @throws IllegalArgumentException Si le format est invalide
@@ -109,10 +111,10 @@ public class CsvUserParser {
 
         if (fields.size() != 8) {
             throw new IllegalArgumentException(
-                "Expected 8 fields but got " + fields.size() + " on line " + lineNumber);
+                    "Expected 8 fields but got " + fields.size() + " on line " + lineNumber);
         }
 
-        String email = fields.get(0).trim();
+        String email = fields.get(0).trim().toLowerCase();
         String passwordHash = fields.get(1).trim();
         String firstName = fields.get(2).trim();
         String lastName = fields.get(3).trim();
@@ -123,14 +125,13 @@ public class CsvUserParser {
         // Parse team names (comma-separated)
         String teamsStr = fields.get(7).trim();
         List<String> teamNames = Arrays.stream(teamsStr.split(","))
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .collect(Collectors.toList());
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
 
         return new UserCsvRow(
-            email, passwordHash, firstName, lastName,
-            metier, tribu, isInterne, teamNames
-        );
+                email, passwordHash, firstName, lastName,
+                metier, tribu, isInterne, teamNames);
     }
 
     /**
@@ -138,7 +139,8 @@ public class CsvUserParser {
      *
      * Exemples:
      * - "field1,field2,field3" → ["field1", "field2", "field3"]
-     * - "field1,"value with, comma",field3" → ["field1", "value with, comma", "field3"]
+     * - "field1,"value with, comma",field3" → ["field1", "value with, comma",
+     * "field3"]
      *
      * @param line Ligne CSV brute
      * @return Liste des champs extraits

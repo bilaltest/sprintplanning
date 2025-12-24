@@ -48,12 +48,12 @@ import { Sprint } from '@models/sprint.model';
                     </tr>
                 </thead>
                 <!-- Current Sprint Pinned Row -->
-                <tbody *ngIf="currentSprint" class="bg-amber-50/50 dark:bg-amber-900/10 border-b-2 border-amber-100 dark:border-amber-800">
-                     <tr class="hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">
+                <tbody *ngIf="currentSprint" class="bg-vibrant-50/50 dark:bg-vibrant-900/10 border-b-2 border-vibrant-100 dark:border-vibrant-800">
+                     <tr class="hover:bg-vibrant-50 dark:hover:bg-vibrant-900/20 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                             <div class="flex items-center space-x-2">
                                 <span>{{ currentSprint.name }}</span>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-vibrant-100 text-vibrant-800 dark:bg-vibrant-900 dark:text-vibrant-200">
                                     En cours
                                 </span>
                                 <span *ngIf="isFreezeWeek(currentSprint)" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">

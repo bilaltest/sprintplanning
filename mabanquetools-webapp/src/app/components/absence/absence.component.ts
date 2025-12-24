@@ -236,11 +236,22 @@ interface MonthMetadata {
                 <div *ngFor="let user of filteredUsers; trackBy: trackUserById" 
                      (click)="toggleHighlight(user.id)"
                      class="h-8 border-b border-gray-300 dark:border-gray-700 flex items-center px-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all cursor-pointer group relative"
-                     [class.bg-indigo-50]="user.id === highlightedUserId"
-                     [class.dark:bg-indigo-900/20]="user.id === highlightedUserId"
-                     [class.ring-2]="user.id === highlightedUserId"
-                     [class.ring-indigo-400]="user.id === highlightedUserId"
-                     [class.dark:ring-indigo-500]="user.id === highlightedUserId">
+                     [class.bg-indigo-50]="user.id === highlightedUserId && user.id !== currentUserId"
+                     [class.dark:bg-indigo-900/20]="user.id === highlightedUserId && user.id !== currentUserId"
+                     [class.ring-2]="user.id === highlightedUserId && user.id !== currentUserId"
+                     [class.ring-indigo-400]="user.id === highlightedUserId && user.id !== currentUserId"
+                     [class.dark:ring-indigo-500]="user.id === highlightedUserId && user.id !== currentUserId"
+                     
+                     [class.sticky]="user.id === currentUserId"
+                     [class.top-0]="user.id === currentUserId"
+                     [class.z-50]="user.id === currentUserId"
+                     [class.bg-white]="user.id === currentUserId"
+                     [class.dark:bg-gray-800]="user.id === currentUserId"
+                     [class.shadow-lg]="user.id === currentUserId"
+                     [class.border-indigo-300]="user.id === currentUserId"
+                     [class.dark:border-indigo-600]="user.id === currentUserId"
+                     [class.border-t-2]="user.id === currentUserId"
+                     [class.border-b-2]="user.id === currentUserId">
                   
                   <!-- Name Column -->
                   <div class="flex-1 flex items-center min-w-0 pr-2">
@@ -296,10 +307,10 @@ interface MonthMetadata {
                          class="flex-none border-r border-gray-300 dark:border-gray-700 flex flex-col items-center justify-end pb-1 text-[10px] relative" 
                          [style.width.px]="dayWidth"
                          [class.font-bold]="day.isToday"
-                         [class.text-emerald-700]="day.isToday"
-                         [class.dark:text-emerald-400]="day.isToday"
-                         [class.bg-emerald-100]="day.isToday"
-                         [class.dark:bg-emerald-900\/40]="day.isToday"
+                         [class.text-vibrant-700]="day.isToday"
+                         [class.dark:text-vibrant-400]="day.isToday"
+                         [class.bg-vibrant-100]="day.isToday"
+                         [class.dark:bg-vibrant-900/40]="day.isToday"
                          [class.bg-gray-100]="day.isWeekend && !day.isToday"
                          [class.dark:bg-gray-800]="day.isWeekend && !day.isToday"
                          [class.text-gray-400]="day.isWeekend"
@@ -337,8 +348,8 @@ interface MonthMetadata {
                            [class.bg-emerald-300]="!day.isCurrentSprint && day.sprintIndex! % 2 !== 0"
                            [class.dark:bg-sky-400]="!day.isCurrentSprint && day.sprintIndex! % 2 === 0"
                            [class.dark:bg-emerald-400]="!day.isCurrentSprint && day.sprintIndex! % 2 !== 0"
-                           [class.bg-amber-500]="day.isCurrentSprint"
-                           [class.dark:bg-amber-500]="day.isCurrentSprint"
+                           [class.bg-vibrant-500]="day.isCurrentSprint"
+                           [class.dark:bg-vibrant-500]="day.isCurrentSprint"
                       ></div>
                       <!-- Sprint Name (Start Only - Horizontal Badge) -->
                       <div *ngIf="day.activeSprint && day.isSprintStart"
@@ -352,10 +363,10 @@ interface MonthMetadata {
                            [class.dark:bg-emerald-900]="!day.isCurrentSprint && day.sprintIndex! % 2 !== 0"
                            [class.dark:text-emerald-300]="!day.isCurrentSprint && day.sprintIndex! % 2 !== 0"
                            
-                           [class.bg-amber-50]="day.isCurrentSprint"
-                           [class.text-amber-700]="day.isCurrentSprint"
-                           [class.dark:bg-amber-900]="day.isCurrentSprint"
-                           [class.dark:text-amber-400]="day.isCurrentSprint"
+                           [class.bg-vibrant-50]="day.isCurrentSprint"
+                           [class.text-vibrant-700]="day.isCurrentSprint"
+                           [class.dark:bg-vibrant-900]="day.isCurrentSprint"
+                           [class.dark:text-vibrant-400]="day.isCurrentSprint"
                       >
                         {{ day.activeSprint.name }}
                       </div>
@@ -366,40 +377,58 @@ interface MonthMetadata {
             </div>
           </div>
 
+          <!-- Shared Grid Template -->
+          <ng-template #gridBackground>
+            <ng-container *ngFor="let month of monthData; trackBy: trackMonthByDate">
+                <div *ngFor="let day of month.days; trackBy: trackDayByDate"
+                     class="border-r border-gray-300 dark:border-gray-700 h-full flex-shrink-0"
+                     [style.width.px]="dayWidth"
+                     [class.bg-vibrant-50]="day.isToday"
+                     [class.dark:bg-vibrant-900/10]="day.isToday"
+                     [class.bg-gray-50]="day.isWeekend && !day.isToday"
+                     [class.dark:bg-gray-800\/50]="day.isWeekend && !day.isToday"
+                     [class.bg-rose-50]="day.isHoliday && !day.isToday"
+                     [class.dark:bg-rose-900\/20]="day.isHoliday && !day.isToday">
+                </div>
+            </ng-container>
+          </ng-template>
+
           <!-- Timeline Grid Container (Scrollable) -->
           <div id="timeline-grid" #mainScrollContainer class="flex-1 overflow-auto custom-scrollbar" (scroll)="onMainScroll($event)">
             <div class="relative" [style.width.px]="timelineWidth">
               
               <!-- BACKGROUND LAYER: The Grids (Rendered ONCE) -->
-              <!-- We use an absolute container that fills the height. -->
-              <!-- Optimization: Since dragging needs per-row interaction, we can't just have one bg. 
-                   But we can have the grid lines drawn by one bg container, and the rows transparent. -->
-              
               <div class="absolute inset-0 flex z-0 pointer-events-none sticky-cols">
-                 <ng-container *ngFor="let month of monthData; trackBy: trackMonthByDate">
-                    <div *ngFor="let day of month.days; trackBy: trackDayByDate"
-                         class="border-r border-gray-300 dark:border-gray-700 h-full flex-shrink-0"
-                         [style.width.px]="dayWidth"
-                         [class.bg-emerald-50]="day.isToday"
-                         [class.dark:bg-emerald-900\/10]="day.isToday"
-                         [class.bg-gray-50]="day.isWeekend && !day.isToday"
-                         [class.dark:bg-gray-800\/50]="day.isWeekend && !day.isToday"
-                         [class.bg-rose-50]="day.isHoliday && !day.isToday"
-                         [class.dark:bg-rose-900\/20]="day.isHoliday && !day.isToday">
-                    </div>
-                 </ng-container>
+                 <ng-container *ngTemplateOutlet="gridBackground"></ng-container>
               </div>
 
               <!-- CONTENT LAYER: Transparent Rows -->
               <div class="relative z-10" #rowsContainer>
                   <div *ngFor="let user of filteredUsers; trackBy: trackUserById" 
                        class="h-8 border-b border-gray-300 dark:border-gray-700 relative hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors"
-                       [class.bg-indigo-50]="user.id === highlightedUserId"
-                       [class.dark:bg-indigo-900/20]="user.id === highlightedUserId"
+                       [class.bg-indigo-50]="user.id === highlightedUserId && user.id !== currentUserId"
+                       [class.dark:bg-indigo-900/20]="user.id === highlightedUserId && user.id !== currentUserId"
+                       [class.sticky]="user.id === currentUserId"
+                       [class.top-0]="user.id === currentUserId"
+                       [class.z-50]="user.id === currentUserId"
+                       [class.bg-white]="user.id === currentUserId"
+                       [class.dark:bg-gray-800]="user.id === currentUserId"
+                       [class.shadow-lg]="user.id === currentUserId"
+                       
                        (mousedown)="onRowMouseDown($event, user)"
                        (mousemove)="onRowMouseMove($event)">
+
+                    <!-- Sticky User specific background (Grid Clone) for opacity + transparency -->
+                    <div *ngIf="user.id === currentUserId" class="absolute inset-0 flex pointer-events-none z-0">
+                        <ng-container *ngTemplateOutlet="gridBackground"></ng-container>
+                    </div>
                     
-                    <!-- Absences overlay -->
+                    <!-- BORDER OVERLAY: On top of everything for sticky row -->
+                    <div *ngIf="user.id === currentUserId"
+                         class="absolute inset-0 pointer-events-none z-[60] border-t-2 border-b-2 border-indigo-300 dark:border-indigo-600">
+                    </div>
+
+                    <!-- Absences overlay (z-20) -->
                     <ng-container *ngFor="let absence of getUserAbsences(user.id); trackBy: trackAbsenceById">
                        <ng-container *ngFor="let segment of getAbsenceSegments(absence); trackBy: trackSegment">
                            <div class="absolute top-1 bottom-1 shadow-sm cursor-pointer hover:brightness-110 transition-all z-20 flex items-center justify-center text-[10px] font-bold text-white overflow-hidden"
@@ -644,7 +673,7 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
   searchQuery = '';
 
   // Timeline config
-  startDate: Date = startOfMonth(addMonths(new Date(), -3));
+  startDate: Date = startOfMonth(addMonths(new Date(), -1));
   endDate: Date = endOfMonth(addMonths(new Date(), 12));
   monthData: MonthMetadata[] = [];
   allDays: DayMetadata[] = [];
@@ -866,7 +895,10 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  currentUserId: string | null = null;
+
   ngOnInit() {
+    this.currentUserId = this.authService.getCurrentUser()?.id || null;
     this.loadSprints(); // Load sprints first or parallel
     this.loadClosedDays();
     this.loadUsers();
@@ -1003,6 +1035,15 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
 
       return matchesSearch && matchesMetier && matchesSquad && matchesTribu && matchesStatus;
     });
+
+    if (this.currentUserId) {
+      this.filteredUsers.sort((a, b) => {
+        if (a.id === this.currentUserId) return -1;
+        if (b.id === this.currentUserId) return 1;
+        return 0; // Keep original order for others
+      });
+    }
+
     this.cdr.markForCheck();
   }
 
@@ -1148,7 +1189,7 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.mainScrollContainer) {
       const x = this.getDateX(date);
       const center = x - (this.mainScrollContainer.nativeElement.clientWidth / 2) + (this.dayWidth / 2);
-      this.mainScrollContainer.nativeElement.scrollLeft = Math.max(0, center);
+      this.mainScrollContainer.nativeElement.scrollLeft = Math.max(0, x);
     }
   }
 

@@ -1,8 +1,11 @@
 package com.catsbanque.mabanquetools.config;
 
+import com.catsbanque.mabanquetools.entity.Absence;
+import com.catsbanque.mabanquetools.entity.AbsenceType;
 import com.catsbanque.mabanquetools.entity.Team;
 import com.catsbanque.mabanquetools.entity.User;
 import com.catsbanque.mabanquetools.repository.UserRepository;
+import com.catsbanque.mabanquetools.util.CsvAbsenceParser;
 import com.catsbanque.mabanquetools.util.CsvUserParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,14 +37,17 @@ public class DataInitializer implements CommandLineRunner {
     private final com.catsbanque.mabanquetools.service.MicroserviceService microserviceService;
     private final com.catsbanque.mabanquetools.service.ReleaseService releaseService;
     private final com.catsbanque.mabanquetools.repository.TeamRepository teamRepository;
+    private final com.catsbanque.mabanquetools.repository.AbsenceRepository absenceRepository;
 
     @Override
     @Transactional
     public void run(String... args) {
         cleanUpObsoletePermissions();
         createDefaultAdminUser();
+        createGuestUser();
         initDefaultSquads();
-        createDefaultUsers();  // ✅ Nouvelle méthode - charge utilisateurs depuis CSV
+        createDefaultUsers(); // ✅ Nouvelle méthode - charge utilisateurs depuis CSV
+        createDefaultAbsences(); // ✅ Nouvelle méthode - charge absences depuis CSV
         microserviceService.initDefaultMicroservices();
         releaseService.migrateSlugs();
     }
@@ -73,7 +79,7 @@ public class DataInitializer implements CommandLineRunner {
     private void createDefaultUsers() {
         // Vérifier si déjà initialisé (skip si plus d'un utilisateur)
         long userCount = userRepository.count();
-        if (userCount > 1) {
+        if (userCount > 2) {
             log.info("✓ Users already initialized ({} users)", userCount);
             return;
         }
@@ -82,8 +88,7 @@ public class DataInitializer implements CommandLineRunner {
         String csvPath = "data/default-users.csv";
         log.info("Loading users from CSV: {}", csvPath);
 
-        List<CsvUserParser.UserCsvRow> csvUsers =
-            CsvUserParser.parseUsersFromCsv(csvPath);
+        List<CsvUserParser.UserCsvRow> csvUsers = CsvUserParser.parseUsersFromCsv(csvPath);
 
         if (csvUsers.isEmpty()) {
             log.warn("⚠️  No users found in CSV file: {}", csvPath);
@@ -106,7 +111,7 @@ public class DataInitializer implements CommandLineRunner {
                 // Créer l'utilisateur
                 User user = new User();
                 user.setEmail(csvUser.getEmail());
-                user.setPassword(csvUser.getPasswordHash());  // Déjà hashé en BCrypt
+                user.setPassword(passwordEncoder.encode("password"));
                 user.setFirstName(csvUser.getFirstName());
                 user.setLastName(csvUser.getLastName());
                 user.setMetier(csvUser.getMetier());
@@ -119,8 +124,8 @@ public class DataInitializer implements CommandLineRunner {
                 Set<Team> teams = new HashSet<>();
                 for (String teamName : csvUser.getTeamNames()) {
                     Team team = teamRepository.findByName(teamName)
-                        .orElseThrow(() -> new IllegalArgumentException(
-                            "Team not found: " + teamName + " for user " + csvUser.getEmail()));
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                    "Team not found: " + teamName + " for user " + csvUser.getEmail()));
                     teams.add(team);
                 }
                 user.setTeams(teams);
@@ -133,23 +138,23 @@ public class DataInitializer implements CommandLineRunner {
 
                 created++;
                 log.info("✓ Created user: {} (teams: {})",
-                    savedUser.getEmail(),
-                    savedUser.getTeams().stream()
-                        .map(Team::getName)
-                        .collect(Collectors.joining(", ")));
+                        savedUser.getEmail(),
+                        savedUser.getTeams().stream()
+                                .map(Team::getName)
+                                .collect(Collectors.joining(", ")));
 
             } catch (Exception e) {
                 log.error("✗ Failed to create user {}: {}",
-                    csvUser.getEmail(), e.getMessage());
+                        csvUser.getEmail(), e.getMessage());
             }
         }
 
         log.info("✅ User initialization complete: {} created, {} skipped",
-            created, skipped);
+                created, skipped);
     }
 
     private void createDefaultAdminUser() {
-        String adminEmail = "bilal.djebbari@ca-ts.fr";
+        String adminEmail = "bilal.djebbari@ca-ts.fr".toLowerCase();
 
         // Chercher par Email uniquement (plus fiable que ID hardcodé)
         java.util.Optional<User> adminByEmail = userRepository.findByEmail(adminEmail);
@@ -195,6 +200,70 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
+    /**
+     * Initialise les absences depuis le fichier CSV
+     * Charge le fichier data/default-absences.csv et crée chaque absence
+     * en résolvant les utilisateurs par leur email.
+     *
+     * Idempotent: vérifie si les absences existent déjà
+     */
+    private void createDefaultAbsences() {
+        // Vérifier si déjà initialisé (skip si au moins une absence existe)
+        long absenceCount = absenceRepository.count();
+        if (absenceCount > 0) {
+            log.info("✓ Absences already initialized ({} absences)", absenceCount);
+            return;
+        }
+
+        // Charger les données depuis le CSV
+        String csvPath = "data/default-absences.csv";
+        log.info("Loading absences from CSV: {}", csvPath);
+
+        List<CsvAbsenceParser.AbsenceCsvRow> csvAbsences = CsvAbsenceParser.parseAbsencesFromCsv(csvPath);
+
+        if (csvAbsences.isEmpty()) {
+            log.warn("⚠️  No absences found in CSV file: {}", csvPath);
+            return;
+        }
+
+        log.info("Initializing {} absences from CSV...", csvAbsences.size());
+
+        int created = 0;
+        int skipped = 0;
+
+        for (CsvAbsenceParser.AbsenceCsvRow csvAbsence : csvAbsences) {
+            try {
+                // Trouver l'utilisateur par email
+                User user = userRepository.findByEmail(csvAbsence.getEmail())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "User not found: " + csvAbsence.getEmail()));
+
+                // Créer l'absence
+                Absence absence = new Absence();
+                absence.setUserId(user.getId());
+                absence.setStartDate(csvAbsence.getStartDate());
+                absence.setEndDate(csvAbsence.getEndDate());
+                absence.setType(AbsenceType.valueOf(csvAbsence.getType()));
+
+                // Sauvegarder (génère l'ID via @Cuid)
+                absenceRepository.save(absence);
+
+                created++;
+                log.debug("✓ Created absence for: {} ({} to {})",
+                        csvAbsence.getEmail(),
+                        csvAbsence.getStartDate(),
+                        csvAbsence.getEndDate());
+
+            } catch (Exception e) {
+                log.error("✗ Failed to create absence for {}: {}",
+                        csvAbsence.getEmail(), e.getMessage());
+            }
+        }
+
+        log.info("✅ Absence initialization complete: {} created, {} skipped",
+                created, skipped);
+    }
+
     private void cleanUpObsoletePermissions() {
         try {
             log.info("🧹 Nettoyage des permissions obsolètes (PI_PLANNING)...");
@@ -206,6 +275,50 @@ public class DataInitializer implements CommandLineRunner {
             }
         } catch (Exception e) {
             log.warn("⚠️ Erreur lors du nettoyage des permissions : {}", e.getMessage());
+        }
+    }
+
+    private void createGuestUser() {
+        String guestEmail = "invite".toLowerCase();
+
+        if (userRepository.findByEmail(guestEmail).isPresent()) {
+            log.info("ℹ️  Guest user already exists.");
+            return;
+        }
+
+        log.info("Creating guest user (email: {})...", guestEmail);
+        User guest = new User();
+        // ID generated automatically
+        guest.setEmail(guestEmail);
+        guest.setPassword(passwordEncoder.encode("invite"));
+        guest.setFirstName("Invité");
+        guest.setLastName("Invité");
+        guest.setThemePreference("light");
+        guest.setWidgetOrder("[]");
+        guest.setInterne(true);
+        guest.setCannotChangePassword(true);
+        guest.setHiddenFromAbsenceTable(true);
+
+        try {
+            User savedGuest = userRepository.save(guest);
+
+            // Assign specific permissions: CALENDAR READ only
+            permissionService.updateUserPermissions(savedGuest.getId(), java.util.Map.of(
+                    com.catsbanque.mabanquetools.entity.PermissionModule.CALENDAR,
+                    com.catsbanque.mabanquetools.entity.PermissionLevel.READ,
+                    com.catsbanque.mabanquetools.entity.PermissionModule.ABSENCE,
+                    com.catsbanque.mabanquetools.entity.PermissionLevel.NONE,
+                    com.catsbanque.mabanquetools.entity.PermissionModule.RELEASES,
+                    com.catsbanque.mabanquetools.entity.PermissionLevel.NONE,
+                    com.catsbanque.mabanquetools.entity.PermissionModule.PLAYGROUND,
+                    com.catsbanque.mabanquetools.entity.PermissionLevel.NONE,
+                    com.catsbanque.mabanquetools.entity.PermissionModule.ADMIN,
+                    com.catsbanque.mabanquetools.entity.PermissionLevel.NONE));
+
+            log.info("✅ Guest user created with restricted permissions (ID: {})", savedGuest.getId());
+        } catch (Exception e) {
+            log.error("❌ Error creating guest user: {}", e.getMessage());
+            throw new RuntimeException("Failed to initialize guest user", e);
         }
     }
 }

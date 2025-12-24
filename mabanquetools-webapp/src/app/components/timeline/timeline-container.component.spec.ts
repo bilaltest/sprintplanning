@@ -42,6 +42,7 @@ class MockFilterBarComponent { }
 class MockSemesterViewComponent {
     @Input() events: Event[] = [];
     @Input() sprints: Sprint[] = [];
+    @Input() closedDays: any[] = [];
     @Output() eventClick = new EventEmitter<Event>();
     @Output() addEventClick = new EventEmitter<string>();
 }

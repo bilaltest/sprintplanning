@@ -298,4 +298,44 @@ class AuthServiceTest {
 
         assertTrue(exception.getMessage().contains("requis"));
     }
+
+    @Test
+    @DisplayName("ChangePassword - Restriction active (Invité)")
+    void testChangePassword_Restriction() {
+        // Given
+        String userId = "guest-id";
+        User user = new User();
+        user.setId(userId);
+        user.setCannotChangePassword(true);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        // When & Then
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> {
+            authService.changePassword(userId, "newPassword");
+        });
+
+        assertTrue(exception.getMessage().contains("ne pouvez pas modifier le mot de passe"));
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("ChangePassword - Restriction inactive (User normal)")
+    void testChangePassword_NoRestriction() {
+        // Given
+        String userId = "user-id";
+        User user = new User();
+        user.setId(userId);
+        user.setCannotChangePassword(false);
+        user.setPassword("oldPassword");
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("newPassword")).thenReturn("hashedNewPassword");
+
+        // When
+        authService.changePassword(userId, "newPassword");
+
+        // Then
+        verify(userRepository).save(argThat(u -> u.getPassword().equals("hashedNewPassword")));
+    }
 }

@@ -52,9 +52,9 @@ interface MonthColumn {
     <div class="semester-view-container h-full flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative">
       
       <!-- Decorative Background Elements -->
-      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 z-20"></div>
+      <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-vibrant-500 z-20"></div>
       <div class="absolute -top-20 -right-20 w-64 h-64 bg-primary-500/5 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-vibrant-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
       <!-- Header Controls -->
       <div class="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700/50 backdrop-blur-sm bg-white/50 dark:bg-gray-800/50 z-10">
@@ -103,8 +103,8 @@ interface MonthColumn {
                    class="flex-1 min-h-[48px] relative rounded-md transition-all duration-200 group/cell"
                    [class.opacity-0]="!cell.isValid"
                    [class.pointer-events-none]="!cell.isValid"
-                   [class.bg-amber-500\/10]="cell.isToday"
-                   [class.dark:bg-amber-500\/20]="cell.isToday"
+                   [class.bg-vibrant-500/10]="cell.isToday"
+                   [class.dark:bg-vibrant-500/20]="cell.isToday"
                    [class.bg-red-50]="cell.isHoliday && !cell.isToday"
                    [class.dark:bg-red-900\/20]="cell.isHoliday && !cell.isToday"
                    [class.bg-slate-50]="cell.isWeekend && !cell.isHoliday && !cell.isToday"
@@ -123,11 +123,11 @@ interface MonthColumn {
                      [class.border-l-[2px]]="true"
                      [class.border-l-sky-400]="!cell.isCurrentSprint && cell.sprintIndex! % 2 === 0"
                      [class.border-l-emerald-400]="!cell.isCurrentSprint && cell.sprintIndex! % 2 !== 0"
-                     [class.border-l-amber-500]="cell.isCurrentSprint"
+                     [class.border-l-vibrant-500]="cell.isCurrentSprint"
 
                      [class.border-sky-200]="!cell.isCurrentSprint && cell.sprintIndex! % 2 === 0"
                      [class.border-emerald-200]="!cell.isCurrentSprint && cell.sprintIndex! % 2 !== 0"
-                     [class.border-amber-200]="cell.isCurrentSprint"
+                     [class.border-vibrant-200]="cell.isCurrentSprint"
                      style="z-index: 0"
                 >
                   <!-- Sprint Name (Only on start) -->
@@ -135,11 +135,11 @@ interface MonthColumn {
                        class="absolute left-1 top-1 text-[10px] font-bold uppercase tracking-wider leading-none z-10 truncate max-w-full pl-1"
                        [class.text-sky-600]="!cell.isCurrentSprint && cell.sprintIndex! % 2 === 0"
                        [class.text-emerald-600]="!cell.isCurrentSprint && cell.sprintIndex! % 2 !== 0"
-                       [class.text-amber-700]="cell.isCurrentSprint"
+                       [class.text-vibrant-700]="cell.isCurrentSprint"
                        
                        [class.dark:text-sky-300]="!cell.isCurrentSprint && cell.sprintIndex! % 2 === 0"
                        [class.dark:text-emerald-300]="!cell.isCurrentSprint && cell.sprintIndex! % 2 !== 0"
-                       [class.dark:text-amber-400]="cell.isCurrentSprint"
+                       [class.dark:text-vibrant-400]="cell.isCurrentSprint"
                   >
                     {{ cell.activeSprint.name }}
                   </div>
@@ -151,8 +151,8 @@ interface MonthColumn {
                   <!-- Date Number & Letter -->
                   <div class="w-6 flex flex-col items-center justify-center mr-2 shrink-0">
                     <span class="text-[11px] font-bold leading-none"
-                          [class.text-amber-600]="cell.isToday"
-                          [class.dark:text-amber-400]="cell.isToday"
+                          [class.text-vibrant-600]="cell.isToday"
+                          [class.dark:text-vibrant-400]="cell.isToday"
                           [class.text-red-500]="cell.isHoliday && !cell.isToday"
                           [class.dark:text-red-400]="cell.isHoliday && !cell.isToday"
                           [class.text-gray-400]="!cell.isToday && !cell.isHoliday"
@@ -161,8 +161,8 @@ interface MonthColumn {
                       {{ cell.dayNumber }}
                     </span>
                     <span class="text-[9px] uppercase leading-none mt-0.5"
-                          [class.text-amber-500]="cell.isToday"
-                          [class.dark:text-amber-500]="cell.isToday"
+                          [class.text-vibrant-500]="cell.isToday"
+                          [class.dark:text-vibrant-500]="cell.isToday"
                           [class.text-red-400]="cell.isHoliday && !cell.isToday"
                           [class.dark:text-red-400]="cell.isHoliday && !cell.isToday"
                           [class.text-gray-300]="!cell.isToday && !cell.isHoliday"
@@ -218,7 +218,7 @@ interface MonthColumn {
                 </div>
 
                 <!-- Today Highlight Border -->
-                <div *ngIf="cell.isToday" class="absolute inset-0 border border-amber-400 rounded-md pointer-events-none ring-1 ring-amber-400/30"></div>
+                <div *ngIf="cell.isToday" class="absolute inset-0 border border-vibrant-400 rounded-md pointer-events-none ring-1 ring-vibrant-400/30"></div>
               </div>
             </div>
           </div>
