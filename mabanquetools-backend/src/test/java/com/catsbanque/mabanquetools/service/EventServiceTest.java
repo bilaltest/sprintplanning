@@ -341,4 +341,35 @@ class EventServiceTest {
         assertThat(count).isEqualTo(1);
         verify(eventRepository, times(2)).save(any(Event.class));
     }
+
+    @Test
+    void testGenerateIcsContent_ShouldReturnValidIcs() {
+        // Given
+        when(eventRepository.findAll()).thenReturn(Collections.singletonList(testEvent));
+
+        // When
+        String icsContent = eventService.generateIcsContent(null, null, null, null);
+
+        // Then
+        assertThat(icsContent).contains("BEGIN:VCALENDAR");
+        assertThat(icsContent).contains("VERSION:2.0");
+        assertThat(icsContent).contains("SUMMARY:MEP v1.0");
+        assertThat(icsContent).contains("DTSTART;VALUE=DATE:20250115");
+        assertThat(icsContent).contains("END:VCALENDAR");
+    }
+
+    @Test
+    void testGenerateIcsContent_WithTime_ShouldIncludeTime() {
+        // Given
+        testEvent.setStartTime("10:00");
+        testEvent.setEndTime("12:00");
+        when(eventRepository.findAll()).thenReturn(Collections.singletonList(testEvent));
+
+        // When
+        String icsContent = eventService.generateIcsContent(null, null, null, null);
+
+        // Then
+        assertThat(icsContent).contains("DTSTART:20250115T100000");
+        assertThat(icsContent).contains("DTEND:20250115T120000");
+    }
 }

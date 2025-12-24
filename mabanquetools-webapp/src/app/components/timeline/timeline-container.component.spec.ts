@@ -12,6 +12,8 @@ import { BehaviorSubject, of } from 'rxjs';
 import { TimelineState } from '@models/timeline.model';
 import { Event } from '@models/event.model';
 import { Sprint } from '@models/sprint.model';
+import { OnboardingService } from '@services/onboarding.service';
+import { MatDialog } from '@angular/material/dialog';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FilterBarComponent } from '../filters/filter-bar.component';
@@ -77,6 +79,8 @@ describe('TimelineContainerComponent', () => {
     let exportService: any;
     let toastService: any;
     let sprintService: any;
+    let onboardingService: any;
+    let matDialog: any;
 
     const mockTimelineState: TimelineState = {
         view: 'semester',
@@ -143,6 +147,16 @@ describe('TimelineContainerComponent', () => {
             getAllSprints: jest.fn().mockReturnValue(of([]))
         };
 
+        onboardingService = {
+            loadSeenKeys: jest.fn().mockReturnValue(of([])),
+            shouldShow: jest.fn().mockReturnValue(false),
+            markAsSeen: jest.fn()
+        };
+
+        matDialog = {
+            open: jest.fn()
+        };
+
 
 
         await TestBed.configureTestingModule({
@@ -155,6 +169,8 @@ describe('TimelineContainerComponent', () => {
                 { provide: ExportService, useValue: exportService },
                 { provide: ToastService, useValue: toastService },
                 { provide: SprintService, useValue: sprintService },
+                { provide: OnboardingService, useValue: onboardingService },
+                { provide: MatDialog, useValue: matDialog },
                 {
                     provide: ActivatedRoute,
                     useValue: {

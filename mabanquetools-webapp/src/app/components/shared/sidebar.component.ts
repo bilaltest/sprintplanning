@@ -74,7 +74,7 @@ interface NavItem {
       </nav>
 
       <!-- Footer (User info + Actions) -->
-      <div class="sidebar-footer">
+      <div class="sidebar-footer" id="sidebar-bottom">
         <!-- User Info -->
         <div *ngIf="currentUser" class="user-info mb-3" [class.collapsed]="isCollapsed && !isMobile">
           <div *ngIf="!isCollapsed || isMobile" class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">

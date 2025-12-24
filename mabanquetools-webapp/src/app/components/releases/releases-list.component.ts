@@ -6,6 +6,9 @@ import { ReleaseService } from '@services/release.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
 import { CanAccessDirective } from '@directives/can-access.directive';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { OnboardingService } from '@services/onboarding.service';
+import { TipModalComponent } from '../onboarding/tip-modal/tip-modal.component';
 import {
   Release,
   STATUS_LABELS,
@@ -27,7 +30,7 @@ import { fr } from 'date-fns/locale';
 @Component({
   selector: 'app-releases-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, CanAccessDirective],
+  imports: [CommonModule, FormsModule, CanAccessDirective, MatDialogModule],
   template: `
     <div class="max-w-7xl mx-auto space-y-6">
       <!-- Header -->
@@ -573,11 +576,14 @@ export class ReleasesListComponent implements OnInit {
     private releaseService: ReleaseService,
     private router: Router,
     private toastService: ToastService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private onboardingService: OnboardingService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
     this.releaseService.loadReleases();
+    this.checkOnboarding();
 
     // Subscribe to releases and split them into upcoming and past
     this.releases$.subscribe(releases => {
@@ -608,6 +614,27 @@ export class ReleasesListComponent implements OnInit {
       const target = e.target as HTMLElement;
       if (!target.closest('.relative')) {
         this.closeKebabMenu();
+      }
+    });
+  }
+
+  private checkOnboarding(): void {
+    this.onboardingService.loadSeenKeys().subscribe(() => {
+      if (this.onboardingService.shouldShow('FEATURE_RELEASES')) {
+        this.dialog.open(TipModalComponent, {
+          width: '90%',
+          maxWidth: '500px',
+          panelClass: 'transparent-dialog',
+          backdropClass: 'blur-backdrop',
+          data: {
+            title: 'Bienvenue sur les Releases',
+            content: 'C\'est ici que vous gérez vos mises en production. Vous pouvez créer des releases, y associer des features de vos squads, et suivre l\'avancement des déploiements. N\'oubliez pas de consulter l\'historique pour voir les anciennes versions.',
+            icon: 'rocket_launch',
+            gradientClass: 'from-emerald-500 to-teal-600'
+          }
+        }).afterClosed().subscribe(() => {
+          this.onboardingService.markAsSeen('FEATURE_RELEASES');
+        });
       }
     });
   }

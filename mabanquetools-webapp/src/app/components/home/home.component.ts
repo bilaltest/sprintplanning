@@ -13,6 +13,10 @@ import { format, isFuture, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { interval, Subscription } from 'rxjs';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { OnboardingService } from '@services/onboarding.service';
+import { WelcomeModalComponent } from '../onboarding/welcome-modal/welcome-modal.component';
+import { driver } from 'driver.js';
 
 interface Widget {
   id: string;
@@ -22,7 +26,7 @@ interface Widget {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, DragDropModule],
+  imports: [CommonModule, DragDropModule, MatDialogModule],
   template: `
     <div class="min-h-screen relative overflow-hidden selection:bg-emerald-500/30 selection:text-emerald-900 dark:selection:text-emerald-100 transition-colors duration-300">
       
@@ -47,7 +51,7 @@ interface Widget {
             <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-900/5 dark:via-white/10 to-transparent"></div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8 perspective-1000">
+          <div id="apps-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 perspective-1000">
             <!-- Calendrier Card -->
             <div *ngIf="canAccess('CALENDAR')" (click)="navigateToCalendar()"
                  class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
@@ -167,6 +171,7 @@ interface Widget {
           </div>
 
           <div
+            id="widgets-grid"
             cdkDropList
             [cdkDropListAutoScrollDisabled]="false"
             (cdkDropListDropped)="onWidgetDrop($event)"
@@ -399,12 +404,87 @@ export class HomeComponent implements OnInit, OnDestroy {
     private eventService: EventService,
     private releaseService: ReleaseService,
     private absenceService: AbsenceService,
-    private authService: AuthService
+    private authService: AuthService,
+    private onboardingService: OnboardingService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
     this.loadWidgetOrder();
     this.loadStatistics();
+    this.checkOnboarding();
+  }
+
+
+  private checkOnboarding(): void {
+    this.onboardingService.loadSeenKeys().subscribe(() => {
+      // Check if we should show the welcome tour (using special key TOUR_HOME or WELCOME)
+      // The requirement says: OnboardingService.markAllAsSeen is called when skipped.
+      // So checking WELCOME or TOUR_HOME is fine.
+      if (this.onboardingService.shouldShow('TOUR_HOME')) {
+        this.dialog.open(WelcomeModalComponent, {
+          width: '90%',
+          maxWidth: '800px',
+          maxHeight: '90vh',
+          panelClass: 'transparent-dialog',
+          backdropClass: 'blur-backdrop',
+          disableClose: true,
+          autoFocus: false
+        }).afterClosed().subscribe((startTour: boolean) => {
+          if (startTour) {
+            this.startTour();
+          } else {
+            this.onboardingService.skipAll();
+          }
+        });
+      }
+    });
+  }
+
+  private startTour(): void {
+    const tourDriver = driver({
+      showProgress: true,
+      animate: true,
+      allowClose: true,
+      doneBtnText: 'Terminer',
+      nextBtnText: 'Suivant',
+      prevBtnText: 'Précédent',
+      onDestroyed: () => {
+        // Mark tour as seen when finished or skipped via X
+        this.onboardingService.markAsSeen('TOUR_HOME');
+      },
+      steps: [
+        {
+          element: '#apps-grid',
+          popover: {
+            title: 'Vos Applications',
+            description: 'Retrouvez ici tous vos modules : Calendrier, Absences, Releases, etc.',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#widgets-grid',
+          popover: {
+            title: 'Vos Widgets',
+            description: 'Un aperçu et accès rapide vers vos événements à venir, la prochaine MEP et vos absences. De nouveaux widgets pourront être ajoutés progressivement. Vous pouvez les ordonner, vos préférences seront sauvegardées.',
+            side: 'top',
+            align: 'start'
+          }
+        },
+        {
+          element: '#sidebar-bottom',
+          popover: {
+            title: 'Paramètres & Profil',
+            description: 'Changez le thème ici, il sera enregistré pour être appliqué lors de votre prochaine connexion. Modifiez votre mot de passe ou déconnectez-vous ici.',
+            side: 'right',
+            align: 'center'
+          }
+        }
+      ]
+    });
+
+    tourDriver.drive();
   }
 
   ngOnDestroy(): void {

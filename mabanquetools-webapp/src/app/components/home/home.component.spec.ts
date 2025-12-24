@@ -6,6 +6,8 @@ import { EventService } from '@services/event.service';
 import { ReleaseService } from '@services/release.service';
 import { AuthService } from '@services/auth.service';
 import { AbsenceService } from '@services/absence.service';
+import { OnboardingService } from '@services/onboarding.service';
+import { MatDialog } from '@angular/material/dialog';
 import { BehaviorSubject, of } from 'rxjs';
 
 describe('HomeComponent', () => {
@@ -17,6 +19,8 @@ describe('HomeComponent', () => {
     let releaseService: any;
     let authService: any;
     let absenceService: any;
+    let onboardingService: any;
+    let dialog: any;
 
     beforeEach(async () => {
         router = {
@@ -46,6 +50,19 @@ describe('HomeComponent', () => {
             getAbsences: jest.fn().mockReturnValue(of([]))
         };
 
+        onboardingService = {
+            loadSeenKeys: jest.fn().mockReturnValue(of([])),
+            shouldShow: jest.fn().mockReturnValue(false),
+            markAsSeen: jest.fn(),
+            skipAll: jest.fn()
+        };
+
+        dialog = {
+            open: jest.fn().mockReturnValue({
+                afterClosed: jest.fn().mockReturnValue(of(false))
+            })
+        };
+
         await TestBed.configureTestingModule({
             imports: [HomeComponent],
             providers: [
@@ -54,7 +71,9 @@ describe('HomeComponent', () => {
                 { provide: EventService, useValue: eventService },
                 { provide: ReleaseService, useValue: releaseService },
                 { provide: AuthService, useValue: authService },
-                { provide: AbsenceService, useValue: absenceService }
+                { provide: AbsenceService, useValue: absenceService },
+                { provide: OnboardingService, useValue: onboardingService },
+                { provide: MatDialog, useValue: dialog }
             ]
         }).compileComponents();
 

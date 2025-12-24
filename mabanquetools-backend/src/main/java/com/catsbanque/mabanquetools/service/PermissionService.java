@@ -99,12 +99,37 @@ public class PermissionService {
      * Permissions par défaut (WRITE pour tous les modules):
      * - CALENDAR: WRITE
      * - RELEASES: WRITE
-     * - ADMIN: WRITE
+     * - ABSENCE: WRITE
+     * - PLAYGROUND: WRITE
+     * - ADMIN: NONE
      *
      * @param user l'utilisateur pour lequel créer les permissions
      */
     @Transactional
     public void createDefaultPermissions(User user) {
+        createOrUpdatePermission(user, PermissionModule.CALENDAR, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.RELEASES, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.ADMIN, PermissionLevel.NONE);
+        createOrUpdatePermission(user, PermissionModule.ABSENCE, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.PLAYGROUND, PermissionLevel.WRITE);
+
+        log.info("Permissions par défaut vérifiées/créées pour l'utilisateur {}", user.getEmail());
+    }
+
+    /**
+     * Crée les permissions d'admin
+     * Cette méthode est idempotente : elle vérifie si la permission existe avant de
+     * la créer.
+     *
+     * Permissions par défaut (WRITE pour tous les modules):
+     * - CALENDAR: WRITE
+     * - RELEASES: WRITE
+     * - ADMIN: WRITE
+     *
+     * @param user l'utilisateur pour lequel créer les permissions
+     */
+    @Transactional
+    public void createAdminPermissions(User user) {
         createOrUpdatePermission(user, PermissionModule.CALENDAR, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.RELEASES, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.ADMIN, PermissionLevel.WRITE);

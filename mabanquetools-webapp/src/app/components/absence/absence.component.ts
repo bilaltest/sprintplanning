@@ -1,4 +1,5 @@
 import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, HostListener, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { driver } from 'driver.js';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -17,6 +18,9 @@ import { ToastService } from '@services/toast.service';
 import { MultiSelectFilterComponent } from '@components/shared/multi-select-filter.component';
 import { ClosedDay } from '@models/closed-day.model';
 import { ClosedDayService } from '@services/closed-day.service';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { OnboardingService } from '@services/onboarding.service';
+import { TipModalComponent } from '../onboarding/tip-modal/tip-modal.component';
 
 interface DayMetadata {
   date: Date;
@@ -43,7 +47,7 @@ interface MonthMetadata {
 @Component({
   selector: 'app-absence',
   standalone: true,
-  imports: [CommonModule, FormsModule, MultiSelectFilterComponent],
+  imports: [CommonModule, FormsModule, MultiSelectFilterComponent, MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="h-[calc(100vh-64px)] flex flex-col bg-gray-50 dark:bg-gray-900">
@@ -152,7 +156,7 @@ interface MonthMetadata {
         
         <ng-template #desktopView>
         <!-- Left Sidebar (Users Table) -->
-        <div [style.width.px]="showUserDetails ? 740 : 350" class="flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col z-10 shadow-lg transition-all duration-300">
+        <div id="users-sidebar" [style.width.px]="showUserDetails ? 740 : 350" class="flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col z-10 shadow-lg transition-all duration-300">
           <!-- Table Header -->
           <div class="h-24 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col justify-center px-4 space-y-2 shrink-0">
             <!-- Headers -->
@@ -279,7 +283,7 @@ interface MonthMetadata {
         <div class="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-800 relative">
           
           <!-- Timeline Header (Months & Days) -->
-          <div #headerScrollContainer class="overflow-x-auto custom-scrollbar border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 h-24" (scroll)="onHeaderScroll($event)">
+          <div id="timeline-header" #headerScrollContainer class="overflow-x-auto custom-scrollbar border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 h-24" (scroll)="onHeaderScroll($event)">
             <div class="flex h-full" [style.width.px]="timelineWidth">
               <!-- Months -->
               <ng-container *ngFor="let month of monthData; trackBy: trackMonthByDate">
@@ -363,7 +367,7 @@ interface MonthMetadata {
           </div>
 
           <!-- Timeline Grid Container (Scrollable) -->
-          <div #mainScrollContainer class="flex-1 overflow-auto custom-scrollbar" (scroll)="onMainScroll($event)">
+          <div id="timeline-grid" #mainScrollContainer class="flex-1 overflow-auto custom-scrollbar" (scroll)="onMainScroll($event)">
             <div class="relative" [style.width.px]="timelineWidth">
               
               <!-- BACKGROUND LAYER: The Grids (Rendered ONCE) -->
@@ -706,13 +710,64 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
     private sprintService: SprintService,
     private toastService: ToastService,
     private closedDayService: ClosedDayService,
-    private breakpointObserver: BreakpointObserver
+    private breakpointObserver: BreakpointObserver,
+    private onboardingService: OnboardingService,
+    private dialog: MatDialog
   ) {
     this.isMobile$ = this.breakpointObserver.observe([Breakpoints.Handset])
       .pipe(map(result => result.matches));
 
     this.generateTimeline();
   }
+
+
+
+  private startAbsenceTour(): void {
+    const tourDriver = driver({
+      showProgress: true,
+      animate: true,
+      allowClose: true,
+      doneBtnText: 'Terminer',
+      nextBtnText: 'Suivant',
+      prevBtnText: 'Précédent',
+      onDestroyed: () => {
+        this.onboardingService.markAsSeen('TOUR_ABSENCE');
+      },
+      steps: [
+        {
+          element: '#users-sidebar',
+          popover: {
+            title: 'Liste des collaborateurs',
+            description: 'Retrouvez ici tous les collaborateurs. Utilisez les filtres (Squad, Métier) pour affiner la liste. Cliquez sur "Plus de détail" pour voir les tribus et l\'indicateur interne/externe.',
+            side: 'right',
+            align: 'start'
+          }
+        },
+        {
+          element: '#timeline-grid',
+          popover: {
+            title: 'Gestion des absences',
+            description: 'Cliquez sur une case pour ajouter une absence. Pour une absence sur plusieurs jours, glissez-déposez sur la période souhaitée. Vous ne pouvez modifier que votre propre ligne (sauf Admin).',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        {
+          element: '#timeline-header',
+          popover: {
+            title: 'Planning & Sprints',
+            description: 'Visualisez les sprints, les Code Freeze et les dates de mise en production (MEP) directement dans l\'en-tête du calendrier.',
+            side: 'bottom',
+            align: 'start'
+          }
+        }
+      ]
+    });
+
+    tourDriver.drive();
+  }
+
+
 
   isMobile$: Observable<boolean>;
   showMobileFilters = false;
@@ -816,6 +871,18 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadClosedDays();
     this.loadUsers();
     this.startPolling();
+    this.checkOnboarding();
+  }
+
+  checkOnboarding() {
+    this.onboardingService.loadSeenKeys().subscribe(() => {
+
+
+      // Check for Guided Tour
+      if (this.onboardingService.shouldShow('TOUR_ABSENCE')) {
+        setTimeout(() => this.startAbsenceTour(), 500);
+      }
+    });
   }
 
   loadSprints() {

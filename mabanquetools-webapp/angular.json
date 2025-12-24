@@ -32,7 +32,8 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/driver.js/dist/driver.css"
             ],
             "scripts": []
           },
@@ -105,7 +106,8 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/driver.js/dist/driver.css"
             ],
             "scripts": []
           }

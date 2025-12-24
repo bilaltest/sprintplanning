@@ -304,4 +304,36 @@ class EventControllerIntegrationTest {
                                 .andExpect(jsonPath("$").isArray())
                                 .andExpect(jsonPath("$", hasSize(2))); // Les deux contiennent "test"
         }
+
+        @Test
+        @DisplayName("GET /api/events/export/ics - Export ICS")
+        void testExportEventsToIcs_Success() throws Exception {
+                // Créer un événement
+                CreateEventRequest event = new CreateEventRequest(
+                                "ICS Test Event",
+                                "2025-12-25",
+                                null,
+                                "10:00",
+                                "12:00",
+                                "#10b981",
+                                "celebration",
+                                "mep",
+                                "Description");
+
+                mockMvc.perform(post("/events")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(event)))
+                                .andExpect(status().isCreated());
+
+                // Exporter
+                mockMvc.perform(get("/events/export/ics"))
+                                .andExpect(status().isOk())
+                                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.header()
+                                                .string("Content-Type", "text/calendar"))
+                                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                                                .string(org.hamcrest.Matchers.containsString("BEGIN:VCALENDAR")))
+                                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content()
+                                                .string(org.hamcrest.Matchers
+                                                                .containsString("SUMMARY:ICS Test Event")));
+        }
 }

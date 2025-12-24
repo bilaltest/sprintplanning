@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ReleasesListComponent } from './releases-list.component';
 import { ReleaseService } from '@services/release.service';
 import { ToastService } from '@services/toast.service';
@@ -56,7 +57,7 @@ describe('ReleasesListComponent', () => {
         } as any;
 
         await TestBed.configureTestingModule({
-            imports: [ReleasesListComponent, FormsModule],
+            imports: [ReleasesListComponent, FormsModule, HttpClientTestingModule],
             providers: [
                 { provide: ReleaseService, useValue: releaseServiceMock },
                 { provide: ToastService, useValue: toastServiceMock },

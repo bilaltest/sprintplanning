@@ -14,6 +14,9 @@ import { Sprint } from '@models/sprint.model';
 import { SprintService } from '@services/sprint.service';
 import { ClosedDay } from '@models/closed-day.model';
 import { ClosedDayService } from '@services/closed-day.service';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { OnboardingService } from '@services/onboarding.service';
+import { TipModalComponent } from '../onboarding/tip-modal/tip-modal.component';
 
 import { SemesterViewComponent } from './semester-view.component';
 import { NowViewComponent } from './now-view.component';
@@ -25,6 +28,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
   standalone: true,
   imports: [
     CommonModule,
+    MatDialogModule,
 
     SemesterViewComponent,
     NowViewComponent,
@@ -116,6 +120,13 @@ import { EventModalComponent } from '../modals/event-modal.component';
                   <span class="material-icons text-base">table_chart</span>
                   <span>Export CSV</span>
                 </button>
+                <button
+                  (click)="exportAsICS()"
+                  class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2"
+                >
+                  <span class="material-icons text-base">calendar_month</span>
+                  <span>Export ICS</span>
+                </button>
               </div>
             </div>
           </div>
@@ -203,7 +214,9 @@ export class TimelineContainerComponent implements OnInit {
     private filterService: FilterService,
     private exportService: ExportService,
     private toastService: ToastService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private onboardingService: OnboardingService,
+    private dialog: MatDialog
   ) {
     // Initialisation des observables
     this.filteredEvents$ = this.filterService.filteredEvents$;
@@ -225,6 +238,29 @@ export class TimelineContainerComponent implements OnInit {
         setTimeout(() => {
           this.scrollToEvent(eventId);
         }, 500);
+      }
+    });
+
+    this.checkOnboarding();
+  }
+
+  private checkOnboarding(): void {
+    this.onboardingService.loadSeenKeys().subscribe(() => {
+      if (this.onboardingService.shouldShow('FEATURE_CALENDAR')) {
+        this.dialog.open(TipModalComponent, {
+          width: '90%',
+          maxWidth: '500px',
+          panelClass: 'transparent-dialog',
+          backdropClass: 'blur-backdrop',
+          data: {
+            title: 'Calendrier des Sprints',
+            content: 'Voici le planning de l\'année. Vous pouvez voir les sprints, les périodes de Code Freeze, et les mises en production (MEP).',
+            icon: 'calendar_month',
+            gradientClass: 'from-blue-500 to-cyan-500'
+          }
+        }).afterClosed().subscribe(() => {
+          this.onboardingService.markAsSeen('FEATURE_CALENDAR');
+        });
       }
     });
   }
@@ -375,6 +411,17 @@ export class TimelineContainerComponent implements OnInit {
       this.toastService.success('Export réussi', 'Le fichier CSV a été téléchargé');
     } catch (error) {
       this.toastService.error('Erreur d\'export', 'Impossible d\'exporter les données en CSV');
+    }
+  }
+
+  async exportAsICS(): Promise<void> {
+    try {
+      this.toastService.info('Export en cours', 'Génération du fichier ICS...');
+      await this.eventService.downloadIcs();
+      this.showExportMenu = false;
+      this.toastService.success('Export réussi', 'Le fichier ICS a été téléchargé');
+    } catch (error) {
+      this.toastService.error('Erreur d\'export', 'Impossible d\'exporter les données en ICS');
     }
   }
 

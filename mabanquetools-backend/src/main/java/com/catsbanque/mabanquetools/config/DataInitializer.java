@@ -5,6 +5,7 @@ import com.catsbanque.mabanquetools.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Slf4j
 @Component
+@Profile("!test")
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
@@ -29,12 +31,13 @@ public class DataInitializer implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         cleanUpObsoletePermissions();
+        createDefaultAdminUser();
         microserviceService.initDefaultMicroservices();
         releaseService.migrateSlugs();
     }
 
     private void createDefaultAdminUser() {
-        String adminEmail = "admin";
+        String adminEmail = "bilal.djebbari@ca-ts.fr";
 
         java.util.Optional<User> adminOpt = userRepository.findByEmail(adminEmail);
 
@@ -42,14 +45,14 @@ public class DataInitializer implements CommandLineRunner {
             User admin = new User();
             admin.setId("admin001");
             admin.setEmail(adminEmail);
-            admin.setPassword(passwordEncoder.encode("admin"));
+            admin.setPassword(passwordEncoder.encode("bilal"));
             admin.setFirstName("Admin");
             admin.setLastName("Système");
             admin.setThemePreference("light");
             admin.setWidgetOrder("[]");
 
             User savedAdmin = userRepository.save(admin);
-            permissionService.createDefaultPermissions(savedAdmin);
+            permissionService.createAdminPermissions(savedAdmin);
             log.info("✅ Utilisateur admin créé avec permissions : {} / {}", adminEmail, "admin");
         } else {
             // S'assurer que les permissions existent même si l'user existe déjà

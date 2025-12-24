@@ -124,4 +124,21 @@ export class EventService {
   async refreshEvents(): Promise<void> {
     await this.loadEvents();
   }
+
+  async downloadIcs(): Promise<void> {
+    try {
+      const blob = await firstValueFrom(
+        this.http.get(`${this.apiUrl}/export/ics`, { responseType: 'blob' })
+      );
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'calendar.ics';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download ICS', error);
+      throw error;
+    }
+  }
 }

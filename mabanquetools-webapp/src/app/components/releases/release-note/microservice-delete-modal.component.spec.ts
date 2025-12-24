@@ -19,12 +19,17 @@ describe('MicroserviceDeleteModalComponent', () => {
     ];
 
     beforeEach(async () => {
-        microserviceServiceSpy = jasmine.createSpyObj('MicroserviceService', ['getAllActive', 'delete']);
-        toastServiceSpy = jasmine.createSpyObj('ToastService', ['success', 'error']);
-        dialogRefSpy = jasmine.createSpyObj('MatDialogRef', ['close']);
-
-        microserviceServiceSpy.getAllActive.and.returnValue(of(mockMicroservices));
-        microserviceServiceSpy.delete.and.returnValue(of(void 0));
+        microserviceServiceSpy = {
+            getAllActive: jest.fn().mockReturnValue(of(mockMicroservices)),
+            delete: jest.fn().mockReturnValue(of(void 0))
+        };
+        toastServiceSpy = {
+            success: jest.fn(),
+            error: jest.fn()
+        };
+        dialogRefSpy = {
+            close: jest.fn()
+        };
 
         await TestBed.configureTestingModule({
             imports: [MicroserviceDeleteModalComponent],
@@ -63,7 +68,7 @@ describe('MicroserviceDeleteModalComponent', () => {
         component.selectedIds.add('1');
         component.selectedIds.add('2');
 
-        spyOn(window, 'confirm').and.returnValue(true);
+        jest.spyOn(window, 'confirm').mockReturnValue(true);
 
         component.onDelete();
 
@@ -74,7 +79,7 @@ describe('MicroserviceDeleteModalComponent', () => {
 
     it('should not delete if cancelled', () => {
         component.selectedIds.add('1');
-        spyOn(window, 'confirm').and.returnValue(false);
+        jest.spyOn(window, 'confirm').mockReturnValue(false);
 
         component.onDelete();
 

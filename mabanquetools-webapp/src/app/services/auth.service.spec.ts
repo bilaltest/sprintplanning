@@ -14,11 +14,11 @@ describe('AuthService', () => {
         });
         service = TestBed.inject(AuthService);
         httpMock = TestBed.inject(HttpTestingController);
-        sessionStorage.clear();
+        localStorage.clear();
     });
 
     afterEach(() => {
-        sessionStorage.clear();
+        localStorage.clear();
     });
 
     it('should be created', () => {
@@ -28,24 +28,24 @@ describe('AuthService', () => {
     it('should check if user is authenticated', () => {
         expect(service.isAuthenticated()).toBe(false);
 
-        sessionStorage.setItem(STORAGE_KEY, 'token');
+        localStorage.setItem(STORAGE_KEY, 'token');
         service['isAuthenticatedSubject'].next(true);
 
         expect(service.isAuthenticated()).toBe(true);
     });
 
     it('should logout', () => {
-        sessionStorage.setItem(STORAGE_KEY, 'token');
+        localStorage.setItem(STORAGE_KEY, 'token');
         service['isAuthenticatedSubject'].next(true);
 
         service.logout();
 
         expect(service.isAuthenticated()).toBe(false);
-        expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull();
+        expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
     });
 
     it('should get token', () => {
-        sessionStorage.setItem(STORAGE_KEY, 'test-token');
+        localStorage.setItem(STORAGE_KEY, 'test-token');
         expect(service.getToken()).toBe('test-token');
     });
 
@@ -82,7 +82,7 @@ describe('AuthService', () => {
     });
 
     it('should fetch current user', async () => {
-        sessionStorage.setItem(STORAGE_KEY, 'token123');
+        localStorage.setItem(STORAGE_KEY, 'token123');
         const mockUser = { id: '1', email: 'test@test.com' } as any;
 
         const promise = service.fetchCurrentUser();
@@ -98,7 +98,7 @@ describe('AuthService', () => {
     });
 
     it('should update preferences', async () => {
-        sessionStorage.setItem(STORAGE_KEY, 'token123');
+        localStorage.setItem(STORAGE_KEY, 'token123');
         const mockUser = { id: '1', themePreference: 'dark' } as any;
 
         const promise = service.updatePreferences('dark');
@@ -113,7 +113,7 @@ describe('AuthService', () => {
     });
 
     it('should update widget order', async () => {
-        sessionStorage.setItem(STORAGE_KEY, 'token123');
+        localStorage.setItem(STORAGE_KEY, 'token123');
         const widgets = ['w1', 'w2'];
         const mockUser = { id: '1', widgetOrder: JSON.stringify(widgets) } as any;
 
@@ -129,7 +129,7 @@ describe('AuthService', () => {
     });
 
     it('should change password', async () => {
-        sessionStorage.setItem(STORAGE_KEY, 'token123');
+        localStorage.setItem(STORAGE_KEY, 'token123');
 
         const promise = service.changePassword('newpass');
 

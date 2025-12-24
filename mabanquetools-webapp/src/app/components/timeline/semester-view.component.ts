@@ -18,6 +18,7 @@ import {
   getYear
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { EventService } from '@services/event.service';
 
 interface DayCell {
   date: Date;
@@ -241,6 +242,8 @@ export class SemesterViewComponent implements OnInit, OnChanges {
   currentDate: Date = new Date();
   months: MonthColumn[] = [];
   semesterLabel: string = '';
+
+  constructor(private eventService: EventService) { }
 
   ngOnInit() {
     this.updateView();

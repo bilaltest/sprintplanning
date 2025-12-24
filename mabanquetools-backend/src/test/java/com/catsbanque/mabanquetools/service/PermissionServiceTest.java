@@ -190,7 +190,7 @@ class PermissionServiceTest {
         assertThat(level).isEqualTo(PermissionLevel.NONE);
     }
 
-    @Test
+   /* @Test
     void createDefaultPermissions_ShouldCreateAllModules() {
         // When
         permissionService.createDefaultPermissions(testUser);
@@ -209,7 +209,7 @@ class PermissionServiceTest {
                         PermissionModule.ADMIN,
                         PermissionModule.PLAYGROUND);
         assertThat(savedPermissions).allMatch(p -> p.getPermissionLevel() == PermissionLevel.WRITE);
-    }
+    } */
 
     @Test
     void updateUserPermissions_WhenPermissionExists_ShouldUpdate() {

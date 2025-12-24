@@ -54,6 +54,29 @@ public class EventController {
     }
 
     /**
+     * GET /api/events/export/ics
+     * Exporter les événements au format ICS
+     */
+    @GetMapping("/export/ics")
+    @PreAuthorize("hasAnyAuthority('PERMISSION_CALENDAR_READ', 'PERMISSION_CALENDAR_WRITE')")
+    public ResponseEntity<String> exportEventsToIcs(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(required = false) String search) {
+        log.info("GET /api/events/export/ics - category: {}, dateFrom: {}, dateTo: {}, search: {}",
+                category, dateFrom, dateTo, search);
+
+        String icsContent = eventService.generateIcsContent(category, dateFrom, dateTo, search);
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/calendar")
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"calendar.ics\"")
+                .body(icsContent);
+    }
+
+    /**
      * GET /api/events/:id
      * Récupérer un événement par ID
      */

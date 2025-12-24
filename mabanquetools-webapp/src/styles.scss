@@ -285,3 +285,177 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ==================== DIALOG OVERRIDES ==================== */
+/* Remove default Material background/shadow to allow custom modal designs */
+.transparent-dialog {
+  .mat-mdc-dialog-container {
+    .mdc-dialog__surface {
+      background-color: transparent !important;
+      box-shadow: none !important;
+      display: block !important;
+      overflow: visible !important;
+    }
+  }
+}
+
+/* Custom Backdrop */
+.blur-backdrop {
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+/* ==================== DRIVER.JS OVERRIDES ==================== */
+/* Ensure popover is visible and on top */
+.driver-popover {
+  z-index: 100000 !important;
+  background-color: white !important;
+  color: #333 !important;
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  padding: 20px !important;
+  max-width: 320px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.driver-popover-title {
+  font-size: 1.125rem !important;
+  /* 18px */
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+  color: #111827 !important;
+  /* Gray-900 */
+  line-height: 1.5 !important;
+}
+
+.driver-popover-description {
+  font-size: 0.95rem !important;
+  /* 15px */
+  line-height: 1.5 !important;
+  color: #4b5563 !important;
+  /* Gray-600 */
+  margin-bottom: 20px !important;
+}
+
+.driver-popover-progress-text {
+  font-size: 0.8rem !important;
+  color: #9ca3af !important;
+  /* Gray-400 */
+}
+
+/* Buttons container */
+.driver-popover-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-top: 0 !important;
+}
+
+/* Base button style */
+.driver-popover-footer button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-shadow: none !important;
+  line-height: 1.25rem !important;
+  outline: none !important;
+}
+
+/* Previous/Close buttons (Secondary) */
+.driver-popover-prev-btn,
+.driver-popover-close-btn {
+  background-color: transparent !important;
+  color: #6b7280 !important;
+  /* Gray-500 */
+  border: 1px solid #e5e7eb !important;
+  /* Gray-200 */
+}
+
+.driver-popover-prev-btn:hover,
+.driver-popover-close-btn:hover {
+  background-color: #f9fafb !important;
+  color: #374151 !important;
+  /* Gray-700 */
+}
+
+/* Next/Done buttons (Primary) */
+.driver-popover-next-btn,
+.driver-popover-done-btn {
+  background-color: #10b981 !important;
+  /* Emerald-500 */
+  color: white !important;
+  border: 1px solid transparent !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.driver-popover-next-btn:hover,
+.driver-popover-done-btn:hover {
+  background-color: #059669 !important;
+  /* Emerald-600 */
+  transform: translateY(-1px) !important;
+}
+
+/* Navigation button spacing */
+.driver-popover-navigation-btns {
+  display: flex !important;
+  gap: 8px !important;
+  justify-content: flex-end !important;
+}
+
+/* Hide the default close button in top right if we want cleaner look, 
+   or style it better. Let's make it subtle. */
+.driver-popover-close-btn {
+  top: 10px !important;
+  right: 10px !important;
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  border: none !important;
+  font-size: 20px !important;
+  color: #9ca3af !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.driver-popover-close-btn:hover {
+  color: #4b5563 !important;
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-radius: 50% !important;
+}
+
+/* Dark Mode Support */
+.dark .driver-popover {
+  background-color: #1f2937 !important;
+  /* Gray-800 */
+  color: #f3f4f6 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark .driver-popover-title {
+  color: #f3f4f6 !important;
+  /* Gray-100 */
+}
+
+.dark .driver-popover-description {
+  color: #d1d5db !important;
+  /* Gray-300 */
+}
+
+.dark .driver-popover-prev-btn {
+  color: #9ca3af !important;
+  border-color: #4b5563 !important;
+}
+
+.dark .driver-popover-prev-btn:hover {
+  background-color: #374151 !important;
+  color: #f3f4f6 !important;
+}
