@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Event, EventCategory, EventColor, EventIcon, EVENT_CATEGORY_LABELS, CATEGORY_DEFAULTS } from '@models/event.model';
 import { EventService } from '@services/event.service';
 import { CategoryService, CategoryInfo } from '@services/category.service';
+import { TagService, TagInfo } from '@services/tag.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
 import { CanAccessDirective } from '@directives/can-access.directive';
@@ -139,6 +140,32 @@ import { CanAccessDirective } from '@directives/can-access.directive';
             </div>
           </div>
 
+          <!-- Tags -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Tags
+            </label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                *ngFor="let tag of allTags"
+                type="button"
+                (click)="toggleTag(tag.id)"
+                [class.ring-2]="formData.tags.includes(tag.id)"
+                [class.ring-offset-1]="formData.tags.includes(tag.id)"
+                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border transition-all"
+                [style.background-color]="tag.color + '20'"
+                [style.color]="tag.color"
+                [style.border-color]="tag.color"
+              >
+                {{ tag.label }}
+                <span *ngIf="formData.tags.includes(tag.id)" class="ml-1 material-icons text-[14px]">check</span>
+              </button>
+              <div *ngIf="allTags.length === 0" class="text-sm text-gray-500 dark:text-gray-400 italic">
+                Aucun tag disponible. Ajoutez-en dans les paramètres.
+              </div>
+            </div>
+          </div>
+
           <!-- Actions -->
           <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
             <div>
@@ -190,6 +217,7 @@ export class EventModalComponent implements OnInit {
 
   isEditMode = false;
   allCategories: CategoryInfo[] = [];
+  allTags: TagInfo[] = [];
 
   get isSprintEvent(): boolean {
     return !!this.event?.sprintId;
@@ -202,12 +230,14 @@ export class EventModalComponent implements OnInit {
     category: 'mep' as string,
     color: '#22c55e',
     icon: 'rocket_launch',
-    description: ''
+    description: '',
+    tags: [] as string[]
   };
 
   constructor(
     private eventService: EventService,
     private categoryService: CategoryService,
+    private tagService: TagService,
     private toastService: ToastService,
     private confirmationService: ConfirmationService
   ) { }
@@ -216,6 +246,11 @@ export class EventModalComponent implements OnInit {
     // Charger les catégories
     this.categoryService.allCategories$.subscribe(categories => {
       this.allCategories = categories;
+    });
+
+    // Charger les tags
+    this.tagService.allTags$.subscribe(tags => {
+      this.allTags = tags;
     });
 
     if (this.event) {
@@ -227,7 +262,8 @@ export class EventModalComponent implements OnInit {
         category: this.event.category,
         color: this.event.color,
         icon: this.event.icon,
-        description: this.event.description || ''
+        description: this.event.description || '',
+        tags: this.event.tags ? [...this.event.tags] : []
       };
     } else {
       // Set default date to today
@@ -241,6 +277,15 @@ export class EventModalComponent implements OnInit {
     if (category) {
       this.formData.color = category.color;
       this.formData.icon = category.icon;
+    }
+  }
+
+  toggleTag(tagId: string): void {
+    const index = this.formData.tags.indexOf(tagId);
+    if (index > -1) {
+      this.formData.tags.splice(index, 1);
+    } else {
+      this.formData.tags.push(tagId);
     }
   }
 
@@ -259,7 +304,8 @@ export class EventModalComponent implements OnInit {
         category: this.formData.category,
         color: this.formData.color,
         icon: this.formData.icon,
-        description: this.formData.description.trim() || undefined
+        description: this.formData.description.trim() || undefined,
+        tags: this.formData.tags
       };
 
       if (this.isEditMode && this.event?.id) {

@@ -9,7 +9,7 @@ import { AuthService } from '@services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   template: `
-    <div class="h-screen flex items-center justify-center p-4">
+    <div class="min-h-screen flex items-center justify-center p-4">
       <!-- Content Container -->
       <div class="w-full max-w-md relative z-10 perspective-1000">
         

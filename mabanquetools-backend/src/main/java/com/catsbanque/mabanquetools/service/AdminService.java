@@ -27,6 +27,7 @@ import com.catsbanque.mabanquetools.entity.ReleaseHistory;
 import com.catsbanque.mabanquetools.entity.ReleaseNoteEntry;
 import com.catsbanque.mabanquetools.entity.Settings;
 import com.catsbanque.mabanquetools.entity.Sprint;
+import com.catsbanque.mabanquetools.entity.Team;
 import com.catsbanque.mabanquetools.entity.User;
 import com.catsbanque.mabanquetools.entity.UserPermission;
 import com.catsbanque.mabanquetools.exception.BadRequestException;
@@ -47,6 +48,7 @@ import com.catsbanque.mabanquetools.repository.ReleaseRepository;
 import com.catsbanque.mabanquetools.repository.SettingsRepository;
 import com.catsbanque.mabanquetools.repository.SprintRepository;
 import com.catsbanque.mabanquetools.repository.SquadRepository;
+import com.catsbanque.mabanquetools.repository.TeamRepository;
 import com.catsbanque.mabanquetools.repository.UserPermissionRepository;
 import com.catsbanque.mabanquetools.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -89,6 +91,7 @@ public class AdminService {
     private final ReleaseNoteEntryRepository releaseNoteEntryRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final PermissionService permissionService;
+    private final TeamRepository teamRepository;
 
     /**
      * Récupérer tous les utilisateurs
@@ -115,8 +118,9 @@ public class AdminService {
                             .themePreference(user.getThemePreference())
                             .metier(user.getMetier())
                             .tribu(user.getTribu())
-                            .interne(user.isInterne())
-                            .squads(user.getSquads())
+                            .interne(user.getInterne())
+                            .squads(user.getTeams().stream().map(Team::getName)
+                                    .collect(Collectors.toList()))
                             .createdAt(user.getCreatedAt())
                             .updatedAt(user.getUpdatedAt())
                             .historiesCount(historyCount)
@@ -126,6 +130,16 @@ public class AdminService {
                 .collect(Collectors.toList());
 
         return new AdminUsersResponse(userDtos);
+    }
+
+    /**
+     * Récupérer la liste des squads
+     */
+    public List<String> getAllSquads() {
+        return teamRepository.findAll().stream()
+                .map(Team::getName)
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     /**
@@ -179,8 +193,19 @@ public class AdminService {
             user.setTribu(request.getTribu());
         if (request.getInterne() != null)
             user.setInterne(request.getInterne());
-        if (request.getSquads() != null)
-            user.setSquads(request.getSquads());
+        if (request.getSquads() != null) {
+            java.util.Set<Team> teams = new java.util.HashSet<>();
+            for (String squadName : request.getSquads()) {
+                Team team = teamRepository.findByName(squadName)
+                        .orElseGet(() -> {
+                            Team newTeam = new Team();
+                            newTeam.setName(squadName);
+                            return teamRepository.save(newTeam);
+                        });
+                teams.add(team);
+            }
+            user.setTeams(teams);
+        }
 
         User savedUser = userRepository.save(user);
         log.debug("Updated user: {}", savedUser);
@@ -197,8 +222,9 @@ public class AdminService {
                 .themePreference(savedUser.getThemePreference())
                 .metier(savedUser.getMetier())
                 .tribu(savedUser.getTribu())
-                .interne(savedUser.isInterne())
-                .squads(savedUser.getSquads())
+                .interne(savedUser.getInterne())
+                .squads(savedUser.getTeams().stream().map(Team::getName)
+                        .collect(Collectors.toList()))
                 .createdAt(savedUser.getCreatedAt())
                 .updatedAt(savedUser.getUpdatedAt())
                 .historiesCount(historyCount)

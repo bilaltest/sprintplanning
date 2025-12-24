@@ -26,66 +26,78 @@ public class DataInitializer implements CommandLineRunner {
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     private final com.catsbanque.mabanquetools.service.MicroserviceService microserviceService;
     private final com.catsbanque.mabanquetools.service.ReleaseService releaseService;
+    private final com.catsbanque.mabanquetools.repository.TeamRepository teamRepository;
 
     @Override
     @Transactional
     public void run(String... args) {
         cleanUpObsoletePermissions();
         createDefaultAdminUser();
+        initDefaultSquads();
         microserviceService.initDefaultMicroservices();
         releaseService.migrateSlugs();
+    }
+
+    private void initDefaultSquads() {
+        if (teamRepository.count() == 0) {
+            log.info("Populating default squads...");
+            java.util.List<String> defaultSquads = java.util.Arrays.asList(
+                    "Squad 1", "Squad 2", "Squad 3", "Squad 4",
+                    "Squad 5", "Squad 6", "ADAM", "Transverse");
+
+            for (String squadName : defaultSquads) {
+                com.catsbanque.mabanquetools.entity.Team team = new com.catsbanque.mabanquetools.entity.Team();
+                team.setName(squadName);
+                team.setDescription("Equipe par défaut " + squadName);
+                teamRepository.save(team);
+            }
+            log.info("✅ {} squads created.", defaultSquads.size());
+        }
     }
 
     private void createDefaultAdminUser() {
         String adminEmail = "bilal.djebbari@ca-ts.fr";
 
-        java.util.Optional<User> adminOpt = userRepository.findByEmail(adminEmail);
+        // Chercher par Email uniquement (plus fiable que ID hardcodé)
+        java.util.Optional<User> adminByEmail = userRepository.findByEmail(adminEmail);
 
-        if (adminOpt.isEmpty()) {
-            User admin = new User();
-            admin.setId("admin001");
-            admin.setEmail(adminEmail);
-            admin.setPassword(passwordEncoder.encode("bilal"));
-            admin.setFirstName("Admin");
-            admin.setLastName("Système");
-            admin.setThemePreference("light");
-            admin.setWidgetOrder("[]");
+        if (adminByEmail.isPresent()) {
+            User admin = adminByEmail.get();
+            log.info("ℹ️  Utilisateur admin trouvé par email (ID: {}). Vérification des permissions...", admin.getId());
+            ensureAdminPermissions(admin);
+            return;
+        }
 
+        // Créer si inexistant (Laissez le générateur CUID gérer l'ID)
+        log.info("Création du nouvel utilisateur admin (email: {})...", adminEmail);
+        User admin = new User();
+        // ID généré automatiquement par @Cuid
+        admin.setEmail(adminEmail);
+        admin.setPassword(passwordEncoder.encode("password"));
+        admin.setFirstName("Admin");
+        admin.setLastName("Système");
+        admin.setThemePreference("light");
+        admin.setWidgetOrder("[]");
+        admin.setInterne(true);
+
+        try {
             User savedAdmin = userRepository.save(admin);
-            permissionService.createAdminPermissions(savedAdmin);
-            log.info("✅ Utilisateur admin créé avec permissions : {} / {}", adminEmail, "admin");
-        } else {
-            // S'assurer que les permissions existent même si l'user existe déjà
-            User admin = adminOpt.get();
+            ensureAdminPermissions(savedAdmin);
+            log.info("✅ Utilisateur admin créé avec succès (ID: {})", savedAdmin.getId());
+        } catch (Exception e) {
+            log.error("❌ Erreur lors de la création de l'admin: {}", e.getMessage());
+            throw new RuntimeException("Impossible d'initialiser l'admin", e);
+        }
+    }
 
-            // Si les permissions par défaut sont retournées (donc pas de vraies permissions
-            // en BDD pour certains cas),
-            // ou si la map est vide (bien que getUserPermissions renvoie default si vide),
-            // on force la recréation si nécessaire.
-            // Une façon simple est de vérifier si le module ADMIN est présent avec WRITE.
-            // Mais getUserPermissions renvoie des defaults si vide.
-
-            // On peut checker directement via permissionService pour voir s'il a les droits
-            // admin
-            if (!permissionService.hasWriteAccess(admin.getId(),
-                    com.catsbanque.mabanquetools.entity.PermissionModule.ADMIN)) {
-                log.info("⚠️  L'admin existant n'a pas les droits ADMIN WRITE. Correction...");
-                // On crée les permissions par défaut (qui incluent ADMIN WRITE)
-                // Attention: createDefaultPermissions fait des saves directs.
-                // Il vaut mieux utiliser une méthode update ou gérer ça finement.
-                // Pour faire simple et robuste : on réapplique les defaults pour l'admin.
-                try {
-                    permissionService.createDefaultPermissions(admin);
-                    log.info("✅ Permissions admin corrigées");
-                } catch (Exception e) {
-                    // Ignorer si doublon (ConstraintViolation) - mais createDefaultPermissions fait
-                    // des new UserPermission.
-                    // Il n'y a pas de check d'existence dans createDefaultPermissions.
-                    // Il faut donc faire attention.
-                    log.warn("Erreur lors de la correction des permissions admin: {}", e.getMessage());
-                }
-            } else {
-                log.info("ℹ️  Utilisateur admin existe déjà avec les droits corrects");
+    private void ensureAdminPermissions(User admin) {
+        if (!permissionService.hasWriteAccess(admin.getId(),
+                com.catsbanque.mabanquetools.entity.PermissionModule.ADMIN)) {
+            try {
+                permissionService.createAdminPermissions(admin);
+                log.info("✅ Permissions admin appliquées pour {}", admin.getId());
+            } catch (Exception e) {
+                log.warn("Erreur lors de l'application des permissions admin: {}", e.getMessage());
             }
         }
     }

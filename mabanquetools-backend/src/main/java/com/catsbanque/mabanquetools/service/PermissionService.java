@@ -107,11 +107,11 @@ public class PermissionService {
      */
     @Transactional
     public void createDefaultPermissions(User user) {
-        createOrUpdatePermission(user, PermissionModule.CALENDAR, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.CALENDAR, PermissionLevel.READ);
         createOrUpdatePermission(user, PermissionModule.RELEASES, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.ADMIN, PermissionLevel.NONE);
         createOrUpdatePermission(user, PermissionModule.ABSENCE, PermissionLevel.WRITE);
-        createOrUpdatePermission(user, PermissionModule.PLAYGROUND, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.PLAYGROUND, PermissionLevel.NONE);
 
         log.info("Permissions par défaut vérifiées/créées pour l'utilisateur {}", user.getEmail());
     }
@@ -204,11 +204,11 @@ public class PermissionService {
      */
     private Map<PermissionModule, PermissionLevel> getDefaultPermissions() {
         Map<PermissionModule, PermissionLevel> defaults = new HashMap<>();
-        defaults.put(PermissionModule.CALENDAR, PermissionLevel.WRITE);
+        defaults.put(PermissionModule.CALENDAR, PermissionLevel.READ);
         defaults.put(PermissionModule.RELEASES, PermissionLevel.WRITE);
         defaults.put(PermissionModule.ADMIN, PermissionLevel.NONE);
         defaults.put(PermissionModule.ABSENCE, PermissionLevel.WRITE);
-        defaults.put(PermissionModule.PLAYGROUND, PermissionLevel.WRITE);
+        defaults.put(PermissionModule.PLAYGROUND, PermissionLevel.NONE);
         return defaults;
     }
 }

@@ -5,6 +5,7 @@ import { CategoryService } from '@services/category.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
 import { PermissionService } from '@services/permission.service';
+import { TagService } from '@services/tag.service';
 import { BehaviorSubject, of } from 'rxjs';
 import { Event } from '@models/event.model';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +15,7 @@ describe('EventModalComponent', () => {
     let fixture: ComponentFixture<EventModalComponent>;
     let eventService: any;
     let categoryService: any;
+    let tagService: any;
     let toastService: any;
 
     let confirmationService: any;
@@ -50,6 +52,10 @@ describe('EventModalComponent', () => {
             getCategoryById: jest.fn().mockReturnValue(mockCategories[0])
         };
 
+        tagService = {
+            allTags$: new BehaviorSubject([])
+        };
+
         toastService = {
             success: jest.fn(),
             error: jest.fn()
@@ -69,7 +75,7 @@ describe('EventModalComponent', () => {
             providers: [
                 { provide: EventService, useValue: eventService },
                 { provide: CategoryService, useValue: categoryService },
-                { provide: ToastService, useValue: toastService },
+                { provide: TagService, useValue: tagService },
                 { provide: ToastService, useValue: toastService },
                 { provide: ConfirmationService, useValue: confirmationService },
                 { provide: PermissionService, useValue: permissionService }
@@ -121,7 +127,8 @@ describe('EventModalComponent', () => {
             category: 'mep',
             color: '#000000',
             icon: 'icon',
-            description: ''
+            description: '',
+            tags: []
         };
 
         await component.onSubmit();

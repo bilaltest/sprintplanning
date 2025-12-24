@@ -19,6 +19,7 @@ import {
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { EventService } from '@services/event.service';
+import { TagService, TagInfo } from '@services/tag.service';
 
 interface DayCell {
   date: Date;
@@ -197,6 +198,16 @@ interface MonthColumn {
                         {{ event.title }}
                       </span>
 
+                      <!-- Tags -->
+                      <div class="flex space-x-1 ml-2" *ngIf="event.tags && event.tags.length > 0">
+                        <div
+                            *ngFor="let tagId of event.tags"
+                            class="w-2 h-2 rounded-full"
+                            [style.background-color]="getTagColor(tagId)"
+                            [title]="getTagLabel(tagId)"
+                        ></div>
+                      </div>
+
                       <!-- Tooltip -->
                       <div class="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 w-max max-w-[150px] px-2 py-1 bg-gray-900/90 text-white text-[10px] rounded shadow-lg opacity-0 group-hover/event:opacity-100 transition-opacity pointer-events-none z-50 whitespace-normal text-center backdrop-blur-sm">
                         {{ event.title }}
@@ -243,9 +254,17 @@ export class SemesterViewComponent implements OnInit, OnChanges {
   months: MonthColumn[] = [];
   semesterLabel: string = '';
 
-  constructor(private eventService: EventService) { }
+  allTags: TagInfo[] = [];
+
+  constructor(
+    private eventService: EventService,
+    private tagService: TagService
+  ) { }
 
   ngOnInit() {
+    this.tagService.allTags$.subscribe(tags => {
+      this.allTags = tags;
+    });
     this.updateView();
   }
 
@@ -260,6 +279,16 @@ export class SemesterViewComponent implements OnInit, OnChanges {
       return CATEGORY_DEFAULTS[event.category].color;
     }
     return event.color;
+  }
+
+  getTagColor(tagId: string): string {
+    const tag = this.allTags.find(t => t.id === tagId);
+    return tag ? tag.color : '#ccc';
+  }
+
+  getTagLabel(tagId: string): string {
+    const tag = this.allTags.find(t => t.id === tagId);
+    return tag ? tag.label : '';
   }
 
   updateView() {

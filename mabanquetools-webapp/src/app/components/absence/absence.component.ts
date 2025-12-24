@@ -50,7 +50,7 @@ interface MonthMetadata {
   imports: [CommonModule, FormsModule, MultiSelectFilterComponent, MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="h-[calc(100vh-64px)] flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div class="min-h-[calc(100dvh-80px)] flex flex-col">
       
       <!-- Toolbar (Legend Only) -->
       <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2 flex items-center justify-between shadow-sm z-20 h-10 shrink-0">
@@ -1246,7 +1246,9 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
       userId: this.selectedUser.id,
       startDate: format(start, 'yyyy-MM-dd'),
       endDate: format(end, 'yyyy-MM-dd'),
-      type: 'ABSENCE'
+      type: 'ABSENCE',
+      startPeriod: 'MORNING',
+      endPeriod: 'AFTERNOON'
     };
     this.showModal = true;
     this.cdr.markForCheck();

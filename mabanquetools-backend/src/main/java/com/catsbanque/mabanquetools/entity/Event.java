@@ -59,6 +59,11 @@ public class Event {
     @Column(length = 25)
     private String sprintId;
 
+    @jakarta.persistence.ElementCollection
+    @jakarta.persistence.CollectionTable(name = "event_tags", joinColumns = @jakarta.persistence.JoinColumn(name = "event_id"))
+    @Column(name = "tag")
+    private java.util.Set<String> tags = new java.util.HashSet<>();
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

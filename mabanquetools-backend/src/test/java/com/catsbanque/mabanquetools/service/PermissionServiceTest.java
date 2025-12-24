@@ -90,10 +90,10 @@ class PermissionServiceTest {
 
         // Then
         assertThat(result).hasSize(5);
-        assertThat(result.get(PermissionModule.CALENDAR)).isEqualTo(PermissionLevel.WRITE);
+        assertThat(result.get(PermissionModule.CALENDAR)).isEqualTo(PermissionLevel.READ);
         assertThat(result.get(PermissionModule.RELEASES)).isEqualTo(PermissionLevel.WRITE);
         assertThat(result.get(PermissionModule.ABSENCE)).isEqualTo(PermissionLevel.WRITE);
-        assertThat(result.get(PermissionModule.PLAYGROUND)).isEqualTo(PermissionLevel.WRITE);
+        assertThat(result.get(PermissionModule.PLAYGROUND)).isEqualTo(PermissionLevel.NONE);
         assertThat(result.get(PermissionModule.ADMIN)).isEqualTo(PermissionLevel.NONE);
     }
 
@@ -190,7 +190,7 @@ class PermissionServiceTest {
         assertThat(level).isEqualTo(PermissionLevel.NONE);
     }
 
-   /* @Test
+    @Test
     void createDefaultPermissions_ShouldCreateAllModules() {
         // When
         permissionService.createDefaultPermissions(testUser);
@@ -201,15 +201,18 @@ class PermissionServiceTest {
 
         List<UserPermission> savedPermissions = permissionCaptor.getAllValues();
         assertThat(savedPermissions).hasSize(5);
-        assertThat(savedPermissions).extracting(UserPermission::getModule)
-                .containsExactlyInAnyOrder(
-                        PermissionModule.CALENDAR,
-                        PermissionModule.RELEASES,
-                        PermissionModule.ABSENCE,
-                        PermissionModule.ADMIN,
-                        PermissionModule.PLAYGROUND);
-        assertThat(savedPermissions).allMatch(p -> p.getPermissionLevel() == PermissionLevel.WRITE);
-    } */
+
+        // Vérification des permissions spécifiques
+        Map<PermissionModule, PermissionLevel> permissionsMap = new HashMap<>();
+        savedPermissions.forEach(p -> permissionsMap.put(p.getModule(), p.getPermissionLevel()));
+
+        assertThat(permissionsMap)
+                .containsEntry(PermissionModule.CALENDAR, PermissionLevel.READ)
+                .containsEntry(PermissionModule.RELEASES, PermissionLevel.WRITE)
+                .containsEntry(PermissionModule.ABSENCE, PermissionLevel.WRITE)
+                .containsEntry(PermissionModule.PLAYGROUND, PermissionLevel.NONE)
+                .containsEntry(PermissionModule.ADMIN, PermissionLevel.NONE);
+    }
 
     @Test
     void updateUserPermissions_WhenPermissionExists_ShouldUpdate() {

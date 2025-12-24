@@ -56,6 +56,18 @@ public class AdminController {
     }
 
     /**
+     * GET /api/admin/squads
+     * Récupérer la liste des squads disponibles
+     */
+    @GetMapping("/squads")
+    @PreAuthorize("@permissionService.hasWriteAccess(principal, T(com.catsbanque.mabanquetools.entity.PermissionModule).ADMIN)")
+    public ResponseEntity<java.util.List<String>> getAllSquads(
+            org.springframework.security.core.Authentication authentication) {
+        log.info("GET /api/admin/squads");
+        return ResponseEntity.ok(adminService.getAllSquads());
+    }
+
+    /**
      * DELETE /api/admin/users/:id
      * Supprime un utilisateur
      * Référence: admin.controller.js:44-83

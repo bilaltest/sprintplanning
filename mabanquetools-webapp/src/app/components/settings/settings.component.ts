@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SettingsService } from '@services/settings.service';
 import { CategoryService } from '@services/category.service';
+import { TagService } from '@services/tag.service';
 import { ConfirmationService } from '@services/confirmation.service';
 import { ToastService } from '@services/toast.service';
 import { Theme, UserPreferences } from '@models/settings.model';
@@ -175,6 +176,104 @@ import { Theme, UserPreferences } from '@models/settings.model';
         </div>
       </div>
 
+      <!-- Tags -->
+      <div class="card p-6">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
+          <span>Tags</span>
+          <button
+            (click)="showAddTagForm = !showAddTagForm"
+            class="btn btn-primary btn-sm flex items-center space-x-1"
+          >
+            <span class="material-icons text-sm">add</span>
+            <span>Ajouter un tag</span>
+          </button>
+        </h2>
+
+        <!-- Add Tag Form -->
+        <div *ngIf="showAddTagForm" class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Nom du tag
+              </label>
+              <input
+                type="text"
+                [(ngModel)]="newTagLabel"
+                placeholder="Ex: iOS, Android"
+                class="input text-sm"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Couleur
+              </label>
+              <div class="grid grid-cols-6 gap-2">
+                <button
+                  *ngFor="let color of predefinedColors"
+                  type="button"
+                  (click)="newTagColor = color.hex"
+                  [class.ring-2]="newTagColor === color.hex"
+                  [class.ring-offset-2]="newTagColor === color.hex"
+                  [class.ring-gray-900]="newTagColor === color.hex"
+                  [class.dark:ring-white]="newTagColor === color.hex"
+                  [style.background-color]="color.hex"
+                  class="h-10 w-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform"
+                  [title]="color.label"
+                >
+                </button>
+              </div>
+            </div>
+
+            <div class="flex space-x-2">
+              <button
+                (click)="addCustomTag()"
+                [disabled]="!newTagLabel || !newTagColor"
+                class="btn btn-primary btn-sm"
+              >
+                Enregistrer
+              </button>
+              <button
+                (click)="cancelAddTag()"
+                class="btn btn-secondary btn-sm"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Tags List -->
+        <div *ngIf="(preferences.customTags || []).length > 0; else noTags" class="mt-6">
+          <div class="flex flex-wrap gap-2">
+            <div
+              *ngFor="let tag of preferences.customTags"
+              class="group relative inline-flex items-center space-x-2 px-3 py-2 border-2 rounded-lg"
+              [style.border-color]="tag.color"
+              [style.background-color]="tag.color + '15'"
+            >
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {{ tag.label }}
+              </span>
+              <button
+                (click)="deleteCustomTag(tag.id)"
+                class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                title="Supprimer"
+              >
+                <span class="material-icons" style="font-size: 14px;">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <ng-template #noTags>
+          <div *ngIf="!showAddTagForm" class="mt-4 text-center py-6 text-gray-500 dark:text-gray-400">
+            <span class="material-icons text-4xl mb-2">label</span>
+            <p class="text-sm">Aucun tag personnalisé</p>
+            <p class="text-xs">Cliquez sur "Ajouter" pour créer un tag</p>
+          </div>
+        </ng-template>
+      </div>
+
       <!-- Actions -->
       <div class="card p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -206,6 +305,7 @@ export class SettingsComponent implements OnInit {
   preferences: UserPreferences = {
     theme: 'light',
     customCategories: [],
+    customTags: [], // Initialisé explicitement
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -217,6 +317,11 @@ export class SettingsComponent implements OnInit {
   newCategoryLabel = '';
   newCategoryColor = '#3b82f6';
   newCategoryIcon = 'event';
+
+  // Custom tag form
+  showAddTagForm = false;
+  newTagLabel = '';
+  newTagColor = '#3b82f6';
 
   // Couleurs prédéfinies pour les catégories personnalisées
   predefinedColors = [
@@ -239,6 +344,7 @@ export class SettingsComponent implements OnInit {
   constructor(
     private settingsService: SettingsService,
     private categoryService: CategoryService,
+    private tagService: TagService,
     private confirmationService: ConfirmationService,
     private toastService: ToastService,
     private router: Router
@@ -331,5 +437,52 @@ export class SettingsComponent implements OnInit {
 
   goBack(): void {
     this.router.navigate(['/calendar']);
+  }
+
+  // Custom Tag methods
+  async addCustomTag(): Promise<void> {
+    if (!this.newTagLabel || !this.newTagColor) {
+      return;
+    }
+
+    try {
+      await this.tagService.addCustomTag(
+        this.newTagLabel,
+        this.newTagColor,
+        'label'
+      );
+
+      // Reset form
+      this.newTagLabel = '';
+      this.newTagColor = '#3b82f6';
+      this.showAddTagForm = false;
+      this.toastService.success('Tag ajouté', 'Le tag a été ajouté avec succès');
+    } catch (error) {
+      this.toastService.error('Erreur', 'Erreur lors de l\'ajout du tag');
+    }
+  }
+
+  cancelAddTag(): void {
+    this.newTagLabel = '';
+    this.newTagColor = '#3b82f6';
+    this.showAddTagForm = false;
+  }
+
+  async deleteCustomTag(id: string): Promise<void> {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer ce tag ?',
+      message: 'Êtes-vous sûr de vouloir supprimer ce tag ?',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
+    if (confirmed) {
+      try {
+        await this.tagService.deleteCustomTag(id);
+        this.toastService.success('Tag supprimé', 'Le tag a été supprimé avec succès');
+      } catch (error) {
+        this.toastService.error('Erreur', 'Erreur lors de la suppression du tag');
+      }
+    }
   }
 }

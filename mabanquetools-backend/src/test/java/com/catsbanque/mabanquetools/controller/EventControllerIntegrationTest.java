@@ -74,7 +74,8 @@ class EventControllerIntegrationTest {
                                 "#10b981",
                                 "celebration",
                                 "mep",
-                                "Test description");
+                                "Test description",
+                                null);
 
                 mockMvc.perform(post("/events")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -89,6 +90,34 @@ class EventControllerIntegrationTest {
         }
 
         @Test
+        @DisplayName("POST /api/events - Créer événement avec tags")
+        void testCreateEvent_WithTags_Success() throws Exception {
+                java.util.Set<String> tags = new java.util.HashSet<>();
+                tags.add("tag1");
+                tags.add("tag2");
+
+                CreateEventRequest request = new CreateEventRequest(
+                                "Tagged Event",
+                                "2025-12-25",
+                                null,
+                                "10:00",
+                                "12:00",
+                                "#10b981",
+                                "celebration",
+                                "mep",
+                                "Test description",
+                                tags);
+
+                mockMvc.perform(post("/events")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                                .andExpect(status().isCreated())
+                                .andExpect(jsonPath("$.title").value("Tagged Event"))
+                                .andExpect(jsonPath("$.tags").isArray())
+                                .andExpect(jsonPath("$.tags", hasSize(2)));
+        }
+
+        @Test
         @DisplayName("POST /api/events - Validation échouée (titre manquant)")
         void testCreateEvent_MissingTitle() throws Exception {
                 CreateEventRequest request = new CreateEventRequest(
@@ -100,6 +129,7 @@ class EventControllerIntegrationTest {
                                 "#10b981",
                                 "celebration",
                                 "mep",
+                                null,
                                 null);
 
                 mockMvc.perform(post("/events")
@@ -121,7 +151,8 @@ class EventControllerIntegrationTest {
                                 "#10b981",
                                 "celebration",
                                 "mep",
-                                "Description");
+                                "Description",
+                                null);
 
                 String createResponse = mockMvc.perform(post("/events")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -158,6 +189,7 @@ class EventControllerIntegrationTest {
                                 "#10b981",
                                 "celebration",
                                 "mep",
+                                null,
                                 null);
 
                 String createResponse = mockMvc.perform(post("/events")
@@ -178,7 +210,8 @@ class EventControllerIntegrationTest {
                                 "#f59e0b",
                                 "update",
                                 "hotfix",
-                                "Updated description");
+                                "Updated description",
+                                null);
 
                 mockMvc.perform(put("/events/{id}", eventId)
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -203,6 +236,7 @@ class EventControllerIntegrationTest {
                                 "#10b981",
                                 "celebration",
                                 "mep",
+                                null,
                                 null);
 
                 String createResponse = mockMvc.perform(post("/events")
@@ -235,6 +269,7 @@ class EventControllerIntegrationTest {
                                 "#10b981",
                                 "celebration",
                                 "mep",
+                                null,
                                 null);
 
                 CreateEventRequest event2 = new CreateEventRequest(
@@ -246,6 +281,7 @@ class EventControllerIntegrationTest {
                                 "#f59e0b",
                                 "warning",
                                 "hotfix",
+                                null,
                                 null);
 
                 mockMvc.perform(post("/events")
@@ -277,6 +313,7 @@ class EventControllerIntegrationTest {
                                 "#10b981",
                                 "celebration",
                                 "mep",
+                                null,
                                 null);
 
                 CreateEventRequest event2 = new CreateEventRequest(
@@ -288,7 +325,8 @@ class EventControllerIntegrationTest {
                                 "#f59e0b",
                                 "warning",
                                 "hotfix",
-                                "This is a test description");
+                                "This is a test description",
+                                null);
 
                 mockMvc.perform(post("/events")
                                 .contentType(MediaType.APPLICATION_JSON)
@@ -318,7 +356,8 @@ class EventControllerIntegrationTest {
                                 "#10b981",
                                 "celebration",
                                 "mep",
-                                "Description");
+                                "Description",
+                                null);
 
                 mockMvc.perform(post("/events")
                                 .contentType(MediaType.APPLICATION_JSON)

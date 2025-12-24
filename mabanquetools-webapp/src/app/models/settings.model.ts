@@ -9,10 +9,20 @@ export interface CustomCategory {
   createdAt: string;
 }
 
+export interface CustomTag {
+  id: string;
+  name: string;
+  label: string;
+  color: string;
+  icon?: string;
+  createdAt: string;
+}
+
 export interface UserPreferences {
   id?: string;
   theme: Theme;
   customCategories: CustomCategory[];
+  customTags: CustomTag[];
   createdAt: string;
   updatedAt: string;
 }
@@ -20,6 +30,7 @@ export interface UserPreferences {
 export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: 'light',
   customCategories: [],
+  customTags: [],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
 };

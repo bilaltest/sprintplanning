@@ -52,7 +52,8 @@ public class SettingsController {
         log.info("PUT /api/settings - theme: {}", request.getTheme());
         SettingsDto settings = settingsService.updateSettings(
                 request.getTheme(),
-                request.getCustomCategories() != null ? request.getCustomCategories().toString() : "[]");
+                request.getCustomCategories() != null ? request.getCustomCategories().toString() : "[]",
+                request.getCustomTags() != null ? request.getCustomTags().toString() : "[]");
         return ResponseEntity.ok(settings);
     }
 }

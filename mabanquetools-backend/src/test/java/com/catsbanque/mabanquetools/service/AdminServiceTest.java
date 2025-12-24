@@ -29,6 +29,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import com.catsbanque.mabanquetools.repository.TeamRepository;
+import com.catsbanque.mabanquetools.entity.Team;
+
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AdminService - Unit Tests")
 class AdminServiceTest {
@@ -47,6 +50,8 @@ class AdminServiceTest {
     private PermissionService permissionService;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private TeamRepository teamRepository;
 
     @InjectMocks
     private AdminService adminService;
@@ -103,7 +108,11 @@ class AdminServiceTest {
         request.setFirstName("Updated");
         request.setSquads(List.of("Squad A"));
 
+        Team teamA = new Team();
+        teamA.setName("Squad A");
+
         when(userRepository.findById("user-1")).thenReturn(Optional.of(testUser));
+        when(teamRepository.findByName("Squad A")).thenReturn(Optional.of(teamA));
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
         when(permissionService.getUserPermissions(anyString())).thenReturn(Collections.emptyMap());
         when(historyRepository.findByUserIdOrderByTimestampDesc(anyString())).thenReturn(Collections.emptyList());
@@ -154,5 +163,25 @@ class AdminServiceTest {
         when(userRepository.findById("unknown")).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class,
                 () -> adminService.updateUser("unknown", new AdminUpdateUserRequest()));
+    }
+
+    @Test
+    @DisplayName("getAllSquads - Success")
+    void testGetAllSquads() {
+        // Given
+        Team t1 = new Team();
+        t1.setName("Squad 1");
+        Team t2 = new Team();
+        t2.setName("Squad 2");
+        when(teamRepository.findAll()).thenReturn(List.of(t1, t2));
+
+        // When
+        List<String> squads = adminService.getAllSquads();
+
+        // Then
+        assertNotNull(squads);
+        assertTrue(squads.contains("Squad 1"));
+        assertTrue(squads.contains("Squad 2"));
+        assertEquals(2, squads.size());
     }
 }

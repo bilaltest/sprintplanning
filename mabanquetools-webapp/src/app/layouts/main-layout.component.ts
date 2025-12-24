@@ -73,7 +73,7 @@ import { filter } from 'rxjs/operators';
   `,
   styles: [`
     .app-container {
-      @apply min-h-screen bg-gray-100 dark:bg-gray-800 relative;
+      @apply min-h-screen relative;
     }
 
     /* Mobile Hamburger Button */

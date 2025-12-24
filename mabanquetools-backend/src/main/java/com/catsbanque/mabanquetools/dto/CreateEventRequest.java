@@ -34,4 +34,6 @@ public class CreateEventRequest {
     private String category;
 
     private String description;
+
+    private java.util.Set<String> tags;
 }

@@ -90,4 +90,17 @@ describe('AbsenceComponent', () => {
         // No easy way to check if tour started without mocking driver.js globally, 
         // but if it didn't crash, that's a good sign.
     });
+
+    it('should initialize default absence values when opening create modal', () => {
+        const startDate = new Date('2025-01-01');
+        const endDate = new Date('2025-01-02');
+        component.selectedUser = { id: 'u1', firstName: 'Test', lastName: 'User', metier: '', tribu: '', interne: true, email: '', squads: [] };
+
+        component.openCreateModal(startDate, endDate);
+
+        expect(component.newAbsence).toBeDefined();
+        expect(component.newAbsence.startPeriod).toBe('MORNING');
+        expect(component.newAbsence.endPeriod).toBe('AFTERNOON');
+        expect(component.newAbsence.type).toBe('ABSENCE');
+    });
 });

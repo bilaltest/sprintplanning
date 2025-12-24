@@ -92,6 +92,11 @@ public class EventService {
         event.setIcon(request.getIcon());
         event.setCategory(request.getCategory());
         event.setDescription(request.getDescription());
+        if (request.getTags() != null) {
+            event.setTags(request.getTags());
+        } else {
+            event.setTags(new java.util.HashSet<>());
+        }
 
         Event saved = eventRepository.save(event);
 
@@ -125,6 +130,9 @@ public class EventService {
         event.setIcon(request.getIcon());
         event.setCategory(request.getCategory());
         event.setDescription(request.getDescription());
+        if (request.getTags() != null) {
+            event.setTags(request.getTags());
+        }
 
         Event updated = eventRepository.save(event);
 
@@ -302,6 +310,9 @@ public class EventService {
         clone.setIcon(event.getIcon());
         clone.setCategory(event.getCategory());
         clone.setDescription(event.getDescription());
+        if (event.getTags() != null) {
+            clone.setTags(new java.util.HashSet<>(event.getTags()));
+        }
         clone.setCreatedAt(event.getCreatedAt());
         clone.setUpdatedAt(event.getUpdatedAt());
         return clone;

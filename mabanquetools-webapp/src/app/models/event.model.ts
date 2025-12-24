@@ -18,6 +18,7 @@ export interface Event {
   icon: EventIcon;
   category: EventCategory;
   description?: string;
+  tags?: string[];
   sprintId?: string;
   createdAt: string; // ISO timestamp
   updatedAt: string; // ISO timestamp

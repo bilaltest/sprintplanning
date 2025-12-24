@@ -24,6 +24,7 @@ public class EventDto {
     private String icon;
     private String category;
     private String description;
+    private java.util.Set<String> tags;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -39,6 +40,7 @@ public class EventDto {
                 .icon(event.getIcon())
                 .category(event.getCategory())
                 .description(event.getDescription())
+                .tags(event.getTags() != null ? new java.util.HashSet<>(event.getTags()) : new java.util.HashSet<>())
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
                 .build();

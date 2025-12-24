@@ -30,6 +30,11 @@ public class Absence {
     @JsonIgnore
     private User user;
 
+    public void setUser(User user) {
+        this.user = user;
+        this.userId = user != null ? user.getId() : null;
+    }
+
     @Column(nullable = false)
     private LocalDate startDate;
 

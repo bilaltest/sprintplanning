@@ -21,6 +21,9 @@ public class SettingsDto {
     @JsonRawValue
     private String customCategories;
 
+    @JsonRawValue
+    private String customTags;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -29,6 +32,7 @@ public class SettingsDto {
                 .id(settings.getId())
                 .theme(settings.getTheme())
                 .customCategories(settings.getCustomCategories())
+                .customTags(settings.getCustomTags())
                 .createdAt(settings.getCreatedAt())
                 .updatedAt(settings.getUpdatedAt())
                 .build();

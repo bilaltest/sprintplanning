@@ -16,10 +16,10 @@ const TRIBES = ['ChDF', 'ChUX', 'Ma Banque', 'Autre'];
 const SQUADS = ['Squad 1', 'Squad 2', 'Squad 3', 'Squad 4', 'Squad 5', 'Squad 6', 'ADAM', 'Transverse'];
 
 @Component({
-    selector: 'app-user-management',
-    standalone: true,
-    imports: [CommonModule, FormsModule],
-    template: `
+  selector: 'app-user-management',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
     <!-- Users Table -->
     <div class="card">
       <div class="p-6 border-b border-gray-200 dark:border-gray-600">
@@ -266,7 +266,7 @@ const SQUADS = ['Squad 1', 'Squad 2', 'Squad 3', 'Squad 4', 'Squad 5', 'Squad 6'
 
     <!-- Modal d'édition des détails utilisateur -->
     <div *ngIf="editingUserDetails" class="modal-overlay" (click)="closeUserDetailsModal()">
-        <div class="modal-content max-w-lg fade-in-scale" (click)="$event.stopPropagation()">
+        <div class="modal-content max-w-lg fade-in" (click)="$event.stopPropagation()">
             <!-- Header -->
             <div class="modal-header-glass">
                 <div class="flex items-center justify-between w-full">
@@ -344,24 +344,6 @@ const SQUADS = ['Squad 1', 'Squad 2', 'Squad 3', 'Squad 4', 'Squad 5', 'Squad 6'
                             <span class="material-icons text-gray-400 text-sm">expand_more</span>
                         </button>
 
-                         <!-- Global Squad Dropdown -->
-                        <div *ngIf="isSquadDropdownOpen" 
-                                class="fixed z-[9999] mt-1 bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar"
-                                [style.top.px]="dropdownRect.top"
-                                [style.left.px]="dropdownRect.left"
-                                [style.width.px]="dropdownRect.width">
-                            <div *ngFor="let squad of SQUADS"
-                                    class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex items-center space-x-3 transition-colors"
-                                    (click)="toggleSquad(squad, $event)">
-                                <div class="w-4 h-4 border border-gray-300 dark:border-gray-600 rounded flex items-center justify-center transition-colors"
-                                        [class.bg-primary-600]="editedUserDetails.squads?.includes(squad)"
-                                        [class.border-primary-600]="editedUserDetails.squads?.includes(squad)">
-                                    <span *ngIf="editedUserDetails.squads?.includes(squad)" class="material-icons text-white text-[10px] font-bold">check</span>
-                                </div>
-                                <span class="text-sm text-gray-900 dark:text-white">{{ squad }}</span>
-                            </div>
-                        </div>
-                         <div *ngIf="isSquadDropdownOpen" (click)="closeSquadDropdown()" class="fixed inset-0 z-[9998] cursor-default bg-transparent"></div>
                     </div>
                 </div>
 
@@ -384,320 +366,353 @@ const SQUADS = ['Squad 1', 'Squad 2', 'Squad 3', 'Squad 4', 'Squad 5', 'Squad 6'
                 </button>
             </div>
         </div>
+        
+        <!-- Global Squad Dropdown (Moved here to escape modal-content overflow/stacking context) -->
+        <div *ngIf="isSquadDropdownOpen" 
+                class="fixed z-[9999] mt-1 bg-white dark:bg-gray-750 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar"
+                [style.top.px]="dropdownRect.top"
+                [style.left.px]="dropdownRect.left"
+                [style.width.px]="dropdownRect.width"
+                (click)="$event.stopPropagation()">
+            <div *ngFor="let squad of squadsList"
+                    class="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer flex items-center space-x-3 transition-colors"
+                    (click)="toggleSquad(squad, $event)">
+                <div class="w-4 h-4 border border-gray-300 dark:border-gray-600 rounded flex items-center justify-center transition-colors"
+                        [class.bg-primary-600]="editedUserDetails.squads?.includes(squad)"
+                        [class.border-primary-600]="editedUserDetails.squads?.includes(squad)">
+                    <span *ngIf="editedUserDetails.squads?.includes(squad)" class="material-icons text-white text-[10px] font-bold">check</span>
+                </div>
+                <span class="text-sm text-gray-900 dark:text-white">{{ squad }}</span>
+            </div>
+        </div>
+        <div *ngIf="isSquadDropdownOpen" (click)="closeSquadDropdown(); $event.stopPropagation()" class="fixed inset-0 z-[9998] cursor-default bg-transparent"></div>
     </div>
   `,
-    styles: [`
+  styles: [`
     :host {
       display: block;
     }
   `]
 })
 export class UserManagementComponent implements OnInit {
-    private readonly API_URL = `${environment.apiUrl}/admin`;
+  private readonly API_URL = `${environment.apiUrl}/admin`;
 
-    users: AdminUser[] = [];
-    isLoading = false;
+  users: AdminUser[] = [];
+  isLoading = false;
 
-    // Permissions editing
-    editingUser: AdminUser | null = null;
-    editedPermissions: Partial<UserPermissions> = {};
-    isSavingPermissions = false;
+  // Permissions editing
+  editingUser: AdminUser | null = null;
+  editedPermissions: Partial<UserPermissions> = {};
+  isSavingPermissions = false;
 
-    // User details editing
-    editingUserDetails: AdminUser | null = null;
-    editedUserDetails: Partial<AdminUser> = {};
-    isSavingUserDetails = false;
+  // User details editing
+  editingUserDetails: AdminUser | null = null;
+  editedUserDetails: Partial<AdminUser> = {};
+  isSavingUserDetails = false;
 
-    readonly JOBS = JOBS;
-    readonly TRIBES = TRIBES;
-    readonly SQUADS = SQUADS;
+  readonly JOBS = JOBS;
+  readonly TRIBES = TRIBES;
+  squadsList: string[] = [];
 
-    // Custom Dropdown State
-    isSquadDropdownOpen = false;
-    dropdownRect = { top: 0, left: 0, width: 0 };
-    @ViewChild('squadButton') squadButtonRef!: ElementRef;
+  // Custom Dropdown State
+  isSquadDropdownOpen = false;
+  dropdownRect = { top: 0, left: 0, width: 0 };
+  @ViewChild('squadButton') squadButtonRef!: ElementRef;
 
-    // Helper for template
-    Math = Math;
+  // Helper for template
+  Math = Math;
 
-    // User Pagination & Search
-    userPage = 1;
-    userPageSize = 10;
-    userSearchQuery = '';
+  // User Pagination & Search
+  userPage = 1;
+  userPageSize = 10;
+  userSearchQuery = '';
 
-    constructor(
-        private http: HttpClient,
-        private confirmationService: ConfirmationService,
-        private toastService: ToastService,
-        private permissionService: PermissionService
-    ) { }
+  constructor(
+    private http: HttpClient,
+    private confirmationService: ConfirmationService,
+    private toastService: ToastService,
+    private permissionService: PermissionService
+  ) { }
 
-    ngOnInit(): void {
-        this.loadUsers();
+  ngOnInit(): void {
+    this.loadUsers();
+    this.loadSquads();
+  }
+
+  async loadSquads(): Promise<void> {
+    try {
+      this.squadsList = await firstValueFrom(
+        this.http.get<string[]>(`${this.API_URL}/squads`)
+      );
+    } catch (error) {
+      console.error('Erreur lors du chargement des squads:', error);
+      // Fallback static list in case of error
+      this.squadsList = SQUADS;
+    }
+  }
+
+  get filteredUsers(): AdminUser[] {
+    if (!this.userSearchQuery) {
+      return this.users;
+    }
+    const query = this.userSearchQuery.toLowerCase();
+    return this.users.filter(user =>
+      user.firstName.toLowerCase().includes(query) ||
+      user.lastName.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query)
+    );
+  }
+
+  get paginatedUsers(): AdminUser[] {
+    const startIndex = (this.userPage - 1) * this.userPageSize;
+    return this.filteredUsers.slice(startIndex, startIndex + this.userPageSize);
+  }
+
+  get totalUserPages(): number {
+    return Math.ceil(this.filteredUsers.length / this.userPageSize);
+  }
+
+  get userPages(): number[] {
+    const total = this.totalUserPages;
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    const current = this.userPage;
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, current + 2);
+    if (start <= 2) end = Math.min(total, 5);
+    if (end >= total - 1) start = Math.max(1, total - 4);
+    const pages = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  setUserPage(page: number): void {
+    if (page >= 1 && page <= this.totalUserPages) {
+      this.userPage = page;
+    }
+  }
+
+  onUserSearch(): void {
+    this.userPage = 1;
+  }
+
+  async loadUsers(): Promise<void> {
+    this.isLoading = true;
+    try {
+      const response = await firstValueFrom(
+        this.http.get<{ users: AdminUser[] }>(`${this.API_URL}/users`)
+      );
+      this.users = response.users;
+    } catch (error) {
+      console.error('Erreur lors du chargement des utilisateurs:', error);
+      this.toastService.error('Erreur', 'Impossible de charger les utilisateurs');
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async refreshUsers(): Promise<void> {
+    await this.loadUsers();
+  }
+
+  async deleteUser(user: AdminUser): Promise<void> {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Supprimer cet utilisateur ?',
+      message: `${user.firstName} ${user.lastName} (${user.email})\n\nCette action est irréversible. Les ${user.historiesCount} actions de cet utilisateur dans l'historique seront marquées comme "Deleted User".`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await firstValueFrom(
+        this.http.delete(`${this.API_URL}/users/${user.id}`)
+      );
+      this.toastService.success('Utilisateur supprimé', 'L\'utilisateur a été supprimé avec succès');
+      await this.loadUsers();
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      this.toastService.error('Erreur', 'Impossible de supprimer l\'utilisateur');
+    }
+  }
+
+  async resetUserPassword(user: AdminUser): Promise<void> {
+    const confirmed = await this.confirmationService.confirm({
+      title: 'Réinitialiser le mot de passe ?',
+      message: `Voulez-vous vraiment réinitialiser le mot de passe de ${user.firstName} ${user.lastName} ?\n\nLe mot de passe sera défini sur "password".`,
+      confirmText: 'Réinitialiser',
+      cancelText: 'Annuler',
+      confirmButtonClass: 'danger'
+    });
+
+    if (!confirmed) return;
+
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.API_URL}/users/${user.id}/reset-password`, {})
+      );
+      this.toastService.success('Succès', 'Mot de passe réinitialisé à "password"');
+    } catch (error) {
+      console.error('Erreur lors de la réinitialisation:', error);
+      this.toastService.error('Erreur', 'Impossible de réinitialiser le mot de passe');
+    }
+  }
+
+  getRelativeTime(timestamp: string): string {
+    return formatDistanceToNow(new Date(timestamp), {
+      addSuffix: true,
+      locale: fr
+    });
+  }
+
+  // Permissions management
+  getPermissionModules(): PermissionModule[] {
+    return ['CALENDAR', 'RELEASES', 'ADMIN', 'ABSENCE', 'PLAYGROUND'];
+  }
+
+  getModuleName(module: PermissionModule): string {
+    const names: Record<PermissionModule, string> = {
+      CALENDAR: 'Calendrier',
+      RELEASES: 'Préparation des MEP',
+      ADMIN: 'Administration',
+      ABSENCE: 'Absence',
+      PLAYGROUND: 'Playground'
+    };
+    return names[module];
+  }
+
+  getModuleIcon(module: PermissionModule): string {
+    const icons: Record<PermissionModule, string> = {
+      CALENDAR: 'event',
+      RELEASES: 'rocket_launch',
+      ADMIN: 'admin_panel_settings',
+      ABSENCE: 'beach_access',
+      PLAYGROUND: 'science'
+    };
+    return icons[module];
+  }
+
+  getModuleDescription(module: PermissionModule): string {
+    const descriptions: Record<PermissionModule, string> = {
+      CALENDAR: 'Gestion des événements du calendrier trimestriel',
+      RELEASES: 'Gestion des releases, squads, features et actions',
+      ADMIN: 'Accès à l\'administration (gestion des utilisateurs, export/import)',
+      ABSENCE: 'Gestion des congés, formations et télétravail',
+      PLAYGROUND: 'Accès au Playground'
+    };
+    return descriptions[module];
+  }
+
+  editPermissions(user: AdminUser): void {
+    this.editingUser = user;
+    this.editedPermissions = { ...user.permissions };
+  }
+
+  closePermissionsModal(): void {
+    this.editingUser = null;
+    this.editedPermissions = {};
+  }
+
+  async savePermissions(): Promise<void> {
+    if (!this.editingUser) return;
+
+    this.isSavingPermissions = true;
+    try {
+      await this.permissionService.updateUserPermissions(
+        this.editingUser.id,
+        this.editedPermissions
+      );
+
+      this.toastService.success('Permissions mises à jour', 'Les permissions ont été modifiées avec succès');
+      this.closePermissionsModal();
+      await this.loadUsers();
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des permissions:', error);
+      this.toastService.error('Erreur', 'Impossible de mettre à jour les permissions');
+    } finally {
+      this.isSavingPermissions = false;
+    }
+  }
+
+  // User details editing methods
+  editUserDetails(user: AdminUser): void {
+    this.editingUserDetails = user;
+    this.editedUserDetails = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      metier: user.metier,
+      tribu: user.tribu,
+      squads: user.squads ? [...user.squads] : [],
+      interne: user.interne ?? false
+    };
+  }
+
+  closeUserDetailsModal(): void {
+    this.editingUserDetails = null;
+    this.editedUserDetails = {};
+    this.isSquadDropdownOpen = false;
+  }
+
+  async saveUserDetails(): Promise<void> {
+    if (!this.editingUserDetails) return;
+
+    this.isSavingUserDetails = true;
+    try {
+      await firstValueFrom(
+        this.http.put<AdminUser>(`${this.API_URL}/users/${this.editingUserDetails.id}`, this.editedUserDetails)
+      );
+
+      this.toastService.success('Utilisateur mis à jour', 'Les informations ont été modifiées avec succès');
+      this.closeUserDetailsModal();
+      await this.loadUsers();
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
+      this.toastService.error('Erreur', 'Impossible de mettre à jour l\'utilisateur');
+    } finally {
+      this.isSavingUserDetails = false;
+    }
+  }
+
+  // Custom Squad Dropdown Methods
+  toggleSquadDropdown(event: Event): void {
+    event.stopPropagation();
+    if (this.isSquadDropdownOpen) {
+      this.closeSquadDropdown();
+    } else {
+      this.openSquadDropdown();
+    }
+  }
+
+  openSquadDropdown(): void {
+    const rect = this.squadButtonRef.nativeElement.getBoundingClientRect();
+    this.dropdownRect = {
+      top: rect.bottom,
+      left: rect.left,
+      width: rect.width
+    };
+    this.isSquadDropdownOpen = true;
+  }
+
+  closeSquadDropdown(): void {
+    this.isSquadDropdownOpen = false;
+  }
+
+  toggleSquad(squad: string, event: Event): void {
+    event.stopPropagation();
+    if (!this.editedUserDetails.squads) {
+      this.editedUserDetails.squads = [];
     }
 
-    get filteredUsers(): AdminUser[] {
-        if (!this.userSearchQuery) {
-            return this.users;
-        }
-        const query = this.userSearchQuery.toLowerCase();
-        return this.users.filter(user =>
-            user.firstName.toLowerCase().includes(query) ||
-            user.lastName.toLowerCase().includes(query) ||
-            user.email.toLowerCase().includes(query)
-        );
+    const index = this.editedUserDetails.squads.indexOf(squad);
+    if (index > -1) {
+      this.editedUserDetails.squads.splice(index, 1);
+    } else {
+      this.editedUserDetails.squads.push(squad);
     }
-
-    get paginatedUsers(): AdminUser[] {
-        const startIndex = (this.userPage - 1) * this.userPageSize;
-        return this.filteredUsers.slice(startIndex, startIndex + this.userPageSize);
-    }
-
-    get totalUserPages(): number {
-        return Math.ceil(this.filteredUsers.length / this.userPageSize);
-    }
-
-    get userPages(): number[] {
-        const total = this.totalUserPages;
-        if (total <= 7) {
-            return Array.from({ length: total }, (_, i) => i + 1);
-        }
-        const current = this.userPage;
-        let start = Math.max(1, current - 2);
-        let end = Math.min(total, current + 2);
-        if (start <= 2) end = Math.min(total, 5);
-        if (end >= total - 1) start = Math.max(1, total - 4);
-        const pages = [];
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
-        }
-        return pages;
-    }
-
-    setUserPage(page: number): void {
-        if (page >= 1 && page <= this.totalUserPages) {
-            this.userPage = page;
-        }
-    }
-
-    onUserSearch(): void {
-        this.userPage = 1;
-    }
-
-    async loadUsers(): Promise<void> {
-        this.isLoading = true;
-        try {
-            const response = await firstValueFrom(
-                this.http.get<{ users: AdminUser[] }>(`${this.API_URL}/users`)
-            );
-            this.users = response.users;
-        } catch (error) {
-            console.error('Erreur lors du chargement des utilisateurs:', error);
-            this.toastService.error('Erreur', 'Impossible de charger les utilisateurs');
-        } finally {
-            this.isLoading = false;
-        }
-    }
-
-    async refreshUsers(): Promise<void> {
-        await this.loadUsers();
-    }
-
-    async deleteUser(user: AdminUser): Promise<void> {
-        const confirmed = await this.confirmationService.confirm({
-            title: 'Supprimer cet utilisateur ?',
-            message: `${user.firstName} ${user.lastName} (${user.email})\n\nCette action est irréversible. Les ${user.historiesCount} actions de cet utilisateur dans l'historique seront marquées comme "Deleted User".`,
-            confirmText: 'Supprimer',
-            cancelText: 'Annuler',
-            confirmButtonClass: 'danger'
-        });
-
-        if (!confirmed) return;
-
-        try {
-            await firstValueFrom(
-                this.http.delete(`${this.API_URL}/users/${user.id}`)
-            );
-            this.toastService.success('Utilisateur supprimé', 'L\'utilisateur a été supprimé avec succès');
-            await this.loadUsers();
-        } catch (error) {
-            console.error('Erreur lors de la suppression:', error);
-            this.toastService.error('Erreur', 'Impossible de supprimer l\'utilisateur');
-        }
-    }
-
-    async resetUserPassword(user: AdminUser): Promise<void> {
-        const confirmed = await this.confirmationService.confirm({
-            title: 'Réinitialiser le mot de passe ?',
-            message: `Voulez-vous vraiment réinitialiser le mot de passe de ${user.firstName} ${user.lastName} ?\n\nLe mot de passe sera défini sur "password".`,
-            confirmText: 'Réinitialiser',
-            cancelText: 'Annuler',
-            confirmButtonClass: 'danger'
-        });
-
-        if (!confirmed) return;
-
-        try {
-            await firstValueFrom(
-                this.http.post(`${this.API_URL}/users/${user.id}/reset-password`, {})
-            );
-            this.toastService.success('Succès', 'Mot de passe réinitialisé à "password"');
-        } catch (error) {
-            console.error('Erreur lors de la réinitialisation:', error);
-            this.toastService.error('Erreur', 'Impossible de réinitialiser le mot de passe');
-        }
-    }
-
-    getRelativeTime(timestamp: string): string {
-        return formatDistanceToNow(new Date(timestamp), {
-            addSuffix: true,
-            locale: fr
-        });
-    }
-
-    // Permissions management
-    getPermissionModules(): PermissionModule[] {
-        return ['CALENDAR', 'RELEASES', 'ADMIN', 'ABSENCE', 'PLAYGROUND'];
-    }
-
-    getModuleName(module: PermissionModule): string {
-        const names: Record<PermissionModule, string> = {
-            CALENDAR: 'Calendrier',
-            RELEASES: 'Préparation des MEP',
-            ADMIN: 'Administration',
-            ABSENCE: 'Absence',
-            PLAYGROUND: 'Playground'
-        };
-        return names[module];
-    }
-
-    getModuleIcon(module: PermissionModule): string {
-        const icons: Record<PermissionModule, string> = {
-            CALENDAR: 'event',
-            RELEASES: 'rocket_launch',
-            ADMIN: 'admin_panel_settings',
-            ABSENCE: 'beach_access',
-            PLAYGROUND: 'science'
-        };
-        return icons[module];
-    }
-
-    getModuleDescription(module: PermissionModule): string {
-        const descriptions: Record<PermissionModule, string> = {
-            CALENDAR: 'Gestion des événements du calendrier trimestriel',
-            RELEASES: 'Gestion des releases, squads, features et actions',
-            ADMIN: 'Accès à l\'administration (gestion des utilisateurs, export/import)',
-            ABSENCE: 'Gestion des congés, formations et télétravail',
-            PLAYGROUND: 'Accès au Playground'
-        };
-        return descriptions[module];
-    }
-
-    editPermissions(user: AdminUser): void {
-        this.editingUser = user;
-        this.editedPermissions = { ...user.permissions };
-    }
-
-    closePermissionsModal(): void {
-        this.editingUser = null;
-        this.editedPermissions = {};
-    }
-
-    async savePermissions(): Promise<void> {
-        if (!this.editingUser) return;
-
-        this.isSavingPermissions = true;
-        try {
-            await this.permissionService.updateUserPermissions(
-                this.editingUser.id,
-                this.editedPermissions
-            );
-
-            this.toastService.success('Permissions mises à jour', 'Les permissions ont été modifiées avec succès');
-            this.closePermissionsModal();
-            await this.loadUsers();
-        } catch (error) {
-            console.error('Erreur lors de la mise à jour des permissions:', error);
-            this.toastService.error('Erreur', 'Impossible de mettre à jour les permissions');
-        } finally {
-            this.isSavingPermissions = false;
-        }
-    }
-
-    // User details editing methods
-    editUserDetails(user: AdminUser): void {
-        this.editingUserDetails = user;
-        this.editedUserDetails = {
-            firstName: user.firstName,
-            lastName: user.lastName,
-            metier: user.metier,
-            tribu: user.tribu,
-            squads: user.squads ? [...user.squads] : [],
-            interne: user.interne ?? false
-        };
-    }
-
-    closeUserDetailsModal(): void {
-        this.editingUserDetails = null;
-        this.editedUserDetails = {};
-        this.isSquadDropdownOpen = false;
-    }
-
-    async saveUserDetails(): Promise<void> {
-        if (!this.editingUserDetails) return;
-
-        this.isSavingUserDetails = true;
-        try {
-            await firstValueFrom(
-                this.http.put<AdminUser>(`${this.API_URL}/users/${this.editingUserDetails.id}`, this.editedUserDetails)
-            );
-
-            this.toastService.success('Utilisateur mis à jour', 'Les informations ont été modifiées avec succès');
-            this.closeUserDetailsModal();
-            await this.loadUsers();
-        } catch (error) {
-            console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
-            this.toastService.error('Erreur', 'Impossible de mettre à jour l\'utilisateur');
-        } finally {
-            this.isSavingUserDetails = false;
-        }
-    }
-
-    // Custom Squad Dropdown Methods
-    toggleSquadDropdown(event: Event): void {
-        event.stopPropagation();
-        if (this.isSquadDropdownOpen) {
-            this.closeSquadDropdown();
-        } else {
-            this.openSquadDropdown();
-        }
-    }
-
-    openSquadDropdown(): void {
-        const rect = this.squadButtonRef.nativeElement.getBoundingClientRect();
-        this.dropdownRect = {
-            top: rect.bottom,
-            left: rect.left,
-            width: rect.width
-        };
-        this.isSquadDropdownOpen = true;
-    }
-
-    closeSquadDropdown(): void {
-        this.isSquadDropdownOpen = false;
-    }
-
-    toggleSquad(squad: string, event: Event): void {
-        event.stopPropagation();
-        if (!this.editedUserDetails.squads) {
-            this.editedUserDetails.squads = [];
-        }
-
-        const index = this.editedUserDetails.squads.indexOf(squad);
-        if (index > -1) {
-            this.editedUserDetails.squads.splice(index, 1);
-        } else {
-            this.editedUserDetails.squads.push(squad);
-        }
-    }
+  }
 }

@@ -53,6 +53,11 @@ public class UserPermission {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
+    public void setUser(User user) {
+        this.user = user;
+        this.userId = user != null ? user.getId() : null;
+    }
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private PermissionModule module;

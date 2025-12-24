@@ -49,9 +49,10 @@ public class AbsenceService {
                         .lastName(u.getLastName())
                         .metier(u.getMetier())
                         .tribu(u.getTribu())
-                        .interne(u.isInterne())
+                        .interne(u.getInterne())
                         .email(u.getEmail())
-                        .squads(u.getSquads())
+                        .squads(u.getTeams().stream().map(com.catsbanque.mabanquetools.entity.Team::getName)
+                                .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
     }

@@ -93,7 +93,7 @@ class SettingsServiceTest {
         when(settingsRepository.save(any(Settings.class))).thenReturn(updatedSettings);
 
         // When
-        SettingsDto result = settingsService.updateSettings("dark", "[\"custom1\",\"custom2\"]");
+        SettingsDto result = settingsService.updateSettings("dark", "[\"custom1\",\"custom2\"]", "[]");
 
         // Then
         assertThat(result).isNotNull();
@@ -115,7 +115,7 @@ class SettingsServiceTest {
         when(settingsRepository.save(any(Settings.class))).thenReturn(newSettings);
 
         // When
-        SettingsDto result = settingsService.updateSettings("dark", "[\"custom1\"]");
+        SettingsDto result = settingsService.updateSettings("dark", "[\"custom1\"]", "[]");
 
         // Then
         assertThat(result).isNotNull();
@@ -137,7 +137,7 @@ class SettingsServiceTest {
         when(settingsRepository.save(any(Settings.class))).thenReturn(testSettings);
 
         // When
-        SettingsDto result = settingsService.updateSettings("light", "[]");
+        SettingsDto result = settingsService.updateSettings("light", "[]", "[]");
 
         // Then
         assertThat(result).isNotNull();
@@ -157,7 +157,7 @@ class SettingsServiceTest {
         when(settingsRepository.save(any(Settings.class))).thenReturn(updated);
 
         // When
-        SettingsDto result = settingsService.updateSettings("light", "[\"cat1\",\"cat2\",\"cat3\"]");
+        SettingsDto result = settingsService.updateSettings("light", "[\"cat1\",\"cat2\",\"cat3\"]", "[]");
 
         // Then
         assertThat(result).isNotNull();

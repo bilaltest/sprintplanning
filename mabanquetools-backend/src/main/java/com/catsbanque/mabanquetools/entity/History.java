@@ -58,6 +58,12 @@ public class History {
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
+
     private User user;
+
+    public void setUser(User user) {
+        this.user = user;
+        this.userId = user != null ? user.getId() : null;
+    }
 
 }

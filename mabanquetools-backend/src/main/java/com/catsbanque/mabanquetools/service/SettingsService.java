@@ -51,13 +51,14 @@ public class SettingsService {
      */
     @CacheEvict(value = "settings", allEntries = true)
     @Transactional
-    public SettingsDto updateSettings(String theme, String customCategories) {
+    public SettingsDto updateSettings(String theme, String customCategories, String customTags) {
         Settings settings = settingsRepository.findAll().stream()
                 .findFirst()
                 .orElse(new Settings());
 
         settings.setTheme(theme);
         settings.setCustomCategories(customCategories);
+        settings.setCustomTags(customTags);
 
         Settings updated = settingsRepository.save(settings);
         log.info("Settings updated");

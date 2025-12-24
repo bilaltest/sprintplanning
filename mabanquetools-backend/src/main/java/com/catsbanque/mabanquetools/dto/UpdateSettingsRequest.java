@@ -29,4 +29,10 @@ public class UpdateSettingsRequest {
      * La validation JSON détaillée est faite côté service
      */
     private JsonNode customCategories;
+
+    /**
+     * Tags personnalisés (JSON string)
+     * Format attendu: JSON array string (ex: "[]" ou "[{...}]")
+     */
+    private JsonNode customTags;
 }

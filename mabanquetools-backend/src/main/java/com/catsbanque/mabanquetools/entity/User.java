@@ -18,12 +18,15 @@ import com.catsbanque.mabanquetools.util.Cuid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import jakarta.persistence.ElementCollection;
 
 @Entity
 @Table(name = "app_user", indexes = {
         @Index(name = "idx_user_email", columnList = "email")
 })
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -55,13 +58,12 @@ public class User {
     @Column(length = 50)
     private String tribu; // e.g., ChDF, ChUX...
 
-    @Column(nullable = false)
-    private boolean isInterne = true;
+    @Column(name = "is_interne", nullable = false)
+    private Boolean interne = true;
 
-    @ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
-    @jakarta.persistence.CollectionTable(name = "user_squads", joinColumns = @jakarta.persistence.JoinColumn(name = "user_id"))
-    @Column(name = "squad")
-    private List<String> squads = new ArrayList<>(); // e.g., Squad 1, ADAM...
+    @jakarta.persistence.ManyToMany(fetch = jakarta.persistence.FetchType.EAGER)
+    @jakarta.persistence.JoinTable(name = "user_teams", joinColumns = @jakarta.persistence.JoinColumn(name = "user_id"), inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "team_id"))
+    private java.util.Set<Team> teams = new java.util.HashSet<>();
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String widgetOrder = "[]"; // JSON array stored as String

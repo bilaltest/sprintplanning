@@ -14,31 +14,28 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "settings")
+@Table(name = "team")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Settings {
+public class Team {
 
     @Id
     @Column(length = 25)
     private String id;
 
-    @Column(nullable = false, length = 20)
-    private String theme = "light"; // 'light' or 'dark'
+    @Column(nullable = false, unique = true, length = 100)
+    private String name;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String customCategories = "[]"; // JSON array stored as String
-
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String customTags = "[]"; // JSON array stored as String
+    @Column(length = 255)
+    private String description;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
