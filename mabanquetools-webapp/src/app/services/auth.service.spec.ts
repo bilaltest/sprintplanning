@@ -81,6 +81,29 @@ describe('AuthService', () => {
         expect(service.isAuthenticated()).toBe(true);
     });
 
+    it('should handle login error with backend structure', async () => {
+        const errorResponse = {
+            error: {
+                message: 'Email ou mot de passe incorrect',
+                status: 400
+            }
+        };
+
+        const promise = service.login('test@test.com', 'wrongpassword');
+
+        const req = httpMock.expectOne(`${environment.apiUrl}/auth/login`);
+        expect(req.request.method).toBe('POST');
+
+        // Simuler le structure HttpErrorResponse d'Angular
+        // Le 2ème argument 'options' de req.flush permet de définir le status text, etc.
+        // Mais pour simuler le body dans 'error.error', il faut passer l'objet complet comme body
+        req.flush(errorResponse, { status: 400, statusText: 'Bad Request' });
+
+        const result = await promise;
+        expect(result.success).toBe(false);
+        expect(result.message).toBe('Email ou mot de passe incorrect');
+    });
+
     it('should fetch current user', async () => {
         localStorage.setItem(STORAGE_KEY, 'token123');
         const mockUser = { id: '1', email: 'test@test.com' } as any;

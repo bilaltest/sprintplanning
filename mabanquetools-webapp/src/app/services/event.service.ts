@@ -1,8 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { Event } from '@models/event.model';
 import { environment } from '../../environments/environment';
+import { PermissionService } from './permission.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,17 +17,42 @@ export class EventService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$: Observable<boolean> = this.loadingSubject.asObservable();
 
+  private errorSubject = new BehaviorSubject<string | null>(null);
+  public error$: Observable<string | null> = this.errorSubject.asObservable();
+
+  private permissionService = inject(PermissionService);
+
   constructor(private http: HttpClient) {
-    this.loadEvents();
+    // Charger les events uniquement si l'utilisateur a les permissions
+    // Attendre un tick pour que PermissionService soit initialisé
+    setTimeout(() => {
+      if (this.permissionService.hasReadAccess('CALENDAR')) {
+        this.loadEvents();
+      }
+    }, 0);
   }
 
   private async loadEvents(): Promise<void> {
+    // Vérifier les permissions avant de charger
+    if (!this.permissionService.hasReadAccess('CALENDAR')) {
+      console.warn('EventService: No permission to load events (CALENDAR READ required)');
+      this.errorSubject.next('Permissions insuffisantes');
+      return;
+    }
+
     try {
       this.loadingSubject.next(true);
+      this.errorSubject.next(null); // Réinitialiser l'erreur
       const events = await firstValueFrom(this.http.get<Event[]>(this.apiUrl));
       this.eventsSubject.next(events);
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      console.error('Error loading events:', error);
+      // Stocker le message d'erreur
+      const errorMessage = error.status === 0
+        ? 'Serveur indisponible'
+        : (error.error?.error?.message || 'Erreur lors du chargement des événements');
+      this.errorSubject.next(errorMessage);
+      // Ne pas throw pour ne pas casser le flux
     } finally {
       this.loadingSubject.next(false);
     }

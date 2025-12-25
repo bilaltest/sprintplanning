@@ -107,6 +107,29 @@ import { AuthService } from '@services/auth.service';
                 Créer un compte
               </a>
             </p>
+
+            <!-- Divider -->
+            <div class="relative my-6">
+              <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-slate-200 dark:border-slate-700"></div>
+              </div>
+              <div class="relative flex justify-center text-sm">
+                <span class="px-2 bg-white/70 dark:bg-slate-900/60 text-slate-500">Ou</span>
+              </div>
+            </div>
+
+            <!-- Guest Login Button -->
+            <button
+              type="button"
+              (click)="loginAsGuest()"
+              [disabled]="isLoading"
+              class="w-full relative overflow-hidden bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium py-3 rounded-xl transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed border border-slate-200 dark:border-slate-600"
+            >
+               <span class="flex items-center justify-center space-x-2">
+                 <span class="material-icons text-sm">person_outline</span>
+                 <span>Continuer en tant qu'invité</span>
+               </span>
+            </button>
           </div>
         </div>
 
@@ -158,6 +181,24 @@ export class LoginComponent {
       this.showError = true;
       this.errorMessage = result.message;
       this.password = '';
+    }
+  }
+
+  async loginAsGuest(): Promise<void> {
+    this.isLoading = true;
+    this.showError = false;
+    this.errorMessage = '';
+
+    // Credentials 'invite'/'invite' are set in DataInitializer.java
+    const result = await this.authService.login('invite', 'invite');
+
+    this.isLoading = false;
+
+    if (result.success) {
+      this.router.navigate(['/']);
+    } else {
+      this.showError = true;
+      this.errorMessage = result.message || "Impossible de se connecter en tant qu'invité";
     }
   }
 }

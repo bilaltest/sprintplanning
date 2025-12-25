@@ -172,10 +172,12 @@ public class DataInitializer implements CommandLineRunner {
         // ID généré automatiquement par @Cuid
         admin.setEmail(adminEmail);
         admin.setPassword(passwordEncoder.encode("password"));
-        admin.setFirstName("Admin");
-        admin.setLastName("Système");
+        admin.setFirstName("Bilal");
+        admin.setLastName("Djebbari");
         admin.setThemePreference("light");
         admin.setWidgetOrder("[]");
+        admin.setMetier("Back");
+        admin.setTribu("Ma Banque");
         admin.setInterne(true);
 
         try {

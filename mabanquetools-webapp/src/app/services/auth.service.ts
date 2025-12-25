@@ -81,9 +81,42 @@ export class AuthService {
     } catch (error: any) {
       return {
         success: false,
-        message: error.error?.error || 'Erreur lors de la création du compte'
+        message: this.getErrorMessage(error)
       };
     }
+  }
+
+  /**
+   * Helper pour extraire le message d'erreur depuis la réponse HTTP
+   */
+  private getErrorMessage(error: any): string {
+    console.error('Auth Error:', error);
+
+    // Cas 1: Erreur standard du backend { error: { message: "...", status: ... } }
+    if (error.error?.error?.message) {
+      return error.error.error.message;
+    }
+
+    // Cas 2: Erreur de validation { errors: { field: "message", ... } }
+    if (error.error?.errors) {
+      const errors = error.error.errors;
+      const firstError = Object.values(errors)[0];
+      if (typeof firstError === 'string') {
+        return firstError;
+      }
+    }
+
+    // Cas 3: Juste un string
+    if (typeof error.error === 'string') {
+      return error.error;
+    }
+
+    // Cas 4: Message direct dans error.message (moins probable avec ce backend)
+    if (error.error?.message) {
+      return error.error.message;
+    }
+
+    return 'Une erreur est survenue';
   }
 
   /**
@@ -106,7 +139,7 @@ export class AuthService {
     } catch (error: any) {
       return {
         success: false,
-        message: error.error?.error || 'Erreur lors de la connexion'
+        message: this.getErrorMessage(error)
       };
     }
   }
@@ -290,7 +323,7 @@ export class AuthService {
     } catch (error: any) {
       return {
         success: false,
-        message: error.error?.error || 'Erreur lors du changement de mot de passe'
+        message: this.getErrorMessage(error)
       };
     }
   }

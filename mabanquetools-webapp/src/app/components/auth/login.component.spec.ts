@@ -96,6 +96,35 @@ describe('LoginComponent', () => {
         expect(component.errorMessage).toBe('Invalid credentials');
         expect(component.password).toBe('');
 
+        expect(component.errorMessage).toBe('Invalid credentials');
+        expect(component.password).toBe('');
+
         jest.useRealTimers();
     });
+
+    describe('loginAsGuest', () => {
+        it('should login as guest successfully', async () => {
+            authService.login.mockResolvedValue({ success: true });
+
+            await component.loginAsGuest();
+
+            expect(component.isLoading).toBe(false);
+            expect(authService.login).toHaveBeenCalledWith('invite', 'invite');
+            expect(router.navigate).toHaveBeenCalledWith(['/']);
+            expect(component.showError).toBe(false);
+        });
+
+        it('should handle guest login failure', async () => {
+            authService.login.mockResolvedValue({ success: false, message: 'Login failed' });
+
+            await component.loginAsGuest();
+
+            expect(component.isLoading).toBe(false);
+            expect(authService.login).toHaveBeenCalledWith('invite', 'invite');
+            expect(router.navigate).not.toHaveBeenCalled();
+            expect(component.showError).toBe(true);
+            expect(component.errorMessage).toBe('Login failed');
+        });
+    });
+
 });

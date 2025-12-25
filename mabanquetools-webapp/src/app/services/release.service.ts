@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -12,6 +12,7 @@ import {
   Action,
   CreateActionDto
 } from '@models/release.model';
+import { PermissionService } from './permission.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,21 +26,51 @@ export class ReleaseService {
   private currentReleaseSubject = new BehaviorSubject<Release | null>(null);
   public currentRelease$ = this.currentReleaseSubject.asObservable();
 
+  private loadingSubject = new BehaviorSubject<boolean>(false);
+  public loading$ = this.loadingSubject.asObservable();
+
+  private errorSubject = new BehaviorSubject<string | null>(null);
+  public error$ = this.errorSubject.asObservable();
+
+  private permissionService = inject(PermissionService);
+
   constructor(private http: HttpClient) {
-    this.loadReleases();
+    // Charger les releases uniquement si l'utilisateur a les permissions
+    // Attendre un tick pour que PermissionService soit initialisé
+    setTimeout(() => {
+      if (this.permissionService.hasReadAccess('RELEASES')) {
+        this.loadReleases();
+      }
+    }, 0);
   }
 
   // ===== RELEASES =====
 
   async loadReleases(): Promise<void> {
+    // Vérifier les permissions avant de charger
+    if (!this.permissionService.hasReadAccess('RELEASES')) {
+      console.warn('ReleaseService: No permission to load releases (RELEASES READ required)');
+      this.errorSubject.next('Permissions insuffisantes');
+      return;
+    }
+
     try {
+      this.loadingSubject.next(true);
+      this.errorSubject.next(null); // Réinitialiser l'erreur
       const releases = await firstValueFrom(
         this.http.get<Release[]>(this.apiUrl)
       );
       this.releasesSubject.next(releases);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading releases:', error);
-      throw error;
+      // Stocker le message d'erreur
+      const errorMessage = error.status === 0
+        ? 'Serveur indisponible'
+        : (error.error?.error?.message || 'Erreur lors du chargement des releases');
+      this.errorSubject.next(errorMessage);
+      // Ne pas throw pour ne pas casser le flux
+    } finally {
+      this.loadingSubject.next(false);
     }
   }
 

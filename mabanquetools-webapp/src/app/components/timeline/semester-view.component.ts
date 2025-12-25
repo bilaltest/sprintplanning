@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Event, CATEGORY_COLORS_DARK, CATEGORY_DEFAULTS } from '@models/event.model';
 import { Sprint } from '@models/sprint.model';
@@ -83,7 +83,7 @@ interface MonthColumn {
       </div>
 
       <!-- Calendar Grid -->
-      <div class="flex-1 overflow-auto custom-scrollbar relative z-0">
+      <div #scrollContainer class="flex-1 overflow-auto custom-scrollbar relative z-0">
         <div class="min-w-[800px] h-full flex">
           
           <!-- Month Columns -->
@@ -101,6 +101,7 @@ interface MonthColumn {
             <div class="flex-1 flex flex-col p-1 gap-[1px]">
               <div *ngFor="let cell of month.cells; let i = index" 
                    class="flex-1 min-h-[48px] relative rounded-md transition-all duration-200 group/cell"
+                   [attr.data-is-today]="cell.isToday"
                    [class.opacity-0]="!cell.isValid"
                    [class.pointer-events-none]="!cell.isValid"
                    [class.bg-vibrant-500/10]="cell.isToday"
@@ -243,12 +244,14 @@ interface MonthColumn {
     }
   `]
 })
-export class SemesterViewComponent implements OnInit, OnChanges {
+export class SemesterViewComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() events: Event[] | null = [];
   @Input() sprints: Sprint[] | null = [];
   @Input() closedDays: ClosedDay[] | null = [];
   @Output() eventClick = new EventEmitter<Event>();
   @Output() addEventClick = new EventEmitter<string>();
+
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef;
 
   currentDate: Date = new Date();
   months: MonthColumn[] = [];
@@ -266,6 +269,12 @@ export class SemesterViewComponent implements OnInit, OnChanges {
       this.allTags = tags;
     });
     this.updateView();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.scrollToToday();
+    }, 500);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -418,6 +427,22 @@ export class SemesterViewComponent implements OnInit, OnChanges {
   goToToday() {
     this.currentDate = new Date();
     this.updateView();
+    // Use timeout to allow view update before scrolling
+    setTimeout(() => {
+      this.scrollToToday();
+    }, 100);
+  }
+
+  scrollToToday(): void {
+    if (!this.scrollContainer) return;
+
+    // Find the "today" element within the scroll container
+    // We used [attr.data-is-today]="cell.isToday" on the cell
+    const todayElement = this.scrollContainer.nativeElement.querySelector('[data-is-today="true"]');
+
+    if (todayElement) {
+      todayElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
+    }
   }
 
   onCellClick(cell: DayCell) {

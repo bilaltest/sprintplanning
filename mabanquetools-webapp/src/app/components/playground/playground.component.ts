@@ -121,8 +121,7 @@ interface GameCard extends Game {
             <div class="coming-icon">
               <span class="material-icons">quiz</span>
             </div>
-            <h4>Quiz DSI</h4>
-            <p>Culture tech & banque</p>
+            <h4>Quiz ?</h4>
             <span class="soon-badge">Bientôt</span>
           </div>
         </div>

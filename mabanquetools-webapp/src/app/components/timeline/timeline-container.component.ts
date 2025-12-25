@@ -150,8 +150,34 @@ import { EventModalComponent } from '../modals/event-modal.component';
         </button>
       </div>
 
+      <!-- Error Banner (shown when backend is unavailable) -->
+      <div *ngIf="eventsError$ | async as error"
+           class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg p-4 flex items-start space-x-3">
+        <span class="material-icons text-red-600 dark:text-red-400 mt-0.5">error_outline</span>
+        <div class="flex-1">
+          <h3 class="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">Erreur de chargement</h3>
+          <p class="text-xs text-red-700 dark:text-red-400">{{ error }}</p>
+        </div>
+        <button
+          (click)="retryLoadEvents()"
+          class="px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60 rounded-lg transition-colors flex items-center space-x-1">
+          <span class="material-icons text-sm">refresh</span>
+          <span>Réessayer</span>
+        </button>
+      </div>
+
       <!-- Timeline view -->
-      <div id="timeline-export" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-6">
+      <div id="timeline-export" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-6 relative min-h-[600px]">
+
+        <!-- Loading Overlay -->
+        <div *ngIf="isLoadingEvents$ | async" class="absolute inset-0 z-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center transition-opacity duration-300">
+          <div class="text-center">
+            <div class="inline-block w-12 h-12 border-4 border-emerald-200 dark:border-emerald-700 border-t-emerald-600 dark:border-t-emerald-400 rounded-full animate-spin mb-4"></div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Chargement...</p>
+          </div>
+        </div>
+
+        <!-- Data Views (Always present) -->
         <app-now-view
           *ngIf="(currentView$ | async) === 'now'"
           [events]="filteredEvents$ | async"
@@ -168,7 +194,6 @@ import { EventModalComponent } from '../modals/event-modal.component';
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
         ></app-semester-view>
-
 
       </div>
 
@@ -206,6 +231,10 @@ export class TimelineContainerComponent implements OnInit {
   isStickyDisabled = false;
   isScrolled = false;
 
+  // Loading & Error states
+  isLoadingEvents$!: Observable<boolean>;
+  eventsError$!: Observable<string | null>;
+
   constructor(
     private timelineService: TimelineService,
     private eventService: EventService,
@@ -227,6 +256,10 @@ export class TimelineContainerComponent implements OnInit {
 
     this.sprints$ = this.sprintService.getAllSprints();
     this.closedDays$ = this.closedDayService.getAllClosedDays();
+
+    // Loading & Error observables
+    this.isLoadingEvents$ = this.eventService.loading$;
+    this.eventsError$ = this.eventService.error$;
   }
 
   ngOnInit(): void {
@@ -436,6 +469,10 @@ export class TimelineContainerComponent implements OnInit {
   @HostListener('window:scroll')
   onWindowScroll(): void {
     this.isScrolled = window.scrollY > 100;
+  }
+
+  async retryLoadEvents(): Promise<void> {
+    await this.eventService.refreshEvents();
   }
 
 }

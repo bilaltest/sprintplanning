@@ -171,6 +171,24 @@ interface Widget {
              <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-900/5 dark:via-white/10 to-transparent"></div>
           </div>
 
+          <!-- Error Banner (shown when backend is unavailable) -->
+          <div *ngIf="eventsError || releasesError"
+               class="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 flex items-start space-x-3">
+            <span class="material-icons text-red-600 dark:text-red-400 mt-0.5">error_outline</span>
+            <div class="flex-1">
+              <h3 class="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">Serveur indisponible</h3>
+              <p class="text-xs text-red-700 dark:text-red-400">
+                Impossible de charger les données. Le serveur backend ne répond pas.
+              </p>
+            </div>
+            <button
+              (click)="retryLoadData()"
+              class="px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60 rounded-lg transition-colors flex items-center space-x-1">
+              <span class="material-icons text-sm">refresh</span>
+              <span>Réessayer</span>
+            </button>
+          </div>
+
           <div
             id="widgets-grid"
             cdkDropList
@@ -204,9 +222,21 @@ interface Widget {
                             </div>
                             <span class="px-2 py-1 rounded-md bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-xs font-mono text-slate-600 dark:text-slate-300">{{ eventsNext15Days.length }}</span>
                          </div>
-                         
-                         <div class="space-y-2 flex-1 overflow-y-auto custom-scrollbar-thin">
-                            <div *ngFor="let event of eventsNext15Days.slice(0, 4)" 
+
+                         <!-- Loading State -->
+                         <div *ngIf="isLoadingEvents" class="space-y-2 flex-1">
+                            <div *ngFor="let i of [1,2,3,4]" class="flex items-center space-x-3 p-2">
+                               <div class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-700 animate-pulse"></div>
+                               <div class="flex-1 space-y-2">
+                                  <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-3/4"></div>
+                                  <div class="h-2 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-1/2"></div>
+                               </div>
+                            </div>
+                         </div>
+
+                         <!-- Data Loaded -->
+                         <div *ngIf="!isLoadingEvents" class="space-y-2 flex-1 overflow-y-auto custom-scrollbar-thin">
+                            <div *ngFor="let event of eventsNext15Days.slice(0, 4)"
                                  class="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer group/item"
                                  (click)="navigateToEvent(event, $event)">
                                <div class="w-2 h-2 rounded-full shadow-sm" [style.background-color]="event.color"></div>
@@ -215,9 +245,13 @@ interface Widget {
                                   <p class="text-xs text-slate-400 dark:text-slate-500">{{ formatDate(event.date) }}</p>
                                </div>
                             </div>
-                            <div *ngIf="eventsNext15Days.length === 0" class="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+                            <div *ngIf="eventsNext15Days.length === 0 && !eventsError" class="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
                                <span class="material-icons text-3xl mb-2 opacity-50">event_busy</span>
                                <span class="text-xs">Aucun événement</span>
+                            </div>
+                            <div *ngIf="eventsError" class="flex-1 flex flex-col items-center justify-center text-red-400 dark:text-red-500">
+                               <span class="material-icons text-3xl mb-2">error_outline</span>
+                               <span class="text-xs text-center">{{ eventsError }}</span>
                             </div>
                          </div>
                     </ng-container>
@@ -235,30 +269,42 @@ interface Widget {
                             </div>
                          </div>
 
-                         <div *ngIf="nextMep; else noMep" class="flex-1 flex flex-col">
-                            <div class="text-center my-auto">
-                               <div class="inline-block p-3 rounded-full bg-teal-50 dark:bg-teal-500/10 mb-3 animate-pulse">
-                                  <span class="material-icons text-3xl text-teal-500 dark:text-teal-400">event</span>
-                               </div>
-                               <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1 truncate px-2">{{ nextMep.name }}</h3>
-                               <p class="text-sm text-teal-600 dark:text-teal-400 font-mono">{{ formatDate(nextMep.releaseDate) }}</p>
-                            </div>
-                            
-                            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
-                               <div class="flex items-center justify-between">
-                                  <span class="text-xs text-slate-400 dark:text-slate-500">J-{{ getDaysUntilMep(nextMep.releaseDate) }}</span>
-                                  <button class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium flex items-center transition-colors">
-                                    Détails <span class="material-icons text-xs ml-1">arrow_forward</span>
-                                  </button>
-                                </div>
-                            </div>
+                         <!-- Loading State -->
+                         <div *ngIf="isLoadingReleases" class="flex-1 flex flex-col items-center justify-center">
+                            <div class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse mb-3"></div>
+                            <div class="h-4 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-32 mb-2"></div>
+                            <div class="h-3 bg-slate-200 dark:bg-slate-700 rounded animate-pulse w-24"></div>
                          </div>
-                         <ng-template #noMep>
-                            <div class="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
+
+                         <!-- Data Loaded -->
+                         <div *ngIf="!isLoadingReleases">
+                            <div *ngIf="nextMep && !releasesError" class="flex-1 flex flex-col">
+                               <div class="text-center my-auto">
+                                  <div class="inline-block p-3 rounded-full bg-teal-50 dark:bg-teal-500/10 mb-3 animate-pulse">
+                                     <span class="material-icons text-3xl text-teal-500 dark:text-teal-400">event</span>
+                                  </div>
+                                  <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1 truncate px-2">{{ nextMep.name }}</h3>
+                                  <p class="text-sm text-teal-600 dark:text-teal-400 font-mono">{{ formatDate(nextMep.releaseDate) }}</p>
+                               </div>
+
+                               <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
+                                  <div class="flex items-center justify-between">
+                                     <span class="text-xs text-slate-400 dark:text-slate-500">J-{{ getDaysUntilMep(nextMep.releaseDate) }}</span>
+                                     <button class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium flex items-center transition-colors">
+                                       Détails <span class="material-icons text-xs ml-1">arrow_forward</span>
+                                     </button>
+                                   </div>
+                               </div>
+                            </div>
+                            <div *ngIf="!nextMep && !releasesError" class="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
                                <span class="material-icons text-3xl mb-2 opacity-50">rocket</span>
                                <span class="text-xs">Aucune MEP planifiée</span>
                             </div>
-                         </ng-template>
+                            <div *ngIf="releasesError" class="flex-1 flex flex-col items-center justify-center text-red-400 dark:text-red-500">
+                               <span class="material-icons text-3xl mb-2">error_outline</span>
+                               <span class="text-xs text-center">{{ releasesError }}</span>
+                            </div>
+                         </div>
                     </ng-container>
 
                     <!-- Absences Widget -->
@@ -377,6 +423,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   userNextAbsences: Absence[] = [];
   orderedWidgets: Widget[] = [];
   ABSENCE_LABELS = ABSENCE_LABELS;
+
+  // Loading & Error states
+  isLoadingEvents = false;
+  isLoadingReleases = false;
+  eventsError: string | null = null;
+  releasesError: string | null = null;
 
   // Animation state for new playground
   isPlaygroundNew = false;
@@ -513,24 +565,49 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   /**
    * Charge l'ordre des widgets depuis les préférences utilisateur
+   * Filtre les widgets selon les permissions de l'utilisateur
    */
   private loadWidgetOrder(): void {
     const savedOrder = this.authService.getWidgetOrder();
 
+    // Filtrer les widgets selon les permissions
+    const availableWidgets = this.DEFAULT_WIDGETS.filter(w => this.canAccessWidget(w.type));
+
     if (savedOrder.length > 0) {
-      // Reconstruct widgets based on saved order
+      // Reconstruct widgets based on saved order (filtrés par permissions)
       this.orderedWidgets = savedOrder
-        .map(id => this.DEFAULT_WIDGETS.find(w => w.id === id))
+        .map(id => availableWidgets.find(w => w.id === id))
         .filter((w): w is Widget => w !== undefined);
 
       // Add any new widgets that aren't in saved order
-      const missingWidgets = this.DEFAULT_WIDGETS.filter(
+      const missingWidgets = availableWidgets.filter(
         w => !savedOrder.includes(w.id)
       );
       this.orderedWidgets.push(...missingWidgets);
     } else {
-      // Use default order
-      this.orderedWidgets = [...this.DEFAULT_WIDGETS];
+      // Use default order (filtrés par permissions)
+      this.orderedWidgets = [...availableWidgets];
+    }
+  }
+
+  /**
+   * Vérifie si l'utilisateur peut accéder à un widget donné
+   */
+  private canAccessWidget(widgetType: 'events7days' | 'nextMep' | 'userAbsences'): boolean {
+    const user = this.authService.getCurrentUser();
+    if (!user || !user.permissions) {
+      return false;
+    }
+
+    switch (widgetType) {
+      case 'events7days':
+        return user.permissions.CALENDAR === 'READ' || user.permissions.CALENDAR === 'WRITE';
+      case 'nextMep':
+        return user.permissions.RELEASES === 'READ' || user.permissions.RELEASES === 'WRITE';
+      case 'userAbsences':
+        return user.permissions.ABSENCE === 'READ' || user.permissions.ABSENCE === 'WRITE';
+      default:
+        return false;
     }
   }
 
@@ -571,6 +648,24 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadStatistics(): void {
+    // Subscribe to loading states
+    this.eventService.loading$.subscribe(loading => {
+      this.isLoadingEvents = loading;
+    });
+
+    this.releaseService.loading$.subscribe(loading => {
+      this.isLoadingReleases = loading;
+    });
+
+    // Subscribe to error states
+    this.eventService.error$.subscribe(error => {
+      this.eventsError = error;
+    });
+
+    this.releaseService.error$.subscribe(error => {
+      this.releasesError = error;
+    });
+
     // Load events
     this.eventService.events$.subscribe(events => {
       // Events in the next 15 days
@@ -641,9 +736,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.animateCounter('hotfix', this.hotfixCount);
     });
 
-    // Load absences
+    // Load absences - Only if user has permission
     const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
+    if (currentUser && currentUser.permissions &&
+        (currentUser.permissions.ABSENCE === 'READ' || currentUser.permissions.ABSENCE === 'WRITE')) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const fifteenDaysFromNow = new Date(today);
@@ -718,6 +814,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     const mepDate = new Date(dateString);
     mepDate.setHours(0, 0, 0, 0);
     return differenceInDays(mepDate, today);
+  }
+
+  async retryLoadData(): Promise<void> {
+    if (this.eventsError) {
+      await this.eventService.refreshEvents();
+    }
+    if (this.releasesError) {
+      await this.releaseService.refreshReleases();
+    }
   }
 
   navigateToCalendar(): void {

@@ -11,6 +11,78 @@
 
 **Principe** : Toute information technique DOIT être dans CLAUDE.md ou dans le code source (commentaires Javadoc, README concis).
 
+## ⚠️ Règles de Tests
+
+**CRITICAL** : Avant de considérer une tâche comme terminée, toujours se poser la question : **"Est-il pertinent d'ajouter des tests pour cette modification ?"**
+
+### Quand ajouter des tests ?
+
+✅ **Ajouter systématiquement** :
+- Nouvelle fonctionnalité critique (authentification, permissions, paiements, etc.)
+- Modification de la logique métier existante
+- Ajout ou modification de services avec logique complexe
+- Corrections de bugs (test de non-régression)
+- Validation de règles métier importantes
+
+✅ **Fortement recommandé** :
+- Nouveaux composants avec logique conditionnelle
+- Transformations de données complexes
+- Méthodes utilitaires partagées
+- Guards, interceptors, directives
+
+⚠️ **Optionnel** :
+- Composants purement visuels sans logique
+- Modifications de style/CSS uniquement
+- Fichiers de configuration statiques
+
+❌ **Pas nécessaire** :
+- Modèles/interfaces TypeScript simples
+- Constantes et énumérations
+- Fichiers de configuration environnement
+
+### Workflow de développement avec tests
+
+1. **Avant de coder** : Identifier les cas d'usage à tester
+2. **Pendant le développement** : Écrire les tests en parallèle ou juste après
+3. **Avant de commit** : Exécuter les tests et vérifier qu'ils passent
+4. **Avant de considérer la tâche terminée** : S'assurer que la couverture de test est adéquate
+
+### Framework de test
+
+- **Frontend Angular** : Jest (pas Jasmine)
+  - Utiliser `jest.fn()` pour les mocks (pas `jasmine.createSpyObj`)
+  - Pattern: `mockMethod.mockReturnValue()` (pas `.and.returnValue()`)
+  - Fichiers: `*.spec.ts` dans le même répertoire que le code
+
+- **Backend Spring Boot** : JUnit 5 + Mockito
+  - Tests unitaires: `@ExtendWith(MockitoExtension.class)`
+  - Tests d'intégration: `@SpringBootTest`, `@DataJpaTest`
+  - Fichiers: `src/test/java/.../*Test.java`
+
+### Exemples de tests critiques ajoutés
+
+- `event.service.permissions.spec.ts` : Vérification que les services ne font PAS d'appels API sans permissions
+- `release.service.permissions.spec.ts` : Idem pour le module RELEASES
+- Tests de guards : Vérification des redirections selon les permissions
+
+### Commandes de test
+
+```bash
+# Frontend (Angular + Jest)
+npm test                              # Tous les tests
+npm test -- <nom-fichier>             # Un fichier spécifique
+npm test -- --coverage                # Avec couverture
+
+# Backend (Spring Boot + JUnit)
+./mvnw test                           # Tous les tests
+./mvnw test -Dtest=<NomTest>         # Un test spécifique
+./mvnw test jacoco:report            # Couverture de code
+```
+
+### ⚠️ Rappel Important
+
+**Ne JAMAIS considérer une tâche comme terminée sans avoir vérifié la pertinence d'ajouter des tests ET sans les avoir exécutés avec succès si des tests ont été ajoutés.**
+
 ## Vue d'ensemble
 Application Angular 20 + Spring Boot pour la DSI d'une banque.
 - **Modules**: Calendrier (Timeline trimestrielle), Préparation des MEP (Squads, Features, Actions FF/MF), Release Notes (Gestion microservices par Squad)
@@ -50,9 +122,10 @@ guards/
 directives/
 └── has-permission.directive.ts              # ⚠️ Directive *hasPermission pour masquer éléments UI
 interceptors/
-└── auth.interceptor.ts                      # ⚠️ HTTP Interceptor (ajoute Authorization: Bearer <token>)
+├── auth.interceptor.ts                      # ⚠️ HTTP Interceptor (ajoute Authorization: Bearer <token>)
+└── error.interceptor.ts                     # ⚠️ Gestion erreurs HTTP + auto-logout si serveur indisponible
 services/
-├── event.service.ts, release.service.ts     # CRUD
+├── event.service.ts, release.service.ts     # ⚠️ CRUD + loading$/error$ states
 ├── release-note.service.ts                  # CRUD Release Notes + Export (Markdown/HTML)
 ├── microservice.service.ts                  # ⚠️ CRUD Microservices (référentiel pour Release Notes)
 ├── auth.service.ts                          # ⚠️ Login, logout, stockage token (sessionStorage)
@@ -550,6 +623,363 @@ Requires: PERMISSION_ADMIN_WRITE
 **Permissions non chargées:**
 - Vérifier que la table `user_permissions` contient bien les entrées pour l'utilisateur
 - Vérifier les logs Spring Boot: "Utilisateur authentifié via JWT: {userId} avec {N} authorities"
+
+## Gestion des Erreurs HTTP & Auto-Logout
+
+### Architecture de Gestion d'Erreurs
+
+L'application dispose d'un système robuste de gestion des erreurs HTTP avec auto-déconnexion en cas de serveur indisponible.
+
+#### Problème Résolu
+
+**Contexte initial:** Lorsque le backend est arrêté et que l'utilisateur actualise une page protégée (ex: `/home`), plusieurs requêtes HTTP échouent simultanément :
+1. `EventService.constructor` → GET /api/events
+2. `ReleaseService.constructor` → GET /api/releases
+3. `PlaygroundService.constructor` → POST /api/games/init + GET /api/games
+4. `HomeComponent.loadStatistics()` → GET /api/absences
+
+**Problèmes rencontrés:**
+- 6 toasts "Serveur indisponible" s'affichaient simultanément (spam)
+- L'utilisateur restait sur la page alors qu'il ne pouvait rien faire (authentification impossible)
+- Aucun feedback clair sur l'action à prendre
+
+**Solution finale:** Auto-déconnexion + redirection vers `/login` avec UN SEUL toast explicatif.
+
+#### Composants de la Solution
+
+**1. Error Interceptor (error.interceptor.ts)**
+
+Intercepteur HTTP Angular qui capture toutes les erreurs HTTP et applique les traitements appropriés.
+
+**Code critique:**
+
+```typescript
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
+import { ToastService } from '../services/toast.service';
+import { AuthService } from '../services/auth.service';
+
+// Variable statique pour éviter les redirections multiples
+let hasRedirectedForServerError = false;
+
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+  const toastService = inject(ToastService);
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  return next(req).pipe(
+    catchError((error: HttpErrorResponse) => {
+      let errorMessage = 'Une erreur est survenue';
+      let errorTitle = 'Erreur';
+
+      if (error.error instanceof ErrorEvent) {
+        // Erreur côté client (réseau, timeout, etc.)
+        errorTitle = 'Erreur de connexion';
+        errorMessage = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';
+      } else {
+        // Erreur côté serveur
+        switch (error.status) {
+          case 0:
+            // Backend indisponible
+            if (!hasRedirectedForServerError) {
+              hasRedirectedForServerError = true;
+
+              // Déconnecter l'utilisateur
+              authService.logout();
+
+              // Afficher UN SEUL toast
+              toastService.error(
+                'Serveur indisponible',
+                'Vous avez été déconnecté suite à l\'indisponibilité du serveur.',
+                10000 // Toast plus long (10s)
+              );
+
+              // Rediriger vers /login
+              router.navigate(['/login']);
+
+              // Reset le flag après 5 secondes
+              setTimeout(() => {
+                hasRedirectedForServerError = false;
+              }, 5000);
+            }
+            // Ne PAS afficher de toast supplémentaire si déjà redirigé
+            return throwError(() => error);
+
+          case 401:
+            errorTitle = 'Non autorisé';
+            errorMessage = 'Votre session a expiré. Veuillez vous reconnecter.';
+            break;
+          case 403:
+            errorTitle = 'Accès refusé';
+            errorMessage = 'Vous n\'avez pas les permissions nécessaires pour cette action.';
+            break;
+          case 404:
+            errorTitle = 'Ressource introuvable';
+            errorMessage = error.error?.error?.message || 'La ressource demandée n\'existe pas.';
+            break;
+          case 500:
+            errorTitle = 'Erreur serveur';
+            errorMessage = 'Une erreur interne est survenue sur le serveur.';
+            break;
+          default:
+            errorTitle = `Erreur ${error.status}`;
+            errorMessage = error.error?.error?.message || error.message;
+        }
+      }
+
+      // Afficher le toast d'erreur (sauf pour les erreurs réseau status 0 déjà gérées)
+      if (error.status !== 0) {
+        toastService.error(errorTitle, errorMessage, 7000);
+      }
+
+      return throwError(() => error);
+    })
+  );
+};
+```
+
+**Enregistrement dans main.ts:**
+
+```typescript
+import { errorInterceptor } from './app/interceptors/error.interceptor';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideHttpClient(
+      withInterceptors([authInterceptor, errorInterceptor]) // ⚠️ Ordre important!
+    ),
+    // ...
+  ]
+});
+```
+
+**2. Loading & Error States dans les Services**
+
+Les services `EventService` et `ReleaseService` exposent des Observables pour gérer les états de chargement et d'erreur.
+
+**Pattern utilisé:**
+
+```typescript
+@Injectable({ providedIn: 'root' })
+export class EventService {
+  private loadingSubject = new BehaviorSubject<boolean>(false);
+  public loading$: Observable<boolean> = this.loadingSubject.asObservable();
+
+  private errorSubject = new BehaviorSubject<string | null>(null);
+  public error$: Observable<string | null> = this.errorSubject.asObservable();
+
+  private async loadEvents(): Promise<void> {
+    try {
+      this.loadingSubject.next(true);
+      this.errorSubject.next(null); // Réinitialiser l'erreur
+      const events = await firstValueFrom(this.http.get<Event[]>(this.apiUrl));
+      this.eventsSubject.next(events);
+    } catch (error: any) {
+      console.error('Error loading events:', error);
+      // Stocker le message d'erreur
+      const errorMessage = error.status === 0
+        ? 'Serveur indisponible'
+        : (error.error?.error?.message || 'Erreur lors du chargement des événements');
+      this.errorSubject.next(errorMessage);
+      // Ne pas throw pour ne pas casser le flux
+    } finally {
+      this.loadingSubject.next(false);
+    }
+  }
+
+  async refreshEvents(): Promise<void> {
+    await this.loadEvents();
+  }
+}
+```
+
+**Important:** Les erreurs sont capturées dans le service (pas de throw) pour éviter de casser le flux Observable. L'error interceptor gère déjà l'affichage des toasts.
+
+**3. UI Components avec Loading/Error States**
+
+**HomeComponent:**
+
+```typescript
+export class HomeComponent {
+  // Loading & Error states
+  isLoadingEvents$ = this.eventService.loading$;
+  isLoadingReleases$ = this.releaseService.loading$;
+  eventsError$ = this.eventService.error$;
+  releasesError$ = this.releaseService.error$;
+
+  async retryLoadData(): Promise<void> {
+    await Promise.all([
+      this.eventService.refreshEvents(),
+      this.releaseService.refreshReleases()
+    ]);
+  }
+}
+```
+
+**Template avec skeleton loaders:**
+
+```html
+<!-- Error banner -->
+<div *ngIf="eventsError$ | async as error" class="error-banner">
+  <p>{{ error }}</p>
+  <button (click)="retryLoadData()">Réessayer</button>
+</div>
+
+<!-- Loading skeleton -->
+<div *ngIf="isLoadingEvents$ | async" class="skeleton-loader">
+  <!-- Skeleton cards -->
+</div>
+
+<!-- Données -->
+<div *ngIf="!(isLoadingEvents$ | async) && !(eventsError$ | async)">
+  <!-- Contenu normal -->
+</div>
+```
+
+**Même pattern appliqué dans:**
+- `TimelineContainerComponent` (calendrier)
+- `ReleasesListComponent` (liste des MEP)
+
+#### Flux de Gestion d'Erreur
+
+**Scénario: Backend éteint, utilisateur sur /home**
+
+```
+┌─────────────────────────────────────┐
+│ Utilisateur sur /home               │
+│ Backend s'éteint                    │
+└────────┬────────────────────────────┘
+         │
+    ┌────▼──────────────────────────┐
+    │ 6 requêtes HTTP échouent      │
+    │ (status 0)                    │
+    └────┬──────────────────────────┘
+         │
+    ┌────▼────────────────────────────┐
+    │ error.interceptor.ts            │
+    │ ┌─────────────────────────────┐ │
+    │ │ 1ère erreur détectée        │ │
+    │ │ hasRedirectedForServerError │ │
+    │ │ = false                     │ │
+    │ │                             │ │
+    │ │ → authService.logout()      │ │
+    │ │ → toast.error()             │ │
+    │ │ → router.navigate(['/login'])│ │
+    │ │ → hasRedirectedForServerError│ │
+    │ │   = true                    │ │
+    │ └─────────────────────────────┘ │
+    │                                 │
+    │ ┌─────────────────────────────┐ │
+    │ │ 2ème, 3ème, 4ème, 5ème, 6ème│ │
+    │ │ erreurs détectées           │ │
+    │ │ hasRedirectedForServerError │ │
+    │ │ = true                      │ │
+    │ │                             │ │
+    │ │ → Rien (skip)               │ │
+    │ └─────────────────────────────┘ │
+    └────┬────────────────────────────┘
+         │
+    ┌────▼──────────────────────┐
+    │ Redirection vers /login   │
+    │ + 1 seul toast            │
+    └───────────────────────────┘
+```
+
+#### Codes d'Erreur HTTP Supportés
+
+| Code | Titre | Message | Action |
+|------|-------|---------|--------|
+| 0 | Serveur indisponible | "Vous avez été déconnecté suite à l'indisponibilité du serveur." | Logout + Redirect /login (1 seul toast) |
+| 401 | Non autorisé | "Votre session a expiré. Veuillez vous reconnecter." | Toast uniquement |
+| 403 | Accès refusé | - | `console.warn()` uniquement (pas de toast, géré en amont par les guards) |
+| 404 | Ressource introuvable | Message custom ou "La ressource demandée n'existe pas." | Toast uniquement |
+| 500 | Erreur serveur | "Une erreur interne est survenue sur le serveur." | Toast uniquement |
+| Autre | Erreur {code} | Message custom de l'API | Toast uniquement |
+
+#### Anti-Spam Pattern
+
+**Problème:** 6 requêtes simultanées = 6 toasts identiques
+
+**Solution:** Variable statique `hasRedirectedForServerError` comme flag
+
+```typescript
+let hasRedirectedForServerError = false;
+
+// Dans l'intercepteur
+if (error.status === 0 && !hasRedirectedForServerError) {
+  hasRedirectedForServerError = true;
+
+  // Actions (logout, toast, redirect)
+
+  // Reset après 5 secondes pour permettre un nouveau cycle
+  setTimeout(() => {
+    hasRedirectedForServerError = false;
+  }, 5000);
+}
+```
+
+**Avantages:**
+- ✅ UN SEUL toast affiché, même avec 6 requêtes en échec
+- ✅ Une seule redirection vers /login
+- ✅ Réinitialisation automatique après 5s pour permettre un nouveau cycle si nécessaire
+
+#### Tests Jest
+
+**Fichier:** `error.interceptor.spec.ts`
+
+**Coverage (8 tests, 100% passent):**
+- ✅ Status 0 déclenche logout + toast + redirect
+- ✅ 401 affiche toast uniquement (pas de logout/redirect)
+- ✅ 403 affiche console.warn uniquement (pas de toast, géré en amont)
+- ✅ 404 affiche toast avec message custom si disponible
+- ✅ 404 affiche toast avec message par défaut sinon
+- ✅ 500 affiche toast
+- ✅ Codes d'erreur par défaut (502, etc.) affichent toast avec message custom
+- ✅ Réponses réussies passent sans modification
+
+**Lancer les tests:**
+
+```bash
+cd mabanquetools-webapp
+npm test -- error.interceptor.spec.ts
+```
+
+**Résultat:**
+```
+PASS src/app/interceptors/error.interceptor.spec.ts
+  errorInterceptor
+    ✓ should handle status 0 error (server unavailable)
+    ✓ should handle 401 error with toast
+    ✓ should handle 403 error without toast (handled upstream)
+    ✓ should handle 404 error with custom message if available
+    ✓ should handle 500 error with toast
+    ✓ should pass through successful responses without modification
+    ✓ should handle default error codes with generic message
+    ✓ should handle 404 error with default message if no custom message
+
+Test Suites: 1 passed, 1 total
+Tests:       8 passed, 8 total
+```
+
+#### Dépannage
+
+**Problème: Plusieurs toasts s'affichent malgré le flag**
+- Vérifier que la variable `hasRedirectedForServerError` est bien en dehors de la fonction interceptor (scope global)
+- Vérifier que le timeout de reset est bien de 5000ms
+
+**Problème: L'utilisateur n'est pas déconnecté**
+- Vérifier que `authService.logout()` supprime bien le token du localStorage/sessionStorage
+- Vérifier que `logout()` met à jour les subjects `isAuthenticatedSubject` et `currentUserSubject`
+
+**Problème: Pas de redirection vers /login**
+- Vérifier que `router.navigate(['/login'])` est bien appelé
+- Vérifier que la route `/login` existe dans `app.routes.ts`
+
+**Problème: Les erreurs 401/403/404 ne montrent pas de toast**
+- Vérifier que la condition `if (error.status !== 0)` est bien présente
+- Vérifier que `ToastService` est bien injecté
 
 ## Schéma de Base de Données (MySQL)
 

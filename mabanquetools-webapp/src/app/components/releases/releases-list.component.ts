@@ -46,8 +46,34 @@ import { fr } from 'date-fns/locale';
         </button>
       </div>
 
+      <!-- Error Banner (shown when backend is unavailable) -->
+      <div *ngIf="releasesError$ | async as error"
+           class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg p-4 flex items-start space-x-3">
+        <span class="material-icons text-red-600 dark:text-red-400 mt-0.5">error_outline</span>
+        <div class="flex-1">
+          <h3 class="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">Erreur de chargement</h3>
+          <p class="text-xs text-red-700 dark:text-red-400">{{ error }}</p>
+        </div>
+        <button
+          (click)="retryLoadReleases()"
+          class="px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-900/60 rounded-lg transition-colors flex items-center space-x-1">
+          <span class="material-icons text-sm">refresh</span>
+          <span>Réessayer</span>
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoadingReleases$ | async" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let i of [1,2,3,4,5,6]" class="card-releases p-6 animate-pulse">
+          <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+          <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+        </div>
+      </div>
+
       <!-- Upcoming Releases Section -->
-      <div *ngIf="upcomingReleases.length > 0">
+      <div *ngIf="!(isLoadingReleases$ | async) && upcomingReleases.length > 0">
         <div class="flex items-center space-x-3 mb-4">
           <span class="material-icons text-2xl text-primary-600 dark:text-primary-400">upcoming</span>
           <h2 class="text-2xl font-bold text-gray-900 dark:text-white">MEP à venir</h2>
@@ -172,7 +198,7 @@ import { fr } from 'date-fns/locale';
       </div>
 
       <!-- Past Releases Section -->
-      <div *ngIf="pastReleases.length > 0">
+      <div *ngIf="!(isLoadingReleases$ | async) && pastReleases.length > 0">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center space-x-3">
             <span class="material-icons text-2xl text-gray-600 dark:text-gray-400">history</span>
@@ -547,6 +573,10 @@ export class ReleasesListComponent implements OnInit {
   upcomingReleases: Release[] = [];
   pastReleases: Release[] = [];
 
+  // Loading & Error states
+  isLoadingReleases$ = this.releaseService.loading$;
+  releasesError$ = this.releaseService.error$;
+
   showCreateModal = false;
   isCreating = false;
 
@@ -847,6 +877,10 @@ export class ReleasesListComponent implements OnInit {
 
   closeKebabMenu(): void {
     this.openKebabMenuId = null;
+  }
+
+  async retryLoadReleases(): Promise<void> {
+    await this.releaseService.refreshReleases();
   }
 
 }
