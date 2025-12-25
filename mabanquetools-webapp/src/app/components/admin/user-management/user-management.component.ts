@@ -572,7 +572,7 @@ export class UserManagementComponent implements OnInit {
 
   // Permissions management
   getPermissionModules(): PermissionModule[] {
-    return ['CALENDAR', 'RELEASES', 'ADMIN', 'ABSENCE', 'PLAYGROUND'];
+    return ['CALENDAR', 'RELEASES', 'ADMIN', 'ABSENCE', 'PLAYGROUND', 'BLOG'];
   }
 
   getModuleName(module: PermissionModule): string {
@@ -581,7 +581,8 @@ export class UserManagementComponent implements OnInit {
       RELEASES: 'Préparation des MEP',
       ADMIN: 'Administration',
       ABSENCE: 'Absence',
-      PLAYGROUND: 'Playground'
+      PLAYGROUND: 'Playground',
+      BLOG: 'Blog'
     };
     return names[module];
   }
@@ -592,7 +593,8 @@ export class UserManagementComponent implements OnInit {
       RELEASES: 'rocket_launch',
       ADMIN: 'admin_panel_settings',
       ABSENCE: 'beach_access',
-      PLAYGROUND: 'science'
+      PLAYGROUND: 'science',
+      BLOG: 'article'
     };
     return icons[module];
   }
@@ -603,7 +605,8 @@ export class UserManagementComponent implements OnInit {
       RELEASES: 'Gestion des releases, squads, features et actions',
       ADMIN: 'Accès à l\'administration (gestion des utilisateurs, export/import)',
       ABSENCE: 'Gestion des congés, formations et télétravail',
-      PLAYGROUND: 'Accès au Playground'
+      PLAYGROUND: 'Accès au Playground',
+      BLOG: 'Publication et consultation d\'articles de blog'
     };
     return descriptions[module];
   }

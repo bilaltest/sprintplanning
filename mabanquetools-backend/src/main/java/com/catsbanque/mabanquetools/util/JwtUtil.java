@@ -160,4 +160,23 @@ public class JwtUtil {
             return true; // Par sécurité, considérer comme expiré en cas d'erreur
         }
     }
+
+    /**
+     * Extrait l'userId depuis une requête HTTP (header Authorization).
+     * Utilisé dans les controllers pour récupérer l'utilisateur courant.
+     *
+     * @param request la requête HTTP
+     * @return Optional contenant l'userId si le token est valide, vide sinon
+     */
+    public java.util.Optional<String> extractUserIdFromRequest(jakarta.servlet.http.HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            String userId = extractUserId(token);
+            return java.util.Optional.ofNullable(userId);
+        }
+
+        return java.util.Optional.empty();
+    }
 }

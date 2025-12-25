@@ -33,7 +33,8 @@
             ],
             "styles": [
               "src/styles.scss",
-              "node_modules/driver.js/dist/driver.css"
+              "node_modules/driver.js/dist/driver.css",
+              "node_modules/quill/dist/quill.snow.css"
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [

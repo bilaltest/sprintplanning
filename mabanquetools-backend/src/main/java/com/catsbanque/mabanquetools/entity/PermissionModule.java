@@ -34,5 +34,11 @@ public enum PermissionModule {
     /**
      * Module Playground - Jeux et expérimentations
      */
-    PLAYGROUND
+    PLAYGROUND,
+
+    /**
+     * Module Blog - Blog interne de la DSI
+     * Publication d'articles, commentaires, gestion des contenus
+     */
+    BLOG
 }

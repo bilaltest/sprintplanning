@@ -89,12 +89,13 @@ class PermissionServiceTest {
         Map<PermissionModule, PermissionLevel> result = permissionService.getUserPermissions("user123");
 
         // Then
-        assertThat(result).hasSize(5);
+        assertThat(result).hasSize(6);
         assertThat(result.get(PermissionModule.CALENDAR)).isEqualTo(PermissionLevel.READ);
         assertThat(result.get(PermissionModule.RELEASES)).isEqualTo(PermissionLevel.WRITE);
         assertThat(result.get(PermissionModule.ABSENCE)).isEqualTo(PermissionLevel.WRITE);
         assertThat(result.get(PermissionModule.PLAYGROUND)).isEqualTo(PermissionLevel.NONE);
         assertThat(result.get(PermissionModule.ADMIN)).isEqualTo(PermissionLevel.NONE);
+        assertThat(result.get(PermissionModule.BLOG)).isEqualTo(PermissionLevel.READ);
     }
 
     @Test
@@ -197,10 +198,10 @@ class PermissionServiceTest {
 
         // Then
         ArgumentCaptor<UserPermission> permissionCaptor = ArgumentCaptor.forClass(UserPermission.class);
-        verify(permissionRepository, times(5)).save(permissionCaptor.capture());
+        verify(permissionRepository, times(6)).save(permissionCaptor.capture());
 
         List<UserPermission> savedPermissions = permissionCaptor.getAllValues();
-        assertThat(savedPermissions).hasSize(5);
+        assertThat(savedPermissions).hasSize(6);
 
         // Vérification des permissions spécifiques
         Map<PermissionModule, PermissionLevel> permissionsMap = new HashMap<>();
@@ -211,7 +212,8 @@ class PermissionServiceTest {
                 .containsEntry(PermissionModule.RELEASES, PermissionLevel.WRITE)
                 .containsEntry(PermissionModule.ABSENCE, PermissionLevel.WRITE)
                 .containsEntry(PermissionModule.PLAYGROUND, PermissionLevel.NONE)
-                .containsEntry(PermissionModule.ADMIN, PermissionLevel.NONE);
+                .containsEntry(PermissionModule.ADMIN, PermissionLevel.NONE)
+                .containsEntry(PermissionModule.BLOG, PermissionLevel.READ);
     }
 
     @Test

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { AuthService, User } from './auth.service';
 
-export type PermissionModule = 'CALENDAR' | 'RELEASES' | 'ADMIN' | 'ABSENCE' | 'PLAYGROUND';
+export type PermissionModule = 'CALENDAR' | 'RELEASES' | 'ADMIN' | 'ABSENCE' | 'PLAYGROUND' | 'BLOG';
 export type PermissionLevel = 'NONE' | 'READ' | 'WRITE';
 
 export interface UserPermissions {
@@ -12,6 +12,7 @@ export interface UserPermissions {
   ADMIN: PermissionLevel;
   ABSENCE: PermissionLevel;
   PLAYGROUND: PermissionLevel;
+  BLOG: PermissionLevel;
 }
 
 export interface UpdatePermissionsRequest {
@@ -109,7 +110,8 @@ export class PermissionService {
       RELEASES: 'Préparation des MEP',
       ADMIN: 'Administration',
       ABSENCE: 'Absences',
-      PLAYGROUND: 'Playground'
+      PLAYGROUND: 'Playground',
+      BLOG: 'Blog'
     };
 
     const actionText = action === 'write' ? 'modifier' : 'consulter';

@@ -141,7 +141,10 @@
       "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" npx jest:*)",
       "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npx jest src/app/interceptors/error.interceptor.spec.ts --no-coverage)",
       "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/npx jest src/app/interceptors/error.interceptor.spec.ts --verbose)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(PATH=\"/Users/bilal/.nvm/versions/node/v24.11.1/bin:$PATH\" /Users/bilal/.nvm/versions/node/v24.11.1/bin/npx tsc:*)",
+      "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/ng build)",
+      "Bash(/Users/bilal/.nvm/versions/node/v24.11.1/bin/node /Users/bilal/.nvm/versions/node/v24.11.1/bin/npx ng build:*)"
     ],
     "deny": [],
     "ask": []

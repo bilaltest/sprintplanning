@@ -5,6 +5,7 @@ import { calendarGuard } from './guards/calendar.guard';
 import { releasesGuard } from './guards/releases.guard';
 import { absenceGuard } from './guards/absence.guard';
 import { playgroundGuard } from './guards/playground.guard';
+import { blogGuard } from './guards/blog.guard';
 
 export const routes: Routes = [
   {
@@ -187,6 +188,42 @@ export const routes: Routes = [
           ),
         canActivate: [absenceGuard],
         data: { breadcrumb: 'Absences' }
+      },
+      {
+        path: 'blog',
+        loadComponent: () =>
+          import('./components/blog/blog-list.component').then(
+            m => m.BlogListComponent
+          ),
+        canActivate: [blogGuard],
+        data: { breadcrumb: 'Blog' }
+      },
+      {
+        path: 'blog/new',
+        loadComponent: () =>
+          import('./components/blog/blog-post-form.component').then(
+            m => m.BlogPostFormComponent
+          ),
+        canActivate: [blogGuard],
+        data: { breadcrumb: 'Nouvel Article' }
+      },
+      {
+        path: 'blog/:slug',
+        loadComponent: () =>
+          import('./components/blog/blog-post-view.component').then(
+            m => m.BlogPostViewComponent
+          ),
+        canActivate: [blogGuard],
+        data: { breadcrumb: 'Article' }
+      },
+      {
+        path: 'blog/:id/edit',
+        loadComponent: () =>
+          import('./components/blog/blog-post-form.component').then(
+            m => m.BlogPostFormComponent
+          ),
+        canActivate: [blogGuard],
+        data: { breadcrumb: 'Modifier Article' }
       }
     ]
   }

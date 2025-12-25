@@ -100,6 +100,7 @@ public class PermissionService {
      * - CALENDAR: READ (lecture seule du calendrier)
      * - RELEASES: WRITE (gestion complète des releases)
      * - ABSENCE: WRITE (gestion complète des absences)
+     * - BLOG: READ (lecture et commentaires sur le blog)
      * - PLAYGROUND: NONE (pas d'accès au playground)
      * - ADMIN: NONE (pas d'accès admin)
      *
@@ -112,6 +113,7 @@ public class PermissionService {
         createOrUpdatePermission(user, PermissionModule.ADMIN, PermissionLevel.NONE);
         createOrUpdatePermission(user, PermissionModule.ABSENCE, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.PLAYGROUND, PermissionLevel.NONE);
+        createOrUpdatePermission(user, PermissionModule.BLOG, PermissionLevel.READ);
 
         log.info("Permissions par défaut vérifiées/créées pour l'utilisateur {}", user.getEmail());
     }
@@ -125,6 +127,7 @@ public class PermissionService {
      * - CALENDAR: WRITE (gestion complète du calendrier)
      * - RELEASES: WRITE (gestion complète des releases)
      * - ABSENCE: WRITE (gestion complète des absences)
+     * - BLOG: WRITE (gestion complète du blog, modération)
      * - PLAYGROUND: WRITE (accès complet au playground)
      * - ADMIN: WRITE (accès admin complet)
      *
@@ -137,6 +140,7 @@ public class PermissionService {
         createOrUpdatePermission(user, PermissionModule.ADMIN, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.ABSENCE, PermissionLevel.WRITE);
         createOrUpdatePermission(user, PermissionModule.PLAYGROUND, PermissionLevel.WRITE);
+        createOrUpdatePermission(user, PermissionModule.BLOG, PermissionLevel.WRITE);
 
         log.info("Permissions admin créées/vérifiées pour l'utilisateur {}", user.getEmail());
     }
@@ -225,6 +229,7 @@ public class PermissionService {
         defaults.put(PermissionModule.ADMIN, PermissionLevel.NONE);
         defaults.put(PermissionModule.ABSENCE, PermissionLevel.WRITE);
         defaults.put(PermissionModule.PLAYGROUND, PermissionLevel.NONE);
+        defaults.put(PermissionModule.BLOG, PermissionLevel.READ);
         return defaults;
     }
 }

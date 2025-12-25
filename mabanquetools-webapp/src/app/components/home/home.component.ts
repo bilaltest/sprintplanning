@@ -16,6 +16,8 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { OnboardingService } from '@services/onboarding.service';
 import { WelcomeModalComponent } from '../onboarding/welcome-modal/welcome-modal.component';
+import { BlogSectionComponent } from './blog-section.component';
+import { PermissionService } from '@services/permission.service';
 import { driver } from 'driver.js';
 
 interface Widget {
@@ -26,7 +28,7 @@ interface Widget {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, DragDropModule, MatDialogModule],
+  imports: [CommonModule, DragDropModule, MatDialogModule, BlogSectionComponent],
   template: `
     <div class="min-h-screen relative overflow-hidden selection:bg-emerald-500/30 selection:text-emerald-900 dark:selection:text-emerald-100 transition-colors duration-300">
       
@@ -349,6 +351,9 @@ interface Widget {
 
           </div>
         </section>
+
+        <!-- Blog Section -->
+        <app-blog-section *ngIf="canAccessBlog()"></app-blog-section>
       </div>
     </div>
   `,
@@ -864,6 +869,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     const permission = user.permissions[module];
     return permission === 'READ' || permission === 'WRITE';
+  }
+
+  canAccessBlog(): boolean {
+    return this.canAccess('BLOG' as PermissionModule);
   }
 
   navigateToAbsenceDate(dateStr: string, event: MouseEvent): void {
