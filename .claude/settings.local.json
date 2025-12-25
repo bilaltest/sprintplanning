@@ -130,7 +130,11 @@
       "Bash(mvn clean test:*)",
       "Bash(./verify_permissions.sh:*)",
       "Bash(./check_teams.sh:*)",
-      "Bash(mvn clean compile:*)"
+      "Bash(mvn clean compile:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbjAwMSIsImVtYWlsIjoiYWRtaW4iLCJmaXJzdE5hbWUiOiJBZG1pbiIsImxhc3ROYW1lIjoiU3lzdMOobWUiLCJpYXQiOjE3MzU4MTk4NzAsImV4cCI6MTc2NTkwNjI3MH0.VgBvDxjLdhvVkGLCF_-JKXZ_NYHlWzGQNZc0Eei5xog\")",
+      "Bash(/tmp/test-color-chaos.sh)",
+      "Bash(mvn clean package:*)",
+      "Bash(1 tail -15 /tmp/package.log)"
     ],
     "deny": [],
     "ask": []

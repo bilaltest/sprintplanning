@@ -275,6 +275,8 @@ public class GameService {
                         "Tapez un maximum de mots en français en 60 secondes !", "keyboard"),
                 new GameInitData("typing-en", "Typing Challenge EN",
                         "Type as many English words as you can in 60 seconds!", "keyboard"),
+                new GameInitData("color-chaos", "Color Chaos",
+                        "L'interface ment ! Cliquez sur la bonne couleur malgré le feedback trompeur !", "palette"),
                 new GameInitData("memory-game", "Memory Game",
                         "Trouvez toutes les paires de cartes le plus vite possible !", "psychology"),
                 new GameInitData("math-rush", "Math Rush",

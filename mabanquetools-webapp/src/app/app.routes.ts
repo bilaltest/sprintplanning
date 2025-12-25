@@ -144,6 +144,15 @@ export const routes: Routes = [
         data: { breadcrumb: 'Typing Challenge EN' }
       },
       {
+        path: 'playground/color-chaos',
+        loadComponent: () =>
+          import('./components/playground/color-chaos/color-chaos.component').then(
+            m => m.ColorChaosComponent
+          ),
+        canActivate: [playgroundGuard],
+        data: { breadcrumb: 'Color Chaos' }
+      },
+      {
         path: 'playground/memory-game',
         loadComponent: () =>
           import('./components/playground/memory-game/memory-game.component').then(

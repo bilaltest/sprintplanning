@@ -363,6 +363,10 @@ export class PlaygroundComponent implements OnInit {
       gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)',
       hoverGradient: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%)'
     },
+    'color-chaos': {
+      gradient: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
+      hoverGradient: 'linear-gradient(135deg, #a78bfa 0%, #f472b6 50%, #fbbf24 100%)'
+    },
     'memory-game': {
       gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%)',
       hoverGradient: 'linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%)'

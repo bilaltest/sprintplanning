@@ -498,7 +498,9 @@ Body: {
   "permissions": {
     "CALENDAR": "WRITE",
     "RELEASES": "READ",
-    "ADMIN": "NONE"
+    "ADMIN": "NONE",
+    "PLAYGROUND": "NONE",
+    "ABSENCE": "WRITE"
   }
 }
 Requires: PERMISSION_ADMIN_WRITE
@@ -509,7 +511,7 @@ Requires: PERMISSION_ADMIN_WRITE
 **Token JWT:**
 - Algorithme: HS256 (HMAC with SHA-256)
 - Secret: Défini dans `application.properties` (à changer en production!)
-- Expiration: 24 heures
+- Expiration: 30 jours
 - Claims: userId, email, firstName, lastName, iat (issued at), exp (expiration)
 
 **Mots de passe:**
@@ -1081,34 +1083,6 @@ mvn spring-boot:run
 ./mvnw test
 ```
 
-### Tests de Non-Régression Permissions
-⚠️ **IMPORTANT**: À chaque nouvelle feature, exécuter les tests de non-régression du système de permissions !
-
-```bash
-# Script de test automatique
-./test-permissions.sh
-
-# Ce script teste :
-# ✅ Login admin avec permissions WRITE sur tous les modules
-# ✅ Modification des permissions via API admin
-# ✅ Nouveau login renvoie permissions mises à jour dans JWT
-# ✅ Accès refusé aux endpoints avec NONE (403)
-# ✅ Accès autorisé avec READ/WRITE (200)
-# ✅ Différence entre READ (GET OK, POST/PUT/DELETE KO) et WRITE (tout OK)
-```
-
-**Documentation complète** : Voir `PERMISSIONS_TESTING_GUIDE.md` pour :
-- Scénarios de test détaillés
-- Guide de test manuel UI Angular
-- API de gestion des permissions
-- Dépannage commun
-- Exemples d'utilisation de la directive `*hasPermission`
-
-**Checklist avant commit** :
-- [ ] Guards protègent bien les routes sensibles
-- [ ] Sidebar filtre les menus selon permissions
-- [ ] Backend renvoie 403 pour accès non autorisés
-- [ ] Script `./test-permissions.sh` passe tous les tests
 
 ### Configuration MySQL
 ```sql
@@ -1259,14 +1233,10 @@ spring.jpa.hibernate.ddl-auto=update
       - Nettoyé logs de debug excessifs
       - Simplifié `applyFilters()` en supprimant le code temporaire et les logs détaillés
     - **Impact**: Amélioration de la maintenabilité et de la fiabilité du code, résolution définitive du bug des changes.
-- **Auth**: JWT token-based (remplace password "NMB"), admin par défaut (email: "admin", password: "admin").
+- **Auth**: JWT token-based (remplace password "NMB"), admin par défaut (email: "bilal.djebbari@ca-ts.fr", password: "password").
 - **Version**: Incluse dans nom release.
 - **Cascade**: JPA cascade delete sur relations @OneToMany.
 - **Permissions**: Système granulaire par module avec 3 niveaux (NONE/READ/WRITE).
   - ⚠️ **CRITIQUE** : Respecter le système de permissions sur toute nouvelle feature !
-  - Voir section "Système de Permissions" ci-dessus pour implémentation obligatoire
-  - Tests automatisés : `./test-permissions.sh`
-  - Documentation : `PERMISSIONS_TESTING_GUIDE.md` + `PERMISSIONS_IMPLEMENTATION_SUMMARY.md`
-
 ---
 **Équipe**: DSI Banque | **Stack**: Angular 20 + Spring Boot 3.5.0 + MySQL | **Auth**: JWT + Permissions granulaires
