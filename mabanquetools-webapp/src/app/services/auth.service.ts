@@ -54,6 +54,9 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(this.getStoredUser());
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
 
+  // Event to notify when playground is unlocked (for animation)
+  public playgroundUnlocked$ = new BehaviorSubject<boolean>(false);
+
   constructor(private http: HttpClient) { }
 
   private checkInitialAuth(): boolean {
@@ -289,6 +292,34 @@ export class AuthService {
         success: false,
         message: error.error?.error || 'Erreur lors du changement de mot de passe'
       };
+    }
+  }
+
+  /**
+   * (Easter Egg) Débloque le module Playground
+   */
+  async unlockPlayground(): Promise<boolean> {
+    try {
+      const token = this.getToken();
+      if (!token) return false;
+
+      const response = await firstValueFrom(
+        this.http.post<{ user: User; message: string }>(`${this.API_URL}/unlock-playground`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      );
+
+      // Mettre à jour l'utilisateur stocké avec les nouvelles permissions
+      localStorage.setItem(this.USER_KEY, JSON.stringify(response.user));
+      this.currentUserSubject.next(response.user);
+
+      // Notify the application
+      this.playgroundUnlocked$.next(true);
+
+      return true;
+    } catch (error) {
+      console.error('Erreur lors du déblocage du playground:', error);
+      return false;
     }
   }
 

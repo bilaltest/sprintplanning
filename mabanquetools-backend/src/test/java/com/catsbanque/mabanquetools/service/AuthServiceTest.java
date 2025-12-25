@@ -338,4 +338,24 @@ class AuthServiceTest {
         // Then
         verify(userRepository).save(argThat(u -> u.getPassword().equals("hashedNewPassword")));
     }
+
+    @Test
+    @DisplayName("UnlockPlayground - Grants playground permission")
+    void testUnlockPlayground() {
+        // Given
+        String userId = "user-123";
+        User user = new User();
+        user.setId(userId);
+
+        // Mock getCurrentUser call inside unlockPlayground
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        // We need to mock permissions fetch
+        when(permissionService.getUserPermissions(userId)).thenReturn(java.util.Map.of());
+
+        // When
+        authService.unlockPlayground(userId);
+
+        // Then
+        verify(permissionService).grantPlaygroundAccess(userId);
+    }
 }

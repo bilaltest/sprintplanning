@@ -268,4 +268,23 @@ class PermissionServiceTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Utilisateur non trouvé");
     }
+
+    @Test
+    void grantPlaygroundAccess_ShouldUpdatePermissionToWrite() {
+        // Given
+        when(userRepository.findById("user123")).thenReturn(Optional.of(testUser));
+        when(permissionRepository.findByUserIdAndModule("user123", PermissionModule.PLAYGROUND))
+                .thenReturn(Optional.empty()); // Assume none initially
+
+        // When
+        permissionService.grantPlaygroundAccess("user123");
+
+        // Then
+        ArgumentCaptor<UserPermission> permissionCaptor = ArgumentCaptor.forClass(UserPermission.class);
+        verify(permissionRepository).save(permissionCaptor.capture());
+
+        UserPermission saved = permissionCaptor.getValue();
+        assertThat(saved.getModule()).isEqualTo(PermissionModule.PLAYGROUND);
+        assertThat(saved.getPermissionLevel()).isEqualTo(PermissionLevel.WRITE);
+    }
 }

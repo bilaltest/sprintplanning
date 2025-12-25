@@ -159,4 +159,23 @@ public class AuthController {
 
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * POST /api/auth/unlock-playground
+     * Easter Egg: Débloque l'accès au playground
+     */
+    @PostMapping("/unlock-playground")
+    public ResponseEntity<UpdatePreferencesResponse> unlockPlayground(Authentication authentication) {
+        String userId = (String) authentication.getPrincipal();
+        log.info("POST /api/auth/unlock-playground - User: {}", userId);
+
+        UserDto updatedUser = authService.unlockPlayground(userId);
+
+        UpdatePreferencesResponse response = UpdatePreferencesResponse.builder()
+                .message("Une nouvelle fonctionnalité sauvage apparaît !")
+                .user(updatedUser)
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
 }

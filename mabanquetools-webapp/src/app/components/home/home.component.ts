@@ -120,7 +120,8 @@ interface Widget {
             
             <!-- Playground Card -->
             <div *ngIf="canAccess('PLAYGROUND')" (click)="navigateToPlayground()"
-                 class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
+                 class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1"
+                 [ngClass]="{'animate-blob': isPlaygroundNew}">
               <div class="absolute inset-0 bg-gradient-to-br from-violet-400/20 to-fuchsia-500/20 dark:from-violet-500/20 dark:to-fuchsia-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
@@ -377,6 +378,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   orderedWidgets: Widget[] = [];
   ABSENCE_LABELS = ABSENCE_LABELS;
 
+  // Animation state for new playground
+  isPlaygroundNew = false;
+
+
   // Stats pour compteurs animés
   totalEvents = 0;
   activeReleases = 0;
@@ -413,6 +418,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadWidgetOrder();
     this.loadStatistics();
     this.checkOnboarding();
+
+    // Subscribe to playground unlock event (for wobble animation)
+    this.authService.playgroundUnlocked$.subscribe(unlocked => {
+      if (unlocked) {
+        this.isPlaygroundNew = true;
+        // Reset after animation (approx 7s)
+        setTimeout(() => {
+          this.isPlaygroundNew = false;
+          // Also reset the subject to avoid re-triggering on nav back
+          this.authService.playgroundUnlocked$.next(false);
+        }, 7000);
+      }
+    });
   }
 
 

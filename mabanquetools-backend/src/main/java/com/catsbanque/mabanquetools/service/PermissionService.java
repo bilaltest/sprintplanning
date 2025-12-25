@@ -200,6 +200,20 @@ public class PermissionService {
     }
 
     /**
+     * Accorde l'accès au module PLAYGROUND pour un utilisateur (Easter Egg).
+     *
+     * @param userId l'ID de l'utilisateur
+     */
+    @Transactional
+    public void grantPlaygroundAccess(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé: " + userId));
+
+        createOrUpdatePermission(user, PermissionModule.PLAYGROUND, PermissionLevel.WRITE);
+        log.info("Accès PLAYGROUND accordé à l'utilisateur {}", user.getEmail());
+    }
+
+    /**
      * Retourne les permissions par défaut (utilisées en cas d'erreur).
      *
      * @return Map des permissions par défaut

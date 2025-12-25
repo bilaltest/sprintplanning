@@ -24,7 +24,8 @@ describe('SidebarComponent', () => {
         authServiceMock = {
             currentUser$: currentUserSubject.asObservable(),
             logout: jest.fn(),
-            changePassword: jest.fn()
+            changePassword: jest.fn(),
+            updatePreferences: jest.fn()
         };
 
         sidebarServiceMock = {
@@ -95,5 +96,24 @@ describe('SidebarComponent', () => {
         const passwordButton = buttons.find(btn => btn.nativeElement.textContent.includes('Mot de passe'));
 
         expect(passwordButton).toBeFalsy();
+    });
+
+    it('should trigger Easter Egg on 10 quick theme toggles', async () => {
+        // Setup user so updatePreferences is called
+        const user = { id: '1', themePreference: 'light' };
+        currentUserSubject.next(user);
+
+        // Mock updatePreferences
+        authServiceMock.updatePreferences.mockResolvedValue(true);
+
+        // Spy on modal
+        const modalSpy = jest.spyOn(component.easterEggModal, 'open');
+
+        // Click 10 times
+        for (let i = 0; i < 10; i++) {
+            await component.toggleDarkMode();
+        }
+
+        expect(modalSpy).toHaveBeenCalled();
     });
 });

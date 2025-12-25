@@ -308,6 +308,19 @@ public class AuthService {
     }
 
     /**
+     * Débloque l'accès au playground pour l'utilisateur (Easter Egg)
+     */
+    @Transactional
+    public UserDto unlockPlayground(String userId) {
+        log.info("Déblocage du playground pour l'utilisateur: {}", userId);
+
+        permissionService.grantPlaygroundAccess(userId);
+
+        // Return updated user with permissions
+        return getCurrentUser(userId);
+    }
+
+    /**
      * Record pour stocker le prénom et nom
      */
     private record NamePair(String firstName, String lastName) {

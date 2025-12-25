@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
@@ -7,6 +7,7 @@ import { SidebarService } from '@services/sidebar.service';
 import { AuthService, User } from '@services/auth.service';
 import { PermissionService, PermissionModule } from '@services/permission.service';
 import { ToastService } from '@services/toast.service';
+import { EasterEggModalComponent } from './easter-egg-modal.component';
 
 interface NavItem {
   label: string;
@@ -19,8 +20,11 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, EasterEggModalComponent],
   template: `
+    <!-- Easter Egg Modal -->
+    <app-easter-egg-modal #easterEggModal (closed)="onEasterEggClosed()"></app-easter-egg-modal>
+
     <!-- Mobile backdrop overlay -->
     <div
       *ngIf="isMobileMenuOpen && isMobile"
@@ -315,6 +319,14 @@ export class SidebarComponent implements OnInit {
     { label: 'Admin', icon: 'admin_panel_settings', route: '/admin', requiredModule: 'ADMIN' }
   ];
 
+  // Easter Egg Logic
+  @ViewChild('easterEggModal') easterEggModal!: EasterEggModalComponent;
+  private clickCount = 0;
+  private lastClickTime = 0;
+  private readonly CLICK_LIMIT = 10;
+  private readonly TIME_LIMIT = 10000; // 10 seconds
+  private firstClickTime = 0;
+
   constructor(
     private router: Router,
     private sidebarService: SidebarService,
@@ -395,6 +407,8 @@ export class SidebarComponent implements OnInit {
   }
 
   async toggleDarkMode(): Promise<void> {
+    this.handleEasterEggClick();
+
     this.isDark = !this.isDark;
     const theme = this.isDark ? 'dark' : 'light';
 
@@ -408,6 +422,54 @@ export class SidebarComponent implements OnInit {
     if (this.currentUser) {
       await this.authService.updatePreferences(theme);
     }
+  }
+
+  private handleEasterEggClick() {
+    const now = Date.now();
+
+    // Reset if too long has passed since first click
+    if (this.clickCount === 0 || (now - this.lastClickTime > 2000)) { // Reset if more than 2s between clicks
+      // Logic update: The user said "10 times in less than 10 seconds".
+      // So I should track the window of time.
+
+      if (this.clickCount === 0) {
+        this.firstClickTime = now;
+      }
+    }
+
+    // Check if the sequence is valid so far
+    // Actually, simpler logic: 
+    // If (now - firstClickTime) > 10000, reset count to 1 and reset start time.
+    if (this.clickCount > 0 && (now - this.firstClickTime > this.TIME_LIMIT)) {
+      this.clickCount = 0;
+      this.firstClickTime = now;
+    }
+
+    if (this.clickCount === 0) {
+      this.firstClickTime = now;
+    }
+
+    this.clickCount++;
+    this.lastClickTime = now;
+
+    if (this.clickCount >= this.CLICK_LIMIT) {
+      // Trigger Easter Egg
+      if (now - this.firstClickTime <= this.TIME_LIMIT) {
+        this.triggerEasterEgg();
+      }
+      // Reset after triggering or failing
+      this.clickCount = 0;
+    }
+  }
+
+  private triggerEasterEgg() {
+    // Check if user already has permissions? Or let them play anyway?
+    // Playing anyway is more fun.
+    this.easterEggModal.open();
+  }
+
+  onEasterEggClosed() {
+    // Reset anything if needed
   }
 
   private applyTheme(isDark: boolean): void {
