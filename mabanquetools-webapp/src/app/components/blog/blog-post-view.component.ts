@@ -6,14 +6,15 @@ import { BlogService } from '../../services/blog.service';
 import { BlogCommentService } from '../../services/blog-comment.service';
 import { AuthService } from '../../services/auth.service';
 import { PermissionService } from '../../services/permission.service';
-import { BlogPost, BlogComment } from '../../models/blog.model';
+import { BlogPost, BlogComment, BlogAuthor } from '../../models/blog.model';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
 import { ToastService } from '../../services/toast.service';
+import { HighlightMentionsPipe } from '../../pipes/highlight-mentions.pipe';
 
 @Component({
   selector: 'app-blog-post-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, HasPermissionDirective],
+  imports: [CommonModule, FormsModule, HasPermissionDirective, HighlightMentionsPipe],
   template: `
     <div class="container mx-auto px-4 py-8 max-w-4xl">
       <!-- Loading State -->
@@ -136,13 +137,33 @@ import { ToastService } from '../../services/toast.service';
         </h2>
 
         <!-- New Comment Form -->
-        <div class="mb-8">
+        <div class="mb-8 relative">
           <textarea
+            #commentTextarea
             [(ngModel)]="newCommentContent"
-            placeholder="Ajouter un commentaire..."
+            (input)="onCommentInput($event)"
+            (keydown)="onCommentKeydown($event)"
+            placeholder="Ajouter un commentaire... (utilisez @ pour mentionner)"
             rows="3"
             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
           ></textarea>
+
+          <!-- Autocomplete dropdown -->
+          <div *ngIf="showUserAutocomplete" class="autocomplete-dropdown">
+            <div
+              *ngFor="let user of filteredUsers; let i = index"
+              class="autocomplete-item"
+              [class.selected]="i === selectedUserIndex"
+              (mouseenter)="selectedUserIndex = i"
+              (click)="insertMention(user)">
+              <span class="user-avatar">{{ user.firstName[0] }}{{ user.lastName[0] }}</span>
+              <div class="user-info">
+                <p class="user-name">{{ user.firstName }} {{ user.lastName }}</p>
+                <p class="user-email">{{ user.email }}</p>
+              </div>
+            </div>
+          </div>
+
           <div class="flex justify-end mt-2">
             <button
               (click)="submitComment()"
@@ -173,7 +194,7 @@ import { ToastService } from '../../services/toast.service';
                     {{ formatDate(comment.createdAt) }}
                   </span>
                 </div>
-                <p class="text-gray-700 dark:text-gray-300 mb-2">{{ comment.content }}</p>
+                <p class="text-gray-700 dark:text-gray-300 mb-2 comment-content" [innerHTML]="comment.content | highlightMentions"></p>
                 <div class="flex items-center gap-4 text-sm">
                   <button
                     (click)="toggleCommentLike(comment)"
@@ -210,7 +231,85 @@ import { ToastService } from '../../services/toast.service';
       </div>
     </div>
   `,
-  styles: []
+  styles: [`
+    .autocomplete-dropdown {
+      position: absolute;
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      margin-top: -8px;
+      width: 100%;
+    }
+
+    :host-context(.dark) .autocomplete-dropdown {
+      background: var(--gray-800);
+      border-color: var(--gray-700);
+    }
+
+    .autocomplete-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item.selected {
+      background: var(--gray-50);
+    }
+
+    :host-context(.dark) .autocomplete-item:hover,
+    :host-context(.dark) .autocomplete-item.selected {
+      background: var(--gray-700);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .user-email {
+      margin: 0;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .comment-content :deep(.mention) {
+      color: var(--primary-color);
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .comment-content :deep(.mention):hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+  `]
 })
 export class BlogPostViewComponent implements OnInit {
   post: BlogPost | null = null;
@@ -218,6 +317,13 @@ export class BlogPostViewComponent implements OnInit {
   loading = true;
   newCommentContent = '';
   currentUserId: string | null = null;
+
+  // Autocomplete mentions
+  showUserAutocomplete = false;
+  filteredUsers: BlogAuthor[] = [];
+  selectedUserIndex = 0;
+  mentionStartIndex = -1;
+  allUsers: BlogAuthor[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -285,6 +391,7 @@ export class BlogPostViewComponent implements OnInit {
     if (!this.post?.id || !this.newCommentContent.trim()) return;
     try {
       await this.commentService.createComment(this.post.id, {
+        postId: this.post.id,
         content: this.newCommentContent.trim()
       });
       this.newCommentContent = '';
@@ -345,5 +452,68 @@ export class BlogPostViewComponent implements OnInit {
       month: 'long',
       day: 'numeric'
     });
+  }
+
+  onCommentInput(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    const cursorPos = textarea.selectionStart;
+    const textBeforeCursor = this.newCommentContent.substring(0, cursorPos);
+
+    // Chercher le dernier @ avant le curseur
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+
+      // Vérifier qu'il n'y a pas d'espace après @
+      if (!textAfterAt.includes(' ')) {
+        this.mentionStartIndex = lastAtIndex;
+        const query = textAfterAt.toLowerCase();
+
+        // Filtrer utilisateurs
+        this.filteredUsers = this.allUsers.filter(user => {
+          const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+          const email = user.email.toLowerCase();
+          return fullName.includes(query) || email.includes(query);
+        });
+
+        this.showUserAutocomplete = this.filteredUsers.length > 0;
+        this.selectedUserIndex = 0;
+        return;
+      }
+    }
+
+    this.showUserAutocomplete = false;
+  }
+
+  onCommentKeydown(event: KeyboardEvent): void {
+    if (!this.showUserAutocomplete) return;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.selectedUserIndex = Math.min(
+        this.selectedUserIndex + 1,
+        this.filteredUsers.length - 1
+      );
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.selectedUserIndex = Math.max(this.selectedUserIndex - 1, 0);
+    } else if (event.key === 'Enter' || event.key === 'Tab') {
+      event.preventDefault();
+      this.insertMention(this.filteredUsers[this.selectedUserIndex]);
+    } else if (event.key === 'Escape') {
+      this.showUserAutocomplete = false;
+    }
+  }
+
+  insertMention(user: BlogAuthor): void {
+    const mention = `@${user.email.split('@')[0]}`;
+
+    const before = this.newCommentContent.substring(0, this.mentionStartIndex);
+    const after = this.newCommentContent.substring(this.mentionStartIndex);
+    const afterQuery = after.substring(after.indexOf(' ') !== -1 ? after.indexOf(' ') : after.length);
+
+    this.newCommentContent = before + mention + ' ' + afterQuery;
+    this.showUserAutocomplete = false;
   }
 }

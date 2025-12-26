@@ -10,6 +10,7 @@ import com.catsbanque.mabanquetools.exception.ResourceNotFoundException;
 import com.catsbanque.mabanquetools.repository.BlogCommentRepository;
 import com.catsbanque.mabanquetools.repository.BlogPostRepository;
 import com.catsbanque.mabanquetools.repository.UserRepository;
+import com.catsbanque.mabanquetools.util.UserMentionParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,8 @@ public class BlogCommentService {
     private final BlogCommentRepository commentRepository;
     private final BlogPostRepository postRepository;
     private final UserRepository userRepository;
+    private final UserMentionParser mentionParser;
+    private final BlogNotificationService notificationService;
 
     /**
      * Récupère tous les commentaires top-level d'un post (sans parent).
@@ -79,9 +82,47 @@ public class BlogCommentService {
         BlogComment saved = commentRepository.save(comment);
         log.info("Commentaire créé avec succès: {}", saved.getId());
 
-        // TODO: Créer des notifications (v2.0)
-        // - Notifier l'auteur du post si c'est un commentaire top-level
-        // - Notifier l'auteur du commentaire parent si c'est une réponse
+        // ===== NOTIFICATIONS =====
+
+        // 1. Parser mentions @user et créer notifications MENTION
+        List<User> mentionedUsers = mentionParser.extractMentions(request.getContent());
+        for (User mentionedUser : mentionedUsers) {
+            // Ne pas notifier si l'auteur se mentionne lui-même
+            if (!mentionedUser.getId().equals(authorId)) {
+                notificationService.createMentionNotification(
+                    mentionedUser,
+                    author,
+                    post.getId(),
+                    saved.getId(),
+                    "vous a mentionné dans un commentaire"
+                );
+            }
+        }
+
+        // 2. Notifier l'auteur du post si c'est un commentaire top-level (et si différent de l'auteur du commentaire)
+        if (request.getParentId() == null && !post.getAuthor().getId().equals(authorId)) {
+            notificationService.createCommentNotification(
+                post.getAuthor(),
+                author,
+                post.getId(),
+                saved.getId()
+            );
+        }
+
+        // 3. Notifier l'auteur du commentaire parent si c'est une réponse (et si différent de l'auteur)
+        if (request.getParentId() != null) {
+            BlogComment parent = commentRepository.findById(request.getParentId()).orElse(null);
+            if (parent != null && !parent.getAuthor().getId().equals(authorId)) {
+                notificationService.createReplyNotification(
+                    parent.getAuthor(),
+                    author,
+                    post.getId(),
+                    saved.getId()
+                );
+            }
+        }
+
+        // =========================
 
         return BlogCommentDto.fromEntity(saved);
     }

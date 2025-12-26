@@ -101,7 +101,7 @@ export class BlogService {
    */
   async publishPost(postId: string): Promise<BlogPost> {
     const post = await firstValueFrom(
-      this.http.post<BlogPost>(`${this.apiUrl}/${postId}/publish`, {})
+      this.http.put<BlogPost>(`${this.apiUrl}/${postId}/publish`, {})
     );
     await this.refreshPosts();
     return post;

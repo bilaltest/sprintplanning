@@ -2,22 +2,23 @@ import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } fr
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import Quill from 'quill';
+import { EditorComponent } from '@tinymce/tinymce-angular';
 import { BlogService } from '../../services/blog.service';
-import { BlogPost, BlogPostStatus } from '../../models/blog.model';
+import { BlogPost, BlogPostStatus, BlogImage } from '../../models/blog.model';
 import { ToastService } from '../../services/toast.service';
+import { ImageUploadModalComponent } from './image-upload-modal.component';
 
 @Component({
   selector: 'app-blog-post-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, EditorComponent, ImageUploadModalComponent],
   template: `
     <div class="container mx-auto px-4 py-8 max-w-4xl">
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
         <!-- Header -->
         <div class="mb-8">
           <h1 class="text-3xl font-bold dark:text-white mb-2">
-            {{ isEditMode ? 'Modifier l\'article' : 'Nouvel article' }}
+            {{ isEditMode ? "Modifier l'article" : "Nouvel article" }}
           </h1>
           <p class="text-gray-600 dark:text-gray-400">
             Partagez vos connaissances avec votre équipe
@@ -45,33 +46,53 @@ import { ToastService } from '../../services/toast.service';
             </p>
           </div>
 
-          <!-- Cover Image URL -->
+          <!-- Cover Image Upload -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Image de couverture (URL)
+              Image de couverture
             </label>
-            <input
-              type="url"
-              [(ngModel)]="formData.coverImage"
-              name="coverImage"
-              placeholder="https://example.com/image.jpg"
-              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
+
+            <!-- Preview si déjà uploadée -->
+            <div *ngIf="formData.coverImage" class="mb-4 relative">
+              <img
+                [src]="formData.coverImage"
+                alt="Cover"
+                class="w-full h-48 object-cover rounded-lg"
+              >
+              <button
+                type="button"
+                (click)="removeCoverImage()"
+                class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition-colors"
+              >
+                <span class="material-icons text-sm">delete</span>
+              </button>
+            </div>
+
+            <!-- Upload button -->
+            <button
+              type="button"
+              (click)="showCoverImageUpload = true"
+              class="btn-secondary flex items-center gap-2"
+            >
+              <span class="material-icons">add_photo_alternate</span>
+              {{ formData.coverImage ? 'Changer' : 'Ajouter' }} l'image de couverture
+            </button>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Optionnel - URL d'une image pour illustrer votre article
+              Optionnel - Image illustrant votre article
             </p>
           </div>
 
-          <!-- Content Editor (Quill) -->
+          <!-- Content Editor (TinyMCE) -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Contenu <span class="text-red-500">*</span>
             </label>
-            <div
-              #editor
-              class="bg-white dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600"
-              style="min-height: 400px;"
-            ></div>
+            <editor
+              [(ngModel)]="formData.content"
+              name="content"
+              [init]="editorConfig"
+              (onInit)="onEditorInit($event)"
+            ></editor>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Utilisez la barre d'outils pour mettre en forme votre texte
             </p>
@@ -103,61 +124,49 @@ import { ToastService } from '../../services/toast.service';
                 [disabled]="!isFormValid() || saving"
                 class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                <span class="material-icons">publish</span>
-                <span>Publier</span>
+                <span class="material-icons">{{ postStatus === 'published' ? 'save' : 'publish' }}</span>
+                <span>{{ postStatus === 'published' ? 'Enregistrer et fermer' : 'Publier' }}</span>
               </button>
             </div>
           </div>
         </form>
       </div>
+
+      <!-- Image Upload Modals -->
+      <app-image-upload-modal
+        *ngIf="showImageUploadModal"
+        (imageSelected)="onImageSelected($event)"
+        (close)="showImageUploadModal = false"
+      ></app-image-upload-modal>
+
+      <app-image-upload-modal
+        *ngIf="showCoverImageUpload"
+        (imageSelected)="onCoverImageSelected($event)"
+        (close)="showCoverImageUpload = false"
+      ></app-image-upload-modal>
     </div>
   `,
   styles: [`
-    /* Quill editor custom styles */
-    ::ng-deep .ql-toolbar {
-      border-top-left-radius: 0.5rem;
-      border-top-right-radius: 0.5rem;
+    /* TinyMCE custom styles */
+    ::ng-deep .tox-tinymce {
+      border-radius: 0.5rem;
+      border-color: rgb(209 213 219);
+    }
+
+    ::ng-deep .dark .tox-tinymce {
+      border-color: rgb(75 85 99);
+    }
+
+    ::ng-deep .tox .tox-edit-area__iframe {
       background: white;
     }
 
-    ::ng-deep .dark .ql-toolbar {
+    ::ng-deep .dark .tox .tox-edit-area__iframe {
       background: rgb(55 65 81);
-      border-color: rgb(75 85 99);
-    }
-
-    ::ng-deep .ql-container {
-      border-bottom-left-radius: 0.5rem;
-      border-bottom-right-radius: 0.5rem;
-      min-height: 300px;
-      font-size: 16px;
-    }
-
-    ::ng-deep .dark .ql-container {
-      background: rgb(55 65 81);
-      border-color: rgb(75 85 99);
-      color: white;
-    }
-
-    ::ng-deep .dark .ql-editor.ql-blank::before {
-      color: rgb(156 163 175);
-    }
-
-    ::ng-deep .dark .ql-stroke {
-      stroke: rgb(209 213 219);
-    }
-
-    ::ng-deep .dark .ql-fill {
-      fill: rgb(209 213 219);
-    }
-
-    ::ng-deep .dark .ql-picker-label {
-      color: rgb(209 213 219);
     }
   `]
 })
 export class BlogPostFormComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('editor') editorElement!: ElementRef;
-
   formData = {
     title: '',
     content: '',
@@ -166,8 +175,37 @@ export class BlogPostFormComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isEditMode = false;
   postId: string | null = null;
+  postStatus: string = 'draft'; // Track current post status
   saving = false;
-  quillEditor!: Quill;
+  editorInstance: any; // TinyMCE editor instance
+
+  // Image upload modals
+  showImageUploadModal = false;
+  showCoverImageUpload = false;
+
+  // TinyMCE configuration
+  editorConfig: any = {
+    height: 500,
+    menubar: false,
+    promotion: false, // Masquer les promotions TinyMCE
+    plugins: [
+      'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+      'insertdatetime', 'media', 'table', 'help', 'wordcount'
+    ],
+    toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
+      'forecolor backcolor | alignleft aligncenter alignright alignjustify | ' +
+      'bullist numlist outdent indent | link image | removeformat | code',
+    content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif; font-size: 16px; }',
+    skin: 'oxide',
+    content_css: 'default',
+    image_advtab: true,
+    images_upload_handler: this.handleImageUpload.bind(this),
+    file_picker_callback: this.filePickerCallback.bind(this),
+    automatic_uploads: false,
+    paste_data_images: false,
+    resize: 'both' as const
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -187,43 +225,78 @@ export class BlogPostFormComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.initializeQuill();
+    // TinyMCE initialization handled by the component
   }
 
   ngOnDestroy(): void {
-    if (this.quillEditor) {
-      this.quillEditor = null as any;
+    if (this.editorInstance) {
+      this.editorInstance.destroy();
+      this.editorInstance = null;
     }
   }
 
-  initializeQuill(): void {
-    const toolbarOptions = [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'align': [] }],
-      ['link', 'image', 'code-block'],
-      ['clean']
-    ];
+  /**
+   * Callback when TinyMCE is initialized
+   */
+  onEditorInit(event: any) {
+    this.editorInstance = event.editor;
+  }
 
-    this.quillEditor = new Quill(this.editorElement.nativeElement, {
-      theme: 'snow',
-      modules: {
-        toolbar: toolbarOptions
-      },
-      placeholder: 'Écrivez votre article ici...'
+  /**
+   * Handle image upload from custom modal
+   */
+  handleImageUpload(blobInfo: any, progress: any): Promise<string> {
+    return new Promise((resolve, reject) => {
+      reject('Use the custom image upload modal instead');
     });
+  }
 
-    // Sync Quill content with formData
-    this.quillEditor.on('text-change', () => {
-      this.formData.content = this.quillEditor.root.innerHTML;
-    });
-
-    // Load existing content if in edit mode
-    if (this.formData.content) {
-      this.quillEditor.root.innerHTML = this.formData.content;
+  /**
+   * Custom file picker callback - opens our modal
+   */
+  filePickerCallback(callback: any, value: any, meta: any) {
+    if (meta.filetype === 'image') {
+      this.showImageUploadModal = true;
+      // Store callback for later use
+      (window as any).tinyMCEImageCallback = callback;
     }
+  }
+
+  /**
+   * Callback when an image is selected from the modal
+   */
+  onImageSelected(image: BlogImage) {
+    if (!this.editorInstance) {
+      console.error('TinyMCE editor not initialized');
+      this.toastService.error('Erreur', 'L\'éditeur n\'est pas encore initialisé');
+      return;
+    }
+
+    // Insert image at cursor position
+    this.editorInstance.insertContent(`<img src="${image.url}" alt="${image.originalFileName}" />`);
+
+    // If there's a callback waiting (from file_picker_callback)
+    if ((window as any).tinyMCEImageCallback) {
+      (window as any).tinyMCEImageCallback(image.url);
+      delete (window as any).tinyMCEImageCallback;
+    }
+
+    this.showImageUploadModal = false;
+  }
+
+  /**
+   * Callback quand une cover image est sélectionnée
+   */
+  onCoverImageSelected(image: BlogImage) {
+    this.formData.coverImage = image.url || '';
+    this.showCoverImageUpload = false;
+  }
+
+  /**
+   * Supprimer la cover image
+   */
+  removeCoverImage() {
+    this.formData.coverImage = '';
   }
 
   async loadPost(postId: string): Promise<void> {
@@ -232,11 +305,9 @@ export class BlogPostFormComponent implements OnInit, AfterViewInit, OnDestroy {
       this.formData.title = post.title;
       this.formData.content = post.content;
       this.formData.coverImage = post.coverImage || '';
+      this.postStatus = post.status || 'draft'; // Store current status
 
-      // Update Quill content if already initialized
-      if (this.quillEditor) {
-        this.quillEditor.root.innerHTML = this.formData.content;
-      }
+      // TinyMCE will automatically sync with formData.content via ngModel
     } catch (error) {
       console.error('Error loading post:', error);
       this.toastService.error('Erreur', 'Impossible de charger l\'article');
@@ -282,23 +353,31 @@ export class BlogPostFormComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       this.saving = true;
 
-      // Save first if new post
+      const request = {
+        title: this.formData.title.trim(),
+        content: this.formData.content,
+        coverImage: this.formData.coverImage || undefined
+      };
+
+      // If new post, create it first
       if (!this.isEditMode) {
-        const request = {
-          title: this.formData.title.trim(),
-          content: this.formData.content,
-          coverImage: this.formData.coverImage || undefined
-        };
         const post = await this.blogService.createPost(request);
         this.postId = post.id || null;
+      } else {
+        // If editing, save modifications first
+        await this.blogService.updatePost(this.postId!, request);
       }
 
-      // Then publish
-      if (this.postId) {
+      // Only publish if post is in DRAFT status
+      if (this.postId && this.postStatus === 'draft') {
         await this.blogService.publishPost(this.postId);
         this.toastService.success('Succès', 'Article publié');
-        this.router.navigate(['/blog']);
+      } else if (this.postStatus === 'published') {
+        // Already published, just show success message for the update
+        this.toastService.success('Succès', 'Article mis à jour');
       }
+
+      this.router.navigate(['/blog']);
     } catch (error) {
       console.error('Error publishing post:', error);
       this.toastService.error('Erreur', 'Impossible de publier l\'article');

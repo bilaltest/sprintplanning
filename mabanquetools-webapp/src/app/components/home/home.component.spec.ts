@@ -33,11 +33,17 @@ describe('HomeComponent', () => {
         };
 
         eventService = {
-            events$: new BehaviorSubject([])
+            events$: new BehaviorSubject([]),
+            loading$: new BehaviorSubject(false),
+            error$: new BehaviorSubject(null),
+            refreshEvents: jest.fn()
         };
 
         releaseService = {
-            releases$: new BehaviorSubject([])
+            releases$: new BehaviorSubject([]),
+            loading$: new BehaviorSubject(false),
+            error$: new BehaviorSubject(null),
+            refreshReleases: jest.fn()
         };
 
         authService = {

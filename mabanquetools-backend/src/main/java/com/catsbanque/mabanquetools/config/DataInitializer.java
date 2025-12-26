@@ -191,14 +191,21 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void ensureAdminPermissions(User admin) {
-        if (!permissionService.hasWriteAccess(admin.getId(),
-                com.catsbanque.mabanquetools.entity.PermissionModule.ADMIN)) {
+        // Vérifier si toutes les permissions admin sont présentes, y compris BLOG
+        boolean needsUpdate = !permissionService.hasWriteAccess(admin.getId(),
+                com.catsbanque.mabanquetools.entity.PermissionModule.ADMIN)
+                || !permissionService.hasWriteAccess(admin.getId(),
+                com.catsbanque.mabanquetools.entity.PermissionModule.BLOG);
+
+        if (needsUpdate) {
             try {
                 permissionService.createAdminPermissions(admin);
-                log.info("✅ Permissions admin appliquées pour {}", admin.getId());
+                log.info("✅ Permissions admin appliquées/mises à jour pour {} (y compris BLOG)", admin.getId());
             } catch (Exception e) {
                 log.warn("Erreur lors de l'application des permissions admin: {}", e.getMessage());
             }
+        } else {
+            log.debug("✓ Permissions admin déjà à jour pour {}", admin.getId());
         }
     }
 
@@ -313,6 +320,8 @@ public class DataInitializer implements CommandLineRunner {
                     com.catsbanque.mabanquetools.entity.PermissionModule.RELEASES,
                     com.catsbanque.mabanquetools.entity.PermissionLevel.NONE,
                     com.catsbanque.mabanquetools.entity.PermissionModule.PLAYGROUND,
+                    com.catsbanque.mabanquetools.entity.PermissionLevel.NONE,
+                    com.catsbanque.mabanquetools.entity.PermissionModule.BLOG,
                     com.catsbanque.mabanquetools.entity.PermissionLevel.NONE,
                     com.catsbanque.mabanquetools.entity.PermissionModule.ADMIN,
                     com.catsbanque.mabanquetools.entity.PermissionLevel.NONE));

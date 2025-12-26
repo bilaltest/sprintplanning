@@ -74,10 +74,40 @@ export interface UpdateBlogPostRequest {
 }
 
 export interface CreateBlogCommentRequest {
+  postId: string;
   content: string;
   parentId?: string; // For replies
 }
 
 export interface CreateBlogTagRequest {
   name: string;
+}
+
+export interface BlogImage {
+  id?: string;
+  originalFileName: string;
+  url?: string; // Data URL (base64) pour image complète
+  thumbnailUrl: string; // Data URL (base64) pour thumbnail
+  mimeType: string;
+  fileSize: number;
+  width: number;
+  height: number;
+  thumbnailWidth: number;
+  thumbnailHeight: number;
+  uploadedById: string;
+  uploadedByName: string;
+  createdAt: string; // ISO date
+}
+
+export interface BlogNotification {
+  id: string;
+  type: string; // NEW_POST, NEW_COMMENT, COMMENT_REPLY, POST_LIKE, COMMENT_LIKE, MENTION
+  recipientId: string;
+  triggeredById: string;
+  triggeredByName: string;
+  relatedPostId?: string;
+  relatedCommentId?: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string; // ISO date
 }

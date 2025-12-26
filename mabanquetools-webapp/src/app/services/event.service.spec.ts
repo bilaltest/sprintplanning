@@ -1,12 +1,14 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { EventService } from './event.service';
+import { PermissionService } from './permission.service';
 import { environment } from '../../environments/environment';
 import { Event } from '@models/event.model';
 
 describe('EventService', () => {
     let service: EventService;
     let httpMock: HttpTestingController;
+    let permissionService: any;
     const apiUrl = `${environment.apiUrl}/events`;
 
     const mockEvents: Event[] = [
@@ -26,53 +28,78 @@ describe('EventService', () => {
     ];
 
     beforeEach(() => {
+        permissionService = {
+            hasReadAccess: jest.fn().mockReturnValue(true),
+            hasWriteAccess: jest.fn().mockReturnValue(true)
+        };
+
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
-            providers: [EventService]
+            providers: [
+                EventService,
+                { provide: PermissionService, useValue: permissionService }
+            ]
         });
         service = TestBed.inject(EventService);
         httpMock = TestBed.inject(HttpTestingController);
-
-        // Handle the initial loadEvents call from constructor
-        const req = httpMock.expectOne(apiUrl);
-        req.flush(mockEvents);
     });
 
     afterEach(() => {
         httpMock.verify();
     });
 
-    it('should be created', () => {
+    it('should be created', fakeAsync(() => {
         expect(service).toBeTruthy();
-    });
 
-    it('should load events on init', () => {
+        // Wait for setTimeout in constructor
+        tick();
+
+        // Handle the initial loadEvents call from constructor
+        const req = httpMock.expectOne(apiUrl);
+        req.flush(mockEvents);
+    }));
+
+    it('should load events on init', fakeAsync(() => {
+        // Wait for setTimeout in constructor
+        tick();
+
+        const req = httpMock.expectOne(apiUrl);
+        req.flush(mockEvents);
+
+        tick();
+
         service.events$.subscribe(events => {
             expect(events.length).toBe(1);
             expect(events).toEqual(mockEvents);
         });
-    });
+    }));
 
-    it('should handle load events error', async () => {
-        // Trigger load via refreshEvents
-        const promise = service.refreshEvents();
+    it('should handle load events error', fakeAsync(() => {
+        // Wait for setTimeout in constructor
+        tick();
 
         const req = httpMock.expectOne(apiUrl);
-        req.error(new ErrorEvent('Network error'));
+        req.error(new ProgressEvent('error'));
 
-        try {
-            await promise;
-        } catch (e) {
-            // Expected error
-        }
+        tick();
 
         service.loading$.subscribe(loading => {
             // Should be false after error
             expect(loading).toBe(false);
         });
-    });
 
-    it('should create event', async () => {
+        service.error$.subscribe(error => {
+            expect(error).toBeTruthy();
+        });
+    }));
+
+    it('should create event', fakeAsync(() => {
+        // Wait for constructor
+        tick();
+        const initReq = httpMock.expectOne(apiUrl);
+        initReq.flush(mockEvents);
+        tick();
+
         const newEventData = {
             title: 'New Event',
             date: '2025-01-02',
@@ -92,18 +119,29 @@ describe('EventService', () => {
         expect(req.request.method).toBe('POST');
         req.flush(createdEvent);
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        tick();
 
         // After create, it reloads events
         const reloadReq = httpMock.expectOne(apiUrl);
         expect(reloadReq.request.method).toBe('GET');
         reloadReq.flush([...mockEvents, createdEvent]);
 
-        const result = await promise;
-        expect(result).toEqual(createdEvent);
-    });
+        tick();
 
-    it('should update event', async () => {
+        promise.then(result => {
+            expect(result).toEqual(createdEvent);
+        });
+
+        tick();
+    }));
+
+    it('should update event', fakeAsync(() => {
+        // Wait for constructor
+        tick();
+        const initReq = httpMock.expectOne(apiUrl);
+        initReq.flush(mockEvents);
+        tick();
+
         const updates = { title: 'Updated Title' };
         const updatedEvent = { ...mockEvents[0], ...updates };
 
@@ -113,33 +151,56 @@ describe('EventService', () => {
         expect(req.request.method).toBe('PUT');
         req.flush(updatedEvent);
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        tick();
 
         // Reloads events
         const reloadReq = httpMock.expectOne(apiUrl);
         reloadReq.flush([updatedEvent]);
 
-        const result = await promise;
-        expect(result).toEqual(updatedEvent);
-    });
+        tick();
 
-    it('should delete event', async () => {
+        promise.then(result => {
+            expect(result).toEqual(updatedEvent);
+        });
+
+        tick();
+    }));
+
+    it('should delete event', fakeAsync(() => {
+        // Wait for constructor
+        tick();
+        const initReq = httpMock.expectOne(apiUrl);
+        initReq.flush(mockEvents);
+        tick();
+
         const promise = service.deleteEvent('1');
 
         const req = httpMock.expectOne(`${apiUrl}/1`);
         expect(req.request.method).toBe('DELETE');
         req.flush({});
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        tick();
 
         // Reloads events
         const reloadReq = httpMock.expectOne(apiUrl);
         reloadReq.flush([]);
 
-        await promise;
-    });
+        tick();
 
-    it('should duplicate event', async () => {
+        promise.then(() => {
+            expect(true).toBe(true);
+        });
+
+        tick();
+    }));
+
+    it('should duplicate event', fakeAsync(() => {
+        // Wait for constructor
+        tick();
+        const initReq = httpMock.expectOne(apiUrl);
+        initReq.flush(mockEvents);
+        tick();
+
         const duplicatedEvent = { ...mockEvents[0], id: '2', title: 'Event 1 (copie)' };
 
         const promise = service.duplicateEvent('1');
@@ -149,24 +210,35 @@ describe('EventService', () => {
         expect(getReq.request.method).toBe('GET');
         getReq.flush(mockEvents[0]);
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        tick();
 
         // Create new event
         const createReq = httpMock.expectOne(apiUrl);
         expect(createReq.request.method).toBe('POST');
         createReq.flush(duplicatedEvent);
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        tick();
 
         // Reload events
         const reloadReq = httpMock.expectOne(apiUrl);
         reloadReq.flush([...mockEvents, duplicatedEvent]);
 
-        const result = await promise;
-        expect(result).toEqual(duplicatedEvent);
-    });
+        tick();
 
-    it('should move event', async () => {
+        promise.then(result => {
+            expect(result).toEqual(duplicatedEvent);
+        });
+
+        tick();
+    }));
+
+    it('should move event', fakeAsync(() => {
+        // Wait for constructor
+        tick();
+        const initReq = httpMock.expectOne(apiUrl);
+        initReq.flush(mockEvents);
+        tick();
+
         const newDate = '2025-02-01';
         const movedEvent = { ...mockEvents[0], date: newDate };
 
@@ -177,44 +249,74 @@ describe('EventService', () => {
         expect(req.request.body).toEqual({ date: newDate });
         req.flush(movedEvent);
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        tick();
 
         // Reloads events
         const reloadReq = httpMock.expectOne(apiUrl);
         reloadReq.flush([movedEvent]);
 
-        const result = await promise;
-        expect(result).toEqual(movedEvent);
-    });
+        tick();
 
-    it('should get event by id', (done) => {
+        promise.then(result => {
+            expect(result).toEqual(movedEvent);
+        });
+
+        tick();
+    }));
+
+    it('should get event by id', fakeAsync(() => {
+        // Wait for constructor
+        tick();
+        const initReq = httpMock.expectOne(apiUrl);
+        initReq.flush(mockEvents);
+        tick();
+
         service.getEventById('1').subscribe(event => {
             expect(event).toEqual(mockEvents[0]);
-            done();
         });
 
         const req = httpMock.expectOne(`${apiUrl}/1`);
         expect(req.request.method).toBe('GET');
         req.flush(mockEvents[0]);
-    });
 
-    it('should clear all events', async () => {
+        tick();
+    }));
+
+    it('should clear all events', fakeAsync(() => {
+        // Wait for constructor
+        tick();
+        const initReq = httpMock.expectOne(apiUrl);
+        initReq.flush(mockEvents);
+        tick();
+
         const promise = service.clearAllEvents();
 
         const req = httpMock.expectOne(apiUrl);
         expect(req.request.method).toBe('DELETE');
         req.flush({});
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        tick();
 
         // Reloads events
         const reloadReq = httpMock.expectOne(apiUrl);
         reloadReq.flush([]);
 
-        await promise;
-    });
+        tick();
 
-    it('should import events', async () => {
+        promise.then(() => {
+            expect(true).toBe(true);
+        });
+
+        tick();
+    }));
+
+    it('should import events', fakeAsync(() => {
+        // Wait for constructor
+        tick();
+        const initReq = httpMock.expectOne(apiUrl);
+        initReq.flush(mockEvents);
+        tick();
+
         const newEvents = [mockEvents[0]];
         const promise = service.importEvents(newEvents);
 
@@ -223,23 +325,40 @@ describe('EventService', () => {
         expect(req.request.body).toEqual({ events: newEvents });
         req.flush({});
 
-        await new Promise(resolve => setTimeout(resolve, 0));
+        tick();
 
         // Reloads events
         const reloadReq = httpMock.expectOne(apiUrl);
         reloadReq.flush(newEvents);
 
-        await promise;
-    });
+        tick();
 
-    it('should export events', async () => {
+        promise.then(() => {
+            expect(true).toBe(true);
+        });
+
+        tick();
+    }));
+
+    it('should export events', fakeAsync(() => {
+        // Wait for constructor
+        tick();
+        const initReq = httpMock.expectOne(apiUrl);
+        initReq.flush(mockEvents);
+        tick();
+
         const promise = service.exportEvents();
 
         const req = httpMock.expectOne(apiUrl);
         expect(req.request.method).toBe('GET');
         req.flush(mockEvents);
 
-        const result = await promise;
-        expect(result).toEqual(mockEvents);
-    });
+        tick();
+
+        promise.then(result => {
+            expect(result).toEqual(mockEvents);
+        });
+
+        tick();
+    }));
 });

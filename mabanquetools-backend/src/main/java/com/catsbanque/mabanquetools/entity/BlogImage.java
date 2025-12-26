@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 @Entity
 @Table(name = "blog_image", indexes = {
@@ -26,17 +27,8 @@ public class BlogImage {
     @Column(length = 25)
     private String id;
 
-    @Column(nullable = false, unique = true, length = 500)
-    private String fileName; // Nom du fichier sur le serveur (unique)
-
     @Column(nullable = false, length = 255)
     private String originalFileName; // Nom original du fichier uploadé
-
-    @Column(nullable = false, length = 500)
-    private String url; // URL complète de l'image
-
-    @Column(length = 500)
-    private String thumbnailUrl; // URL de la miniature (optionnel)
 
     @Column(nullable = false, length = 20)
     private String mimeType; // image/jpeg, image/png, image/webp
@@ -45,10 +37,25 @@ public class BlogImage {
     private Long fileSize; // Taille en bytes
 
     @Column(nullable = false)
-    private Integer width;
+    private Integer width; // Largeur image originale
 
     @Column(nullable = false)
-    private Integer height;
+    private Integer height; // Hauteur image originale
+
+    // Stockage BLOB
+    @Lob
+    @Column(name = "image_data", nullable = false, columnDefinition = "LONGBLOB")
+    private byte[] imageData; // Image originale (max ~4GB MySQL LONGBLOB)
+
+    @Lob
+    @Column(name = "thumbnail_data", columnDefinition = "MEDIUMBLOB")
+    private byte[] thumbnailData; // Thumbnail redimensionné (max ~16MB MySQL MEDIUMBLOB)
+
+    @Column(nullable = false)
+    private Integer thumbnailWidth; // Largeur thumbnail
+
+    @Column(nullable = false)
+    private Integer thumbnailHeight; // Hauteur thumbnail
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_by_id", nullable = false)
@@ -57,4 +64,19 @@ public class BlogImage {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    // Méthodes transient pour générer data URLs
+    @Transient
+    public String getUrl() {
+        if (imageData == null) return null;
+        String base64 = Base64.getEncoder().encodeToString(imageData);
+        return String.format("data:%s;base64,%s", mimeType, base64);
+    }
+
+    @Transient
+    public String getThumbnailUrl() {
+        if (thumbnailData == null) return null;
+        String base64 = Base64.getEncoder().encodeToString(thumbnailData);
+        return String.format("data:%s;base64,%s", mimeType, base64);
+    }
 }

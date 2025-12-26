@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { SidebarComponent } from '../components/shared/sidebar.component';
 import { BreadcrumbComponent } from '../components/shared/breadcrumb.component';
+import { NotificationBellComponent } from '../components/blog/notification-bell.component';
 import { SidebarService } from '@services/sidebar.service';
 import { AuthService } from '@services/auth.service';
 import { filter } from 'rxjs/operators';
@@ -10,7 +11,7 @@ import { filter } from 'rxjs/operators';
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, SidebarComponent, BreadcrumbComponent],
+  imports: [CommonModule, RouterModule, SidebarComponent, BreadcrumbComponent, NotificationBellComponent],
   template: `
     <div class="app-container">
       <!-- Mobile Hamburger Menu Button -->
@@ -31,8 +32,12 @@ import { filter } from 'rxjs/operators';
         <div class="content-header">
           <app-breadcrumb></app-breadcrumb>
 
-          <!-- Calendrier Contextual Actions -->
-          <div class="contextual-actions" *ngIf="isCalendarRoute">
+          <div class="header-actions">
+            <!-- Notification Bell -->
+            <app-notification-bell></app-notification-bell>
+
+            <!-- Calendrier Contextual Actions -->
+            <div class="contextual-actions" *ngIf="isCalendarRoute">
             <button
               routerLink="/history"
               class="action-btn"
@@ -51,16 +56,17 @@ import { filter } from 'rxjs/operators';
             </button>
           </div>
 
-          <!-- Releases Contextual Actions -->
-          <div class="contextual-actions" *ngIf="isReleasesRoute">
-            <button
-              routerLink="/release-history"
-              class="action-btn"
-              title="Historique des releases"
-            >
-              <span class="material-icons">history</span>
-              <span class="action-label">Historique</span>
-            </button>
+            <!-- Releases Contextual Actions -->
+            <div class="contextual-actions" *ngIf="isReleasesRoute">
+              <button
+                routerLink="/release-history"
+                class="action-btn"
+                title="Historique des releases"
+              >
+                <span class="material-icons">history</span>
+                <span class="action-label">Historique</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -124,6 +130,10 @@ import { filter } from 'rxjs/operators';
 
     .content-header {
       @apply bg-white dark:bg-gray-750 border-b border-gray-200 dark:border-gray-600 px-4 md:px-8 py-3 md:py-0 flex items-center justify-between flex-wrap gap-3;
+    }
+
+    .header-actions {
+      @apply flex items-center gap-4;
     }
 
     .contextual-actions {

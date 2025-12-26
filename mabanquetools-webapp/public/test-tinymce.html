@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test TinyMCE</title>
+    <script src="/tinymce/tinymce.min.js"></script>
+    <script>
+        tinymce.init({
+            selector: 'textarea',
+            license_key: 'gpl',
+            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
+            toolbar: 'undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | removeformat | code',
+            height: 500
+        });
+    </script>
+</head>
+<body>
+    <h1>Test TinyMCE</h1>
+    <textarea>
+        Ceci est un test de TinyMCE.
+
+        Si vous voyez cet éditeur s'afficher correctement, cela signifie que TinyMCE est bien installé et fonctionnel.
+    </textarea>
+</body>
+</html>

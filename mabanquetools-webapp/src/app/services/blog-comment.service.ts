@@ -16,20 +16,13 @@ export class BlogCommentService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Get all top-level comments for a post
+   * Get all top-level comments for a post (with nested replies)
    */
   async getCommentsByPostId(postId: string): Promise<BlogComment[]> {
     return await firstValueFrom(
-      this.http.get<BlogComment[]>(`${this.apiUrl}/post/${postId}`)
-    );
-  }
-
-  /**
-   * Get replies for a comment (threaded comments)
-   */
-  async getRepliesByParentId(parentId: string): Promise<BlogComment[]> {
-    return await firstValueFrom(
-      this.http.get<BlogComment[]>(`${this.apiUrl}/${parentId}/replies`)
+      this.http.get<BlogComment[]>(this.apiUrl, {
+        params: { postId }
+      })
     );
   }
 
@@ -37,8 +30,9 @@ export class BlogCommentService {
    * Create a new comment on a post
    */
   async createComment(postId: string, request: CreateBlogCommentRequest): Promise<BlogComment> {
+    // Le postId est déjà dans request.postId, pas besoin de path param
     return await firstValueFrom(
-      this.http.post<BlogComment>(`${this.apiUrl}/post/${postId}`, request)
+      this.http.post<BlogComment>(this.apiUrl, request)
     );
   }
 

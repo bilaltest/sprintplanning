@@ -33,8 +33,7 @@
             ],
             "styles": [
               "src/styles.scss",
-              "node_modules/driver.js/dist/driver.css",
-              "node_modules/quill/dist/quill.snow.css"
+              "node_modules/driver.js/dist/driver.css"
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
@@ -42,7 +41,8 @@
               "html2canvas",
               "raf",
               "rgbcolor",
-              "core-js"
+              "core-js",
+              "lodash"
             ]
           },
           "configurations": {
