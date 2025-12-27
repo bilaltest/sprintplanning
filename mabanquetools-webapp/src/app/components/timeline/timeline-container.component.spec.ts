@@ -117,7 +117,8 @@ describe('TimelineContainerComponent', () => {
 
         eventService = {
             deleteEvent: jest.fn().mockResolvedValue(undefined),
-            events$: new BehaviorSubject(mockEvents)
+            events$: new BehaviorSubject(mockEvents),
+            loading$: new BehaviorSubject(true)
         };
 
         filterService = {
@@ -275,6 +276,18 @@ describe('TimelineContainerComponent', () => {
 
         await component.exportAsCSV();
         expect(exportService.exportAsCSV).toHaveBeenCalled();
+    });
+
+    it('should show view even when events are loading', () => {
+        // loading$ is true (set in beforeEach mock)
+        fixture.detectChanges();
+        const compiled = fixture.nativeElement as HTMLElement;
+
+        // View should be visible (semester view by default in mock state)
+        expect(compiled.querySelector('app-semester-view')).toBeTruthy();
+
+        // Loading text should NOT be present (blocking overlay removed)
+        expect(compiled.textContent).not.toContain('Chargement...');
     });
 
 

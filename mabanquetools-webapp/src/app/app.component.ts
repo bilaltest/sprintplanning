@@ -13,9 +13,9 @@ import { routeAnimations } from './animations/route-animations';
   template: `
     <!-- Global Ambient Background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-[100px] animate-blob mix-blend-multiply dark:mix-blend-screen dark:bg-emerald-500/20"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-teal-500/10 blur-[100px] animate-blob animation-delay-2000 mix-blend-multiply dark:mix-blend-screen dark:bg-teal-500/20"></div>
-        <div class="absolute top-[20%] right-[20%] w-[300px] h-[300px] rounded-full bg-cyan-500/10 blur-[80px] animate-blob animation-delay-4000 mix-blend-multiply dark:mix-blend-screen dark:bg-cyan-500/20"></div>
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-[100px] animate-blob dark:bg-emerald-500/20 will-change-transform"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-teal-500/10 blur-[100px] animate-blob animation-delay-2000 dark:bg-teal-500/20 will-change-transform"></div>
+        <div class="absolute top-[20%] right-[20%] w-[300px] h-[300px] rounded-full bg-cyan-500/10 blur-[80px] animate-blob animation-delay-4000 dark:bg-cyan-500/20 will-change-transform"></div>
     </div>
 
     <!-- Main Content with Animation -->
@@ -43,12 +43,27 @@ export class AppComponent implements OnInit {
     this.authService.currentUser$.subscribe(user => {
       if (user) {
         this.applyTheme(user.themePreference);
+      } else {
+        // Fallback: Système (Si déconnecté)
+        this.applySystemTheme();
+      }
+    });
+
+    // Écouter les changements de préférence système (pour mise à jour en temps réel si déconnecté)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (!this.authService.getCurrentUser()) {
+        this.applyTheme(e.matches ? 'dark' : 'light');
       }
     });
   }
 
   getRouteAnimationData() {
     return this.contexts.getContext('primary')?.route?.snapshot?.data?.['animation'];
+  }
+
+  private applySystemTheme(): void {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    this.applyTheme(prefersDark ? 'dark' : 'light');
   }
 
   private applyTheme(theme: 'light' | 'dark'): void {

@@ -59,7 +59,7 @@ interface Widget {
               <div class="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-teal-500/20 dark:from-emerald-500/20 dark:to-teal-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
               <!-- Card Content -->
-              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
                 <!-- Background decoration -->
                 <div class="absolute inset-0 bg-gradient-to-br from-emerald-100/20 to-teal-100/20 dark:from-emerald-500/10 dark:to-teal-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
@@ -81,7 +81,7 @@ interface Widget {
                  class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
               <div class="absolute inset-0 bg-gradient-to-br from-amber-400/20 to-orange-500/20 dark:from-amber-500/20 dark:to-orange-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
-              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
                 <div class="absolute inset-0 bg-gradient-to-br from-amber-100/20 to-orange-100/20 dark:from-amber-500/10 dark:to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
                 <div class="relative z-10 mb-6 transform group-hover:scale-110 transition-transform duration-500 ease-out">
@@ -102,7 +102,7 @@ interface Widget {
                  class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
               <div class="absolute inset-0 bg-gradient-to-br from-teal-400/20 to-cyan-500/20 dark:from-teal-500/20 dark:to-cyan-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
-              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
                 <div class="absolute inset-0 bg-gradient-to-br from-teal-100/20 to-cyan-100/20 dark:from-teal-500/10 dark:to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
                 <div class="relative z-10 mb-6 transform group-hover:scale-110 transition-transform duration-500 ease-out">
@@ -124,7 +124,7 @@ interface Widget {
                  [ngClass]="{'animate-blob': isPlaygroundNew}">
               <div class="absolute inset-0 bg-gradient-to-br from-violet-400/20 to-fuchsia-500/20 dark:from-violet-500/20 dark:to-fuchsia-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
-              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
                 <div class="absolute inset-0 bg-gradient-to-br from-violet-100/20 to-fuchsia-100/20 dark:from-violet-500/10 dark:to-fuchsia-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
                 <div class="relative z-10 mb-6 transform group-hover:scale-110 transition-transform duration-500 ease-out">
@@ -145,7 +145,7 @@ interface Widget {
                  class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
               <div class="absolute inset-0 bg-gradient-to-br from-slate-400/20 to-slate-500/20 dark:from-slate-500/20 dark:to-slate-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
-              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
+              <div class="relative h-full bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-white/10 rounded-[22px] p-8 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl dark:shadow-black/40 hover:shadow-2xl transition-all duration-300">
                 <div class="absolute inset-0 bg-gradient-to-br from-slate-100/20 to-slate-200/20 dark:from-slate-500/10 dark:to-slate-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
                 <div class="relative z-10 mb-6 transform group-hover:scale-110 transition-transform duration-500 ease-out">

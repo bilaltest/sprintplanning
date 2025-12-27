@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ChangeDetectorRef, Renderer2 } from '@angular/core';
 import { ReleaseNoteComponent } from './release-note.component';
 import { ReleaseService } from '@services/release.service';
 import { ReleaseNoteService } from '@services/release-note.service';
@@ -96,6 +97,15 @@ describe('ReleaseNoteComponent', () => {
             open: jest.fn()
         } as any;
 
+        const cdrMock = {
+            markForCheck: jest.fn(),
+            detectChanges: jest.fn()
+        } as any;
+
+        const rendererMock = {
+            listen: jest.fn().mockReturnValue(() => { }) // returns a cleanup function
+        } as any;
+
         await TestBed.configureTestingModule({
             imports: [ReleaseNoteComponent, FormsModule, CommonModule],
             providers: [
@@ -107,7 +117,9 @@ describe('ReleaseNoteComponent', () => {
                 { provide: ConfirmationService, useValue: confirmationServiceMock },
                 { provide: Router, useValue: routerMock },
                 { provide: ActivatedRoute, useValue: activeRouteMock },
-                { provide: MatDialog, useValue: dialogMock }
+                { provide: MatDialog, useValue: dialogMock },
+                { provide: ChangeDetectorRef, useValue: cdrMock },
+                { provide: Renderer2, useValue: rendererMock }
             ]
         }).compileComponents();
 

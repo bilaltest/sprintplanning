@@ -110,7 +110,7 @@ type Stage = 'HIDDEN' | 'PROFESSOR' | 'TRANSITION' | 'BATTLE' | 'CAUGHT';
         <!-- PLAYER HUD -->
         <div class="absolute bottom-[35%] right-10 bg-[#f8f8f8] border-4 border-yellow-600 rounded-lg p-4 shadow-lg w-80 z-10 triangle-box">
              <div class="flex justify-between items-baseline mb-1">
-               <span class="font-bold text-xl uppercase text-gray-800">DEV {{ authService.getUserDisplayName() }}</span>
+               <span class="font-bold text-xl uppercase text-gray-800">{{ authService.getUserDisplayName() }}</span>
                <span class="text-sm font-bold text-gray-800">Lv.1</span>
              </div>
              <div class="w-full bg-gray-300 h-4 rounded-full border-2 border-gray-500 overflow-hidden relative">
@@ -230,12 +230,12 @@ type Stage = 'HIDDEN' | 'PROFESSOR' | 'TRANSITION' | 'BATTLE' | 'CAUGHT';
 
     /* SHAKE */
     .animate-shake {
-        animation: shake 2s 3 ease-in-out forwards;
+        animation: shake 1s 3 ease-in-out forwards;
     }
     @keyframes shake {
         0%, 100% { transform: rotate(0deg); }
-        25% { transform: rotate(-15deg); }
-        75% { transform: rotate(15deg); }
+        25% { transform: rotate(-20deg); }
+        75% { transform: rotate(20deg); }
     }
 
     .triangle-box:after {
@@ -309,7 +309,7 @@ export class EasterEggModalComponent {
     this.battleMessage = "Impossible de fuir ! C'est votre destin !";
     this.isBusy = true;
     setTimeout(() => {
-      this.battleMessage = "Que doit faire DEV ?";
+      this.battleMessage = `Que doit faire ${this.authService.getUserDisplayName()} ?`;
       this.isBusy = false;
     }, 2000);
   }
@@ -317,7 +317,7 @@ export class EasterEggModalComponent {
   throwBall() {
     this.showBag = false;
     this.isBusy = true;
-    this.battleMessage = "DEV utilise MASTER BALL !";
+    this.battleMessage = `${this.authService.getUserDisplayName()} utilise MASTER BALL !`;
 
     setTimeout(() => {
       // Animation
@@ -342,7 +342,7 @@ export class EasterEggModalComponent {
 
           // Unlock permission in backend
           await this.authService.unlockPlayground();
-        }, 7500); // 5 shakes * 1.5s
+        }, 5500);
 
       }, 2000);
     }, 1000);

@@ -50,8 +50,8 @@ describe('SemesterViewComponent', () => {
     });
 
     it('should load tags on init', () => {
-        expect(component.allTags.length).toBe(1);
-        expect(component.allTags[0].label).toBe('iOS');
+        expect(component.tagsMap.size).toBe(1);
+        expect(component.tagsMap.get('tag1')?.label).toBe('iOS');
     });
 
     it('should get tag color', () => {
@@ -84,5 +84,17 @@ describe('SemesterViewComponent', () => {
             expect(jan1.events.length).toBe(1);
             expect(jan1.events[0].title).toBe('Test Event');
         }
+    });
+    it('should emit ready event after view init but NOT scroll', () => {
+        jest.useFakeTimers();
+        const readySpy = jest.spyOn(component.ready, 'emit');
+        const scrollSpy = jest.spyOn(component, 'scrollToToday');
+
+        component.ngAfterViewInit();
+        jest.advanceTimersByTime(500);
+
+        expect(readySpy).toHaveBeenCalled();
+        expect(scrollSpy).not.toHaveBeenCalled();
+        jest.useRealTimers();
     });
 });

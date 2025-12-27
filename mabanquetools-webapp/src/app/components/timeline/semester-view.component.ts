@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, AfterViewInit, ViewChild, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Event, CATEGORY_COLORS_DARK, CATEGORY_DEFAULTS } from '@models/event.model';
 import { Sprint } from '@models/sprint.model';
@@ -48,6 +48,7 @@ interface MonthColumn {
   selector: 'app-semester-view',
   standalone: true,
   imports: [CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="semester-view-container h-full flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden relative">
       
@@ -87,7 +88,7 @@ interface MonthColumn {
         <div class="min-w-[800px] h-full flex">
           
           <!-- Month Columns -->
-          <div *ngFor="let month of months" class="flex-1 min-w-[130px] border-r border-dashed border-gray-100 dark:border-gray-700/50 last:border-r-0 flex flex-col group transition-colors hover:bg-gray-50/30 dark:hover:bg-gray-700/10">
+          <div *ngFor="let month of months; trackBy: trackByMonth" class="flex-1 min-w-[130px] border-r border-dashed border-gray-100 dark:border-gray-700/50 last:border-r-0 flex flex-col group transition-colors hover:bg-gray-50/30 dark:hover:bg-gray-700/10">
             
             <!-- Month Header -->
             <div class="sticky top-0 z-10 py-3 text-center border-b border-gray-100 dark:border-gray-700 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm">
@@ -99,7 +100,7 @@ interface MonthColumn {
 
             <!-- Days Grid -->
             <div class="flex-1 flex flex-col p-1 gap-[1px]">
-              <div *ngFor="let cell of month.cells; let i = index" 
+              <div *ngFor="let cell of month.cells; let i = index; trackBy: trackByCell" 
                    class="flex-1 min-h-[48px] relative rounded-md transition-all duration-200 group/cell"
                    [attr.data-is-today]="cell.isToday"
                    [class.opacity-0]="!cell.isValid"
@@ -258,29 +259,33 @@ export class SemesterViewComponent implements OnInit, OnChanges, AfterViewInit {
   months: MonthColumn[] = [];
   semesterLabel: string = '';
 
-  allTags: TagInfo[] = [];
+  tagsMap: Map<string, TagInfo> = new Map();
 
   constructor(
     private eventService: EventService,
-    private tagService: TagService
+    private tagService: TagService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     this.tagService.allTags$.subscribe(tags => {
-      this.allTags = tags;
+      this.tagsMap = new Map(tags.map(t => [t.id, t]));
+      this.cdr.markForCheck();
     });
     this.updateView();
   }
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      this.scrollToToday();
+      // this.scrollToToday(); // Removed auto-scroll
+      this.ready.emit();
     }, 500);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['events'] || changes['sprints'] || changes['closedDays']) {
       this.updateView();
+      this.cdr.markForCheck(); // Explicit check needed
     }
   }
 
@@ -292,13 +297,21 @@ export class SemesterViewComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   getTagColor(tagId: string): string {
-    const tag = this.allTags.find(t => t.id === tagId);
+    const tag = this.tagsMap.get(tagId);
     return tag ? tag.color : '#ccc';
   }
 
   getTagLabel(tagId: string): string {
-    const tag = this.allTags.find(t => t.id === tagId);
+    const tag = this.tagsMap.get(tagId);
     return tag ? tag.label : '';
+  }
+
+  trackByMonth(index: number, month: MonthColumn): string {
+    return month.date.toISOString();
+  }
+
+  trackByCell(index: number, cell: DayCell): string {
+    return cell.date.toISOString();
   }
 
   updateView() {

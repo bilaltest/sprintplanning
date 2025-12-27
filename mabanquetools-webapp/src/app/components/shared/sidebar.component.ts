@@ -63,7 +63,7 @@ interface NavItem {
       <!-- Navigation -->
       <nav class="sidebar-nav">
         <a
-          *ngFor="let item of getVisibleNavItems()"
+          *ngFor="let item of visibleNavItems"
           [routerLink]="item.route"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{exact: item.route === '/home'}"
@@ -382,6 +382,8 @@ export class SidebarComponent implements OnInit {
         this.isDark = savedTheme === 'dark' || document.documentElement.classList.contains('dark');
         this.applyTheme(this.isDark);
       }
+
+      this.updateVisibleNavItems();
     });
   }
 
@@ -485,9 +487,11 @@ export class SidebarComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  getVisibleNavItems(): NavItem[] {
+  visibleNavItems: NavItem[] = [];
+
+  private updateVisibleNavItems(): void {
     // Filtrer les items de navigation en fonction des permissions
-    return this.navItems.filter(item => {
+    this.visibleNavItems = this.navItems.filter(item => {
       // Si l'item n'a pas de module requis, il est toujours visible (Accueil, Playground)
       if (!item.requiredModule) {
         return true;

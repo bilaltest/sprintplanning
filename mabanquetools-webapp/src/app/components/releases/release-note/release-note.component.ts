@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -7,7 +7,7 @@ import { ReleaseNoteService } from '@services/release-note.service';
 import { MicroserviceService } from '@services/microservice.service';
 import { ToastService } from '@services/toast.service';
 import { ConfirmationService } from '@services/confirmation.service';
-import { Release, Feature } from '@models/release.model';
+import { Release, Feature, Squad } from '@models/release.model';
 import { ReleaseNoteEntry, ChangeItem, CreateReleaseNoteEntryRequest } from '@models/release-note.model';
 import { Microservice } from '@models/microservice.model';
 import { ReleaseNoteEntryModalComponent } from './release-note-entry-modal.component';
@@ -31,6 +31,7 @@ import { fr } from 'date-fns/locale';
     MicroservicesTableComponent,
     ReleaseNoteEntryModalComponent
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="max-w-7xl mx-auto space-y-6" *ngIf="release">
 
@@ -143,7 +144,7 @@ import { fr } from 'date-fns/locale';
 
       <!-- Section 1: Fonctionnalités Majeures (composant séparé) -->
       <app-major-features
-        [squads]="getSortedSquads()"
+        [squads]="sortedSquads"
         [(isExpanded)]="isFeaturesSectionExpanded"
         (saveFeature)="onSaveFeature($event)"
         (deleteFeature)="onDeleteFeature($event)"
@@ -199,11 +200,14 @@ import { fr } from 'date-fns/locale';
     ></app-release-note-entry-modal>
   `
 })
-export class ReleaseNoteComponent implements OnInit {
+export class ReleaseNoteComponent implements OnInit, OnDestroy {
   release: Release | null = null;
   entries: ReleaseNoteEntry[] = [];
   filteredEntries: ReleaseNoteEntry[] = [];
   microservices: Microservice[] = [];
+
+  // Computed properties for optimization
+  sortedSquads: Squad[] = [];
 
   // Filters
   selectedSquad = '';
@@ -243,6 +247,8 @@ export class ReleaseNoteComponent implements OnInit {
   // Features section
   isFeaturesSectionExpanded = false;
 
+  private cleanupListener: (() => void) | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -251,7 +257,9 @@ export class ReleaseNoteComponent implements OnInit {
     private releaseNoteService: ReleaseNoteService,
     private microserviceService: MicroserviceService,
     private toastService: ToastService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private cdr: ChangeDetectorRef,
+    private renderer: Renderer2
   ) { }
 
   ngOnInit(): void {
@@ -265,19 +273,28 @@ export class ReleaseNoteComponent implements OnInit {
 
     this.loadColumnPreferences();
 
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', (e) => {
+    // Clean listener for dropdowns
+    this.cleanupListener = this.renderer.listen('document', 'click', (e: Event) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.relative')) {
         this.isExportDropdownOpen = false;
+        this.cdr.markForCheck();
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.cleanupListener) {
+      this.cleanupListener();
+    }
   }
 
   async loadRelease(releaseId: string): Promise<void> {
     try {
       this.release = await this.releaseService.getRelease(releaseId);
+      this.computeSortedSquads();
       this.applyFilters();
+      this.cdr.markForCheck();
     } catch (error) {
       console.error('Error loading release:', error);
       this.toastService.error('Erreur lors du chargement de la release');
@@ -290,10 +307,12 @@ export class ReleaseNoteComponent implements OnInit {
       next: (entries) => {
         this.entries = entries;
         this.applyFilters();
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading entries:', error);
         this.toastService.error('Erreur lors du chargement des entrées');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -305,10 +324,12 @@ export class ReleaseNoteComponent implements OnInit {
         if (this.entries.length > 0) {
           this.applyFilters();
         }
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading microservices:', error);
         this.toastService.error('Erreur lors du chargement des microservices');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -423,6 +444,7 @@ export class ReleaseNoteComponent implements OnInit {
 
       return this.sortDirection === 'asc' ? comparison : -comparison;
     });
+    this.cdr.markForCheck();
   }
 
   // Filter handlers
@@ -786,9 +808,18 @@ export class ReleaseNoteComponent implements OnInit {
     return format(d, 'd MMMM yyyy', { locale: fr });
   }
 
-  getSortedSquads() {
-    if (!this.release?.squads) return [];
-    return [...this.release.squads].sort((a, b) => a.squadNumber - b.squadNumber);
+  computeSortedSquads() {
+    if (!this.release?.squads) {
+      this.sortedSquads = [];
+      return;
+    }
+    this.sortedSquads = [...this.release.squads].sort((a, b) => a.squadNumber - b.squadNumber);
+  }
+
+  // Deprecated: used computeSortedSquads instead for performance
+  // kept if needed by other components, but normally private
+  private getSortedSquadsRef() {
+    return this.sortedSquads;
   }
 
   goBack(): void {

@@ -62,6 +62,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
           <!-- Navigation -->
           <div class="flex items-center space-x-4">
             <button
+              id="btn-today"
               (click)="goToToday()"
               class="btn btn-secondary btn-sm"
             >
@@ -176,13 +177,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
            class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-6 relative min-h-[600px]"
            [class.pointer-events-none]="isTourActive">
 
-        <!-- Loading Overlay -->
-        <div *ngIf="isLoadingEvents$ | async" class="absolute inset-0 z-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center transition-opacity duration-300">
-          <div class="text-center">
-            <div class="inline-block w-12 h-12 border-4 border-emerald-200 dark:border-emerald-700 border-t-emerald-600 dark:border-t-emerald-400 rounded-full animate-spin mb-4"></div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">Chargement...</p>
-          </div>
-        </div>
+
 
         <!-- Data Views (Always present) -->
         <app-now-view
@@ -316,11 +311,11 @@ export class TimelineContainerComponent implements OnInit {
       },
       steps: [
         {
-          element: '[data-is-today="true"]',
+          element: '#btn-today',
           popover: {
             title: 'Aujourd\'hui',
-            description: 'Focus immédiat sur la journée courante. Vous pouvez cliquer sur un événement pour voir les détails.',
-            side: 'top',
+            description: 'Cliquez sur ce bouton pour centrer la vue sur la journée courante.',
+            side: 'bottom',
             align: 'center'
           }
         },

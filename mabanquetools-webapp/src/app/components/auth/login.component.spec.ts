@@ -47,59 +47,37 @@ describe('LoginComponent', () => {
     });
 
     it('should not submit if password is empty', async () => {
+        component.emailPrefix = 'test';
         component.password = '';
         await component.onSubmit();
         expect(authService.login).not.toHaveBeenCalled();
     });
 
-    it('should login successfully', async () => {
-        jest.useFakeTimers();
-        component.email = 'test@example.com';
+    it('should login successfully with suffix appended', async () => {
+        component.emailPrefix = 'test';
         component.password = 'password';
         authService.login.mockResolvedValue({ success: true });
 
-        const promise = component.onSubmit();
+        await component.onSubmit();
 
-        // Initial state
-        expect(component.isLoading).toBe(true);
-        expect(component.showError).toBe(false);
-
-        // Advance time to trigger timeout
-        jest.advanceTimersByTime(500);
-
-        await promise;
-
-        expect(authService.login).toHaveBeenCalledWith('test@example.com', 'password');
+        expect(authService.login).toHaveBeenCalledWith('test@ca-ts.fr', 'password');
         expect(component.isLoading).toBe(false);
         expect(router.navigate).toHaveBeenCalledWith(['/']);
-
-        jest.useRealTimers();
     });
 
     it('should handle login failure', async () => {
-        jest.useFakeTimers();
-        component.email = 'test@example.com';
+        component.emailPrefix = 'test';
         component.password = 'wrong';
         authService.login.mockResolvedValue({ success: false, message: 'Invalid credentials' });
 
-        const promise = component.onSubmit();
+        await component.onSubmit();
 
-        // Advance time to trigger timeout
-        jest.advanceTimersByTime(500);
-
-        await promise;
-
-        expect(authService.login).toHaveBeenCalledWith('test@example.com', 'wrong');
+        expect(authService.login).toHaveBeenCalledWith('test@ca-ts.fr', 'wrong');
         expect(component.isLoading).toBe(false);
         expect(router.navigate).not.toHaveBeenCalled();
         expect(component.showError).toBe(true);
         expect(component.errorMessage).toBe('Invalid credentials');
         expect(component.password).toBe('');
-
-        expect(component.errorMessage).toBe('Invalid credentials');
-        expect(component.password).toBe('');
-
-        jest.useRealTimers();
     });
 
     describe('loginAsGuest', () => {
