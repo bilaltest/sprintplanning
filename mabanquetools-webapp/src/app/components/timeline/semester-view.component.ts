@@ -250,6 +250,7 @@ export class SemesterViewComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() closedDays: ClosedDay[] | null = [];
   @Output() eventClick = new EventEmitter<Event>();
   @Output() addEventClick = new EventEmitter<string>();
+  @Output() ready = new EventEmitter<void>();
 
   @ViewChild('scrollContainer') scrollContainer!: ElementRef;
 
@@ -442,6 +443,13 @@ export class SemesterViewComponent implements OnInit, OnChanges, AfterViewInit {
 
     if (todayElement) {
       todayElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'center' });
+      // Emit ready after scroll animation (approx)
+      setTimeout(() => {
+        this.ready.emit();
+      }, 500);
+    } else {
+      // If no today element (e.g. looking at future/past semester), just emit ready
+      this.ready.emit();
     }
   }
 

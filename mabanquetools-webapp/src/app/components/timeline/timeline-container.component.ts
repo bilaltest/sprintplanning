@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { TimelineService } from '@services/timeline.service';
@@ -16,7 +16,7 @@ import { ClosedDay } from '@models/closed-day.model';
 import { ClosedDayService } from '@services/closed-day.service';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { OnboardingService } from '@services/onboarding.service';
-import { TipModalComponent } from '../onboarding/tip-modal/tip-modal.component';
+import { driver } from 'driver.js';
 
 import { SemesterViewComponent } from './semester-view.component';
 import { NowViewComponent } from './now-view.component';
@@ -81,6 +81,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
 
             <div class="relative">
               <button
+                id="btn-export"
                 (click)="toggleExportMenu()"
                 class="btn btn-secondary flex items-center space-x-2"
               >
@@ -89,8 +90,11 @@ import { EventModalComponent } from '../modals/event-modal.component';
               </button>
 
               <div
-                *ngIf="showExportMenu"
-                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-1 z-50 fade-in-scale"
+                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 py-1 z-50 transition-all duration-200"
+                [class.invisible]="!showExportMenu"
+                [class.opacity-0]="!showExportMenu"
+                [class.pointer-events-none]="!showExportMenu"
+                [class.fade-in-scale]="showExportMenu && !isTourActive"
               >
                 <button
                   (click)="exportAsPDF()"
@@ -121,6 +125,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
                   <span>Export CSV</span>
                 </button>
                 <button
+                  id="btn-export-ics"
                   (click)="exportAsICS()"
                   class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2"
                 >
@@ -134,7 +139,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
       </div>
 
       <!-- Filter bar -->
-      <div [class.sticky]="!isStickyDisabled" class="z-30" [style.top.px]="0">
+      <div [class.sticky]="!isStickyDisabled" class="z-30" [style.top.px]="0" [class.pointer-events-none]="isTourActive">
         <app-filter-bar></app-filter-bar>
         
         <!-- Toggle button (visible when scrolled) -->
@@ -167,7 +172,9 @@ import { EventModalComponent } from '../modals/event-modal.component';
       </div>
 
       <!-- Timeline view -->
-      <div id="timeline-export" class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-6 relative min-h-[600px]">
+      <div id="timeline-export" 
+           class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-6 relative min-h-[600px]"
+           [class.pointer-events-none]="isTourActive">
 
         <!-- Loading Overlay -->
         <div *ngIf="isLoadingEvents$ | async" class="absolute inset-0 z-20 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg flex items-center justify-center transition-opacity duration-300">
@@ -184,6 +191,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
           (deleteEventClick)="handleDeleteEvent($event)"
+          (ready)="onViewReady()"
         ></app-now-view>
 
         <app-semester-view
@@ -193,6 +201,7 @@ import { EventModalComponent } from '../modals/event-modal.component';
           [closedDays]="closedDays$ | async"
           (eventClick)="openEditEventModal($event)"
           (addEventClick)="openCreateEventModalWithDate($event)"
+          (ready)="onViewReady()"
         ></app-semester-view>
 
       </div>
@@ -230,6 +239,7 @@ export class TimelineContainerComponent implements OnInit {
   showExportMenu = false;
   isStickyDisabled = false;
   isScrolled = false;
+  isTourActive = false;
 
   // Loading & Error states
   isLoadingEvents$!: Observable<boolean>;
@@ -245,7 +255,8 @@ export class TimelineContainerComponent implements OnInit {
     private toastService: ToastService,
     private route: ActivatedRoute,
     private onboardingService: OnboardingService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {
     // Initialisation des observables
     this.filteredEvents$ = this.filterService.filteredEvents$;
@@ -274,28 +285,80 @@ export class TimelineContainerComponent implements OnInit {
       }
     });
 
+    // this.checkOnboarding(); - Moved to onViewReady
+  }
+
+  onViewReady(): void {
     this.checkOnboarding();
   }
 
   private checkOnboarding(): void {
     this.onboardingService.loadSeenKeys().subscribe(() => {
       if (this.onboardingService.shouldShow('FEATURE_CALENDAR')) {
-        this.dialog.open(TipModalComponent, {
-          width: '90%',
-          maxWidth: '500px',
-          panelClass: 'transparent-dialog',
-          backdropClass: 'blur-backdrop',
-          data: {
-            title: 'Calendrier des Sprints',
-            content: 'Voici le planning de l\'année. Vous pouvez voir les sprints, les périodes de Code Freeze, et les mises en production (MEP).',
-            icon: 'calendar_month',
-            gradientClass: 'from-blue-500 to-cyan-500'
-          }
-        }).afterClosed().subscribe(() => {
-          this.onboardingService.markAsSeen('FEATURE_CALENDAR');
-        });
+        this.startTour();
       }
     });
+  }
+
+  private startTour(): void {
+    this.isTourActive = true;
+    const tourDriver = driver({
+      showProgress: true,
+      animate: true,
+      allowClose: true,
+      doneBtnText: 'Terminer',
+      nextBtnText: 'Suivant',
+      prevBtnText: 'Précédent',
+      onDestroyed: () => {
+        this.isTourActive = false;
+        this.onboardingService.markAsSeen('FEATURE_CALENDAR');
+        this.showExportMenu = false; // Close menu if open
+      },
+      steps: [
+        {
+          element: '[data-is-today="true"]',
+          popover: {
+            title: 'Aujourd\'hui',
+            description: 'Focus immédiat sur la journée courante. Vous pouvez cliquer sur un événement pour voir les détails.',
+            side: 'top',
+            align: 'center'
+          }
+        },
+        {
+          element: 'app-filter-bar',
+          onDeselected: () => {
+            // Prepare next step (Export) by pre-opening the menu and scrolling up
+            // This ensures the element exists when Step 3 starts
+            this.showExportMenu = true;
+            this.cdr.detectChanges();
+            window.scrollTo({ top: 0, behavior: 'auto' });
+          },
+          popover: {
+            title: 'Filtres',
+            description: 'Utilisez la barre de filtres pour n\'afficher que certaines catégories d\'événements (ex: MEP uniquement).',
+            side: 'bottom',
+            align: 'start'
+          }
+        },
+        {
+          element: '#btn-export-ics',
+          onHighlightStarted: () => {
+            // Ensure state is correct just in case
+            this.showExportMenu = true;
+            window.scrollTo({ top: 0, behavior: 'auto' });
+            this.cdr.detectChanges();
+          },
+          popover: {
+            title: 'Export Calendrier',
+            description: 'Cliquez sur Exporter puis choisissez "Export ICS" pour ajouter ce planning à votre calendrier Outlook.',
+            side: 'left',
+            align: 'center'
+          }
+        }
+      ]
+    });
+
+    tourDriver.drive();
   }
 
   private scrollToEvent(eventId: string): void {

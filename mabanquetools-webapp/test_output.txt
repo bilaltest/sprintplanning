@@ -1,344 +1,107 @@
+FAIL src/app/components/home/home.component.spec.ts
+  HomeComponent
+    ✕ should create (82 ms)
+    ✕ should navigate to calendar (7 ms)
+    ✕ should navigate to releases (5 ms)
 
-> event-planning-app@1.0.0 test
-> jest
+  ● HomeComponent › should create
 
-PASS src/app/app.component.spec.ts
-  ● Console
+    TypeError: Cannot read properties of undefined (reading 'subscribe')
 
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
+      654 |   private loadStatistics(): void {
+      655 |     // Subscribe to loading states
+    > 656 |     this.eventService.loading$.subscribe(loading => {
+          |                                ^
+      657 |       this.isLoadingEvents = loading;
+      658 |     });
+      659 |
 
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-PASS src/app/components/filters/filter-bar.component.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-PASS src/app/components/modals/event-modal.component.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-PASS src/app/services/event.service.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-PASS src/app/services/settings.service.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-PASS src/app/services/timeline.service.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-PASS src/app/services/auth.service.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-FAIL src/app/components/auth/login.component.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-  ● LoginComponent › should login successfully
-
-    expect(jest.fn()).toHaveBeenCalledWith(...expected)
-
-    Expected: "password"
-
-    Number of calls: 0
-
-      59 |         tick();
-      60 |
-    > 61 |         expect(authService.login).toHaveBeenCalledWith('password');
-         |                                   ^
-      62 |         expect(component.isLoading).toBe(false);
-      63 |         expect(router.navigate).toHaveBeenCalledWith(['/']);
-      64 |     }));
-
-      at src/app/components/auth/login.component.spec.ts:61:35
-      at fakeAsyncFn (node_modules/zone.js/bundles/zone-testing.umd.js:1794:30)
+      at HomeComponent.loadStatistics (src/app/components/home/home.component.ts:656:32)
+      at HomeComponent.ngOnInit (src/app/components/home/home.component.ts:473:10)
+      at callHookInternal (node_modules/@angular/core/fesm2022/debug_node.mjs:860:14)
+      at callHook (node_modules/@angular/core/fesm2022/debug_node.mjs:887:13)
+      at callHooks (node_modules/@angular/core/fesm2022/debug_node.mjs:841:17)
+      at executeInitAndCheckHooks (node_modules/@angular/core/fesm2022/debug_node.mjs:791:9)
+      at refreshView (node_modules/@angular/core/fesm2022/debug_node.mjs:10179:21)
+      at detectChangesInView (node_modules/@angular/core/fesm2022/debug_node.mjs:10384:9)
+      at detectChangesInViewWhileDirty (node_modules/@angular/core/fesm2022/debug_node.mjs:10073:9)
+      at detectChangesInternal (node_modules/@angular/core/fesm2022/debug_node.mjs:10061:9)
+      at ViewRef.detectChanges (node_modules/@angular/core/fesm2022/debug_node.mjs:10923:9)
+      at node_modules/@angular/core/fesm2022/testing.mjs:313:44
       at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:410:32)
-      at ProxyZoneSpec.Object.<anonymous>.ProxyZoneSpec.onInvoke (node_modules/zone.js/bundles/zone-testing.umd.js:2219:43)
+      at Object.onInvoke (node_modules/@angular/core/fesm2022/debug_node.mjs:7926:33)
       at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:409:38)
       at ZoneImpl.run (node_modules/zone.js/bundles/zone.umd.js:145:47)
-      at Object.wrappedFunc (node_modules/zone.js/bundles/zone-testing.umd.js:449:38)
+      at NgZone.run (node_modules/@angular/core/fesm2022/debug_node.mjs:7772:28)
+      at ComponentFixture.detectChanges (node_modules/@angular/core/fesm2022/testing.mjs:310:30)
+      at src/app/components/home/home.component.spec.ts:82:17
 
-  ● LoginComponent › should handle login failure
+  ● HomeComponent › should navigate to calendar
 
-    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+    TypeError: Cannot read properties of undefined (reading 'subscribe')
 
-    Expected: "wrong"
+      654 |   private loadStatistics(): void {
+      655 |     // Subscribe to loading states
+    > 656 |     this.eventService.loading$.subscribe(loading => {
+          |                                ^
+      657 |       this.isLoadingEvents = loading;
+      658 |     });
+      659 |
 
-    Number of calls: 0
-
-      76 |         tick();
-      77 |
-    > 78 |         expect(authService.login).toHaveBeenCalledWith('wrong');
-         |                                   ^
-      79 |         expect(component.isLoading).toBe(false);
-      80 |         expect(router.navigate).not.toHaveBeenCalled();
-      81 |         expect(component.showError).toBe(true);
-
-      at src/app/components/auth/login.component.spec.ts:78:35
-      at fakeAsyncFn (node_modules/zone.js/bundles/zone-testing.umd.js:1794:30)
+      at HomeComponent.loadStatistics (src/app/components/home/home.component.ts:656:32)
+      at HomeComponent.ngOnInit (src/app/components/home/home.component.ts:473:10)
+      at callHookInternal (node_modules/@angular/core/fesm2022/debug_node.mjs:860:14)
+      at callHook (node_modules/@angular/core/fesm2022/debug_node.mjs:887:13)
+      at callHooks (node_modules/@angular/core/fesm2022/debug_node.mjs:841:17)
+      at executeInitAndCheckHooks (node_modules/@angular/core/fesm2022/debug_node.mjs:791:9)
+      at refreshView (node_modules/@angular/core/fesm2022/debug_node.mjs:10179:21)
+      at detectChangesInView (node_modules/@angular/core/fesm2022/debug_node.mjs:10384:9)
+      at detectChangesInViewWhileDirty (node_modules/@angular/core/fesm2022/debug_node.mjs:10073:9)
+      at detectChangesInternal (node_modules/@angular/core/fesm2022/debug_node.mjs:10061:9)
+      at ViewRef.detectChanges (node_modules/@angular/core/fesm2022/debug_node.mjs:10923:9)
+      at node_modules/@angular/core/fesm2022/testing.mjs:313:44
       at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:410:32)
-      at ProxyZoneSpec.Object.<anonymous>.ProxyZoneSpec.onInvoke (node_modules/zone.js/bundles/zone-testing.umd.js:2219:43)
+      at Object.onInvoke (node_modules/@angular/core/fesm2022/debug_node.mjs:7926:33)
       at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:409:38)
       at ZoneImpl.run (node_modules/zone.js/bundles/zone.umd.js:145:47)
-      at Object.wrappedFunc (node_modules/zone.js/bundles/zone-testing.umd.js:449:38)
+      at NgZone.run (node_modules/@angular/core/fesm2022/debug_node.mjs:7772:28)
+      at ComponentFixture.detectChanges (node_modules/@angular/core/fesm2022/testing.mjs:310:30)
+      at src/app/components/home/home.component.spec.ts:82:17
 
-PASS src/app/components/home/home.component.spec.ts
-  ● Console
+  ● HomeComponent › should navigate to releases
 
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
+    TypeError: Cannot read properties of undefined (reading 'subscribe')
 
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
+      654 |   private loadStatistics(): void {
+      655 |     // Subscribe to loading states
+    > 656 |     this.eventService.loading$.subscribe(loading => {
+          |                                ^
+      657 |       this.isLoadingEvents = loading;
+      658 |     });
+      659 |
 
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
+      at HomeComponent.loadStatistics (src/app/components/home/home.component.ts:656:32)
+      at HomeComponent.ngOnInit (src/app/components/home/home.component.ts:473:10)
+      at callHookInternal (node_modules/@angular/core/fesm2022/debug_node.mjs:860:14)
+      at callHook (node_modules/@angular/core/fesm2022/debug_node.mjs:887:13)
+      at callHooks (node_modules/@angular/core/fesm2022/debug_node.mjs:841:17)
+      at executeInitAndCheckHooks (node_modules/@angular/core/fesm2022/debug_node.mjs:791:9)
+      at refreshView (node_modules/@angular/core/fesm2022/debug_node.mjs:10179:21)
+      at detectChangesInView (node_modules/@angular/core/fesm2022/debug_node.mjs:10384:9)
+      at detectChangesInViewWhileDirty (node_modules/@angular/core/fesm2022/debug_node.mjs:10073:9)
+      at detectChangesInternal (node_modules/@angular/core/fesm2022/debug_node.mjs:10061:9)
+      at ViewRef.detectChanges (node_modules/@angular/core/fesm2022/debug_node.mjs:10923:9)
+      at node_modules/@angular/core/fesm2022/testing.mjs:313:44
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:410:32)
+      at Object.onInvoke (node_modules/@angular/core/fesm2022/debug_node.mjs:7926:33)
+      at _ZoneDelegate.invoke (node_modules/zone.js/bundles/zone.umd.js:409:38)
+      at ZoneImpl.run (node_modules/zone.js/bundles/zone.umd.js:145:47)
+      at NgZone.run (node_modules/@angular/core/fesm2022/debug_node.mjs:7772:28)
+      at ComponentFixture.detectChanges (node_modules/@angular/core/fesm2022/testing.mjs:310:30)
+      at src/app/components/home/home.component.spec.ts:82:17
 
-PASS src/app/components/settings/settings.component.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-PASS src/app/components/timeline/month-view.component.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-PASS src/app/components/timeline/timeline-container.component.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-PASS src/app/components/timeline/annual-view.component.spec.ts
-  ● Console
-
-    console.warn
-      
-          Importing "setup-jest.js" directly is deprecated. The file "setup-jest.js" will be removed in the future.
-          Please use "setupZoneTestEnv" function instead. Example:
-      
-          // setup-jest.ts
-          import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
-      
-          setupZoneTestEnv();
-
-    > 1 | import 'jest-preset-angular/setup-jest';
-        | ^
-      2 |
-      3 | Object.defineProperty(window, 'CSS', {value: null});
-      4 | Object.defineProperty(window, 'getComputedStyle', {
-
-      at Object.<anonymous> (node_modules/jest-preset-angular/setup-jest.js:1:111)
-      at Object.<anonymous> (setup-jest.ts:1:1)
-
-
-Test Suites: 1 failed, 12 passed, 13 total
-Tests:       2 failed, 111 passed, 113 total
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 3 total
 Snapshots:   0 total
-Time:        3.502 s
-Ran all test suites.
+Time:        1.08 s
+Ran all test suites matching src/app/components/home/home.component.spec.ts.

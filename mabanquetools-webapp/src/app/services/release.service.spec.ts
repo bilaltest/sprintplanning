@@ -1,12 +1,14 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ReleaseService } from './release.service';
+import { PermissionService } from './permission.service';
 import { environment } from '../../environments/environment';
 import { Release, CreateReleaseDto, UpdateReleaseDto, CreateFeatureDto, CreateActionDto } from '@models/release.model';
 
 describe('ReleaseService', () => {
     let service: ReleaseService;
     let httpMock: HttpTestingController;
+    let permissionServiceMock: any;
     const apiUrl = `${environment.apiUrl}/releases`;
 
     const mockRelease: Release = {
@@ -19,19 +21,29 @@ describe('ReleaseService', () => {
         squads: []
     };
 
-    beforeEach(() => {
+    beforeEach(fakeAsync(() => {
+        permissionServiceMock = {
+            hasReadAccess: jest.fn().mockReturnValue(true)
+        };
+
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
-            providers: [ReleaseService]
+            providers: [
+                ReleaseService,
+                { provide: PermissionService, useValue: permissionServiceMock }
+            ]
         });
         service = TestBed.inject(ReleaseService);
         httpMock = TestBed.inject(HttpTestingController);
+
+        // Advance time to trigger setTimeout in constructor
+        tick();
 
         // Handle initial loadReleases call from constructor
         const req = httpMock.expectOne(apiUrl);
         expect(req.request.method).toBe('GET');
         req.flush([]);
-    });
+    }));
 
     afterEach(() => {
         httpMock.verify();

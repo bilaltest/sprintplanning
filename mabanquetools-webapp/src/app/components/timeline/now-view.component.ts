@@ -281,6 +281,7 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
   @Output() eventClick = new EventEmitter<Event>();
   @Output() addEventClick = new EventEmitter<string>();
   @Output() deleteEventClick = new EventEmitter<Event>();
+  @Output() ready = new EventEmitter<void>();
   @ViewChild('scrollContainer') scrollContainer?: ElementRef;
 
   days: DayCard[] = [];
@@ -646,6 +647,13 @@ export class NowViewComponent implements OnChanges, AfterViewInit {
         left: scrollLeft,
         behavior: 'smooth'
       });
+
+      // Emit ready after scroll animation
+      setTimeout(() => {
+        this.ready.emit();
+      }, 500);
+    } else {
+      this.ready.emit();
     }
   }
 

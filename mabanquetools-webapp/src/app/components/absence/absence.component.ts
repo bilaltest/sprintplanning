@@ -20,7 +20,7 @@ import { ClosedDay } from '@models/closed-day.model';
 import { ClosedDayService } from '@services/closed-day.service';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { OnboardingService } from '@services/onboarding.service';
-import { TipModalComponent } from '../onboarding/tip-modal/tip-modal.component';
+// import { TipModalComponent } from '../onboarding/tip-modal/tip-modal.component';
 
 interface DayMetadata {
   date: Date;
@@ -156,7 +156,7 @@ interface MonthMetadata {
         
         <ng-template #desktopView>
         <!-- Left Sidebar (Users Table) -->
-        <div id="users-sidebar" [style.width.px]="showUserDetails ? 740 : 350" class="flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col z-10 shadow-lg transition-all duration-300">
+        <div id="users-sidebar" [style.width.px]="showUserDetails ? 740 : 350" class="flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col z-10 shadow-lg transition-all duration-300" [class.pointer-events-none]="isTourActive">
           <!-- Table Header -->
           <div class="h-24 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex flex-col justify-center px-4 space-y-2 shrink-0">
             <!-- Headers -->
@@ -294,7 +294,7 @@ interface MonthMetadata {
         <div class="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-800 relative">
           
           <!-- Timeline Header (Months & Days) -->
-          <div id="timeline-header" #headerScrollContainer class="overflow-x-auto custom-scrollbar border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 h-24" (scroll)="onHeaderScroll($event)">
+          <div id="timeline-header" #headerScrollContainer class="overflow-x-auto custom-scrollbar border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shrink-0 h-24" (scroll)="onHeaderScroll($event)" [class.pointer-events-none]="isTourActive">
             <div class="flex h-full" [style.width.px]="timelineWidth">
               <!-- Months -->
               <ng-container *ngFor="let month of monthData; trackBy: trackMonthByDate">
@@ -394,7 +394,7 @@ interface MonthMetadata {
           </ng-template>
 
           <!-- Timeline Grid Container (Scrollable) -->
-          <div id="timeline-grid" #mainScrollContainer class="flex-1 overflow-auto custom-scrollbar" (scroll)="onMainScroll($event)">
+          <div id="timeline-grid" #mainScrollContainer class="flex-1 overflow-auto custom-scrollbar" (scroll)="onMainScroll($event)" [class.pointer-events-none]="isTourActive">
             <div class="relative" [style.width.px]="timelineWidth">
               
               <!-- BACKGROUND LAYER: The Grids (Rendered ONCE) -->
@@ -751,7 +751,10 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
 
+  isTourActive = false;
+
   private startAbsenceTour(): void {
+    this.isTourActive = true;
     const tourDriver = driver({
       showProgress: true,
       animate: true,
@@ -760,6 +763,7 @@ export class AbsenceComponent implements OnInit, AfterViewInit, OnDestroy {
       nextBtnText: 'Suivant',
       prevBtnText: 'Précédent',
       onDestroyed: () => {
+        this.isTourActive = false;
         this.onboardingService.markAsSeen('TOUR_ABSENCE');
       },
       steps: [

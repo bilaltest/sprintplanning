@@ -8,7 +8,7 @@ import { ConfirmationService } from '@services/confirmation.service';
 import { CanAccessDirective } from '@directives/can-access.directive';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { OnboardingService } from '@services/onboarding.service';
-import { TipModalComponent } from '../onboarding/tip-modal/tip-modal.component';
+// import { TipModalComponent } from '../onboarding/tip-modal/tip-modal.component';
 import {
   Release,
   STATUS_LABELS,
@@ -649,24 +649,8 @@ export class ReleasesListComponent implements OnInit {
   }
 
   private checkOnboarding(): void {
-    this.onboardingService.loadSeenKeys().subscribe(() => {
-      if (this.onboardingService.shouldShow('FEATURE_RELEASES')) {
-        this.dialog.open(TipModalComponent, {
-          width: '90%',
-          maxWidth: '500px',
-          panelClass: 'transparent-dialog',
-          backdropClass: 'blur-backdrop',
-          data: {
-            title: 'Bienvenue sur les Releases',
-            content: 'C\'est ici que vous gérez vos mises en production. Vous pouvez créer des releases, y associer des features de vos squads, et suivre l\'avancement des déploiements. N\'oubliez pas de consulter l\'historique pour voir les anciennes versions.',
-            icon: 'rocket_launch',
-            gradientClass: 'from-emerald-500 to-teal-600'
-          }
-        }).afterClosed().subscribe(() => {
-          this.onboardingService.markAsSeen('FEATURE_RELEASES');
-        });
-      }
-    });
+    // Onboarding tour logic to be implemented later or removed if not needed across the board
+    // Old TipModalComponent removed as requested
   }
 
   formatDate(dateString: string): string {

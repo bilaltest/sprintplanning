@@ -1,12 +1,14 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { EventService } from './event.service';
+import { PermissionService } from './permission.service';
 import { environment } from '../../environments/environment';
 import { Event } from '@models/event.model';
 
 describe('EventService', () => {
     let service: EventService;
     let httpMock: HttpTestingController;
+    let permissionServiceMock: any;
     const apiUrl = `${environment.apiUrl}/events`;
 
     const mockEvents: Event[] = [
@@ -25,18 +27,28 @@ describe('EventService', () => {
         }
     ];
 
-    beforeEach(() => {
+    beforeEach(fakeAsync(() => {
+        permissionServiceMock = {
+            hasReadAccess: jest.fn().mockReturnValue(true)
+        };
+
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
-            providers: [EventService]
+            providers: [
+                EventService,
+                { provide: PermissionService, useValue: permissionServiceMock }
+            ]
         });
         service = TestBed.inject(EventService);
         httpMock = TestBed.inject(HttpTestingController);
 
+        // Advance time to trigger setTimeout in constructor
+        tick();
+
         // Handle the initial loadEvents call from constructor
         const req = httpMock.expectOne(apiUrl);
         req.flush(mockEvents);
-    });
+    }));
 
     afterEach(() => {
         httpMock.verify();

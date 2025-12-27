@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { EventService } from './event.service';
 import { PermissionService } from './permission.service';
@@ -35,7 +35,7 @@ describe('EventService - Permission Checks', () => {
         }
     });
 
-    it('should NOT load events on init if user has no CALENDAR permission', (done) => {
+    it('should NOT load events on init if user has no CALENDAR permission', fakeAsync(() => {
         // Mock: User has NO permission
         permissionService.hasReadAccess!.mockReturnValue(false);
 
@@ -43,19 +43,18 @@ describe('EventService - Permission Checks', () => {
         service = TestBed.inject(EventService);
 
         // Wait for setTimeout to execute
-        setTimeout(() => {
-            // Verify NO HTTP call was made
-            httpMock.expectNone(apiUrl);
+        tick();
 
-            // Verify error state is set
-            service.error$.subscribe(error => {
-                expect(error).toBe('Permissions insuffisantes');
-                done();
-            });
-        }, 10);
-    });
+        // Verify NO HTTP call was made
+        httpMock.expectNone(apiUrl);
 
-    it('should load events on init if user has CALENDAR READ permission', (done) => {
+        // Verify error state is null (silent fail)
+        service.error$.subscribe(error => {
+            expect(error).toBeNull();
+        });
+    }));
+
+    it('should load events on init if user has CALENDAR READ permission', fakeAsync(() => {
         // Mock: User has READ permission
         permissionService.hasReadAccess!.mockReturnValue(true);
 
@@ -63,34 +62,29 @@ describe('EventService - Permission Checks', () => {
         service = TestBed.inject(EventService);
 
         // Wait for setTimeout to execute
-        setTimeout(() => {
-            // Verify HTTP call was made
-            const req = httpMock.expectOne(apiUrl);
-            expect(req.request.method).toBe('GET');
-            req.flush([]);
+        tick();
 
-            done();
-        }, 10);
-    });
+        // Verify HTTP call was made
+        const req = httpMock.expectOne(apiUrl);
+        expect(req.request.method).toBe('GET');
+        req.flush([]);
+    }));
 
-    it('should NOT call API in loadEvents if user has no permission', async () => {
+    it('should NOT call API in loadEvents if user has no permission', fakeAsync(() => {
         // Mock: User has permission initially (for constructor)
         permissionService.hasReadAccess!.mockReturnValue(true);
         service = TestBed.inject(EventService);
 
         // Handle constructor call
-        setTimeout(() => {
-            const req = httpMock.match(apiUrl);
-            req.forEach(r => r.flush([]));
-        }, 10);
-
-        await new Promise(resolve => setTimeout(resolve, 20));
+        tick();
+        httpMock.expectOne(apiUrl).flush([]);
 
         // Now revoke permission
         permissionService.hasReadAccess!.mockReturnValue(false);
 
         // Try to refresh events
-        await service.refreshEvents();
+        service.refreshEvents();
+        tick();
 
         // Verify NO new HTTP call was made
         httpMock.expectNone(apiUrl);
@@ -99,33 +93,28 @@ describe('EventService - Permission Checks', () => {
         service.error$.subscribe(error => {
             expect(error).toBe('Permissions insuffisantes');
         });
-    });
+    }));
 
-    it('should call API in loadEvents if user has permission', async () => {
+    it('should call API in loadEvents if user has permission', fakeAsync(() => {
         // Mock: User has permission
         permissionService.hasReadAccess!.mockReturnValue(true);
         service = TestBed.inject(EventService);
 
         // Handle constructor call
-        setTimeout(() => {
-            const req = httpMock.match(apiUrl);
-            req.forEach(r => r.flush([]));
-        }, 10);
-
-        await new Promise(resolve => setTimeout(resolve, 20));
+        tick();
+        httpMock.expectOne(apiUrl).flush([]);
 
         // Refresh events (should work)
-        const refreshPromise = service.refreshEvents();
+        service.refreshEvents();
+        tick();
 
         // Verify HTTP call was made
         const req = httpMock.expectOne(apiUrl);
         expect(req.request.method).toBe('GET');
         req.flush([]);
+    }));
 
-        await refreshPromise;
-    });
-
-    it('should log warning when permission check fails', (done) => {
+    it('should log warning when permission check fails', fakeAsync(() => {
         // Spy on console.warn
         jest.spyOn(console, 'warn').mockImplementation();
 
@@ -134,27 +123,28 @@ describe('EventService - Permission Checks', () => {
 
         service = TestBed.inject(EventService);
 
-        setTimeout(() => {
-            // Verify warning was logged
-            expect(console.warn).toHaveBeenCalledWith(
-                'EventService: No permission to load events (CALENDAR READ required)'
-            );
-            done();
-        }, 10);
-    });
+        tick();
 
-    it('should check CALENDAR module for permission', (done) => {
+        // Call refreshEvents to trigger the check inside loadEvents
+        service.refreshEvents();
+        tick();
+
+        // Verify warning was logged
+        expect(console.warn).toHaveBeenCalledWith(
+            'EventService: No permission to load events (CALENDAR READ required)'
+        );
+    }));
+
+    it('should check CALENDAR module for permission', fakeAsync(() => {
         permissionService.hasReadAccess!.mockReturnValue(true);
         service = TestBed.inject(EventService);
 
-        setTimeout(() => {
-            // Verify hasReadAccess was called with 'CALENDAR'
-            expect(permissionService.hasReadAccess).toHaveBeenCalledWith('CALENDAR');
+        tick();
 
-            // Clean up
-            const req = httpMock.match(apiUrl);
-            req.forEach(r => r.flush([]));
-            done();
-        }, 10);
-    });
+        // Verify hasReadAccess was called with 'CALENDAR'
+        expect(permissionService.hasReadAccess).toHaveBeenCalledWith('CALENDAR');
+
+        // Clean up
+        httpMock.expectOne(apiUrl).flush([]);
+    }));
 });

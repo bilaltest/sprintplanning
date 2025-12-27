@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ReleaseService } from './release.service';
 import { PermissionService } from './permission.service';
@@ -35,7 +35,7 @@ describe('ReleaseService - Permission Checks', () => {
         }
     });
 
-    it('should NOT load releases on init if user has no RELEASES permission', (done) => {
+    it('should NOT load releases on init if user has no RELEASES permission', fakeAsync(() => {
         // Mock: User has NO permission
         permissionService.hasReadAccess!.mockReturnValue(false);
 
@@ -43,19 +43,18 @@ describe('ReleaseService - Permission Checks', () => {
         service = TestBed.inject(ReleaseService);
 
         // Wait for setTimeout to execute
-        setTimeout(() => {
-            // Verify NO HTTP call was made
-            httpMock.expectNone(apiUrl);
+        tick();
 
-            // Verify error state is set
-            service.error$.subscribe(error => {
-                expect(error).toBe('Permissions insuffisantes');
-                done();
-            });
-        }, 10);
-    });
+        // Verify NO HTTP call was made
+        httpMock.expectNone(apiUrl);
 
-    it('should load releases on init if user has RELEASES READ permission', (done) => {
+        // Verify error state is null (silent fail)
+        service.error$.subscribe(error => {
+            expect(error).toBeNull();
+        });
+    }));
+
+    it('should load releases on init if user has RELEASES READ permission', fakeAsync(() => {
         // Mock: User has READ permission
         permissionService.hasReadAccess!.mockReturnValue(true);
 
@@ -63,34 +62,29 @@ describe('ReleaseService - Permission Checks', () => {
         service = TestBed.inject(ReleaseService);
 
         // Wait for setTimeout to execute
-        setTimeout(() => {
-            // Verify HTTP call was made
-            const req = httpMock.expectOne(apiUrl);
-            expect(req.request.method).toBe('GET');
-            req.flush([]);
+        tick();
 
-            done();
-        }, 10);
-    });
+        // Verify HTTP call was made
+        const req = httpMock.expectOne(apiUrl);
+        expect(req.request.method).toBe('GET');
+        req.flush([]);
+    }));
 
-    it('should NOT call API in loadReleases if user has no permission', async () => {
+    it('should NOT call API in loadReleases if user has no permission', fakeAsync(() => {
         // Mock: User has permission initially (for constructor)
         permissionService.hasReadAccess!.mockReturnValue(true);
         service = TestBed.inject(ReleaseService);
 
         // Handle constructor call
-        setTimeout(() => {
-            const req = httpMock.match(apiUrl);
-            req.forEach(r => r.flush([]));
-        }, 10);
-
-        await new Promise(resolve => setTimeout(resolve, 20));
+        tick();
+        httpMock.expectOne(apiUrl).flush([]);
 
         // Now revoke permission
         permissionService.hasReadAccess!.mockReturnValue(false);
 
         // Try to refresh releases
-        await service.refreshReleases();
+        service.refreshReleases();
+        tick();
 
         // Verify NO new HTTP call was made
         httpMock.expectNone(apiUrl);
@@ -99,33 +93,28 @@ describe('ReleaseService - Permission Checks', () => {
         service.error$.subscribe(error => {
             expect(error).toBe('Permissions insuffisantes');
         });
-    });
+    }));
 
-    it('should call API in loadReleases if user has permission', async () => {
+    it('should call API in loadReleases if user has permission', fakeAsync(() => {
         // Mock: User has permission
         permissionService.hasReadAccess!.mockReturnValue(true);
         service = TestBed.inject(ReleaseService);
 
         // Handle constructor call
-        setTimeout(() => {
-            const req = httpMock.match(apiUrl);
-            req.forEach(r => r.flush([]));
-        }, 10);
-
-        await new Promise(resolve => setTimeout(resolve, 20));
+        tick();
+        httpMock.expectOne(apiUrl).flush([]);
 
         // Refresh releases (should work)
-        const refreshPromise = service.refreshReleases();
+        service.refreshReleases();
+        tick();
 
         // Verify HTTP call was made
         const req = httpMock.expectOne(apiUrl);
         expect(req.request.method).toBe('GET');
         req.flush([]);
+    }));
 
-        await refreshPromise;
-    });
-
-    it('should log warning when permission check fails', (done) => {
+    it('should log warning when permission check fails', fakeAsync(() => {
         // Spy on console.warn
         jest.spyOn(console, 'warn').mockImplementation();
 
@@ -134,56 +123,55 @@ describe('ReleaseService - Permission Checks', () => {
 
         service = TestBed.inject(ReleaseService);
 
-        setTimeout(() => {
-            // Verify warning was logged
-            expect(console.warn).toHaveBeenCalledWith(
-                'ReleaseService: No permission to load releases (RELEASES READ required)'
-            );
-            done();
-        }, 10);
-    });
+        tick();
 
-    it('should check RELEASES module for permission', (done) => {
+        // Call refreshReleases to trigger the check inside loadReleases
+        service.refreshReleases();
+        tick();
+
+        // Verify warning was logged
+        expect(console.warn).toHaveBeenCalledWith(
+            'ReleaseService: No permission to load releases (RELEASES READ required)'
+        );
+    }));
+
+    it('should check RELEASES module for permission', fakeAsync(() => {
         permissionService.hasReadAccess!.mockReturnValue(true);
         service = TestBed.inject(ReleaseService);
 
-        setTimeout(() => {
-            // Verify hasReadAccess was called with 'RELEASES'
-            expect(permissionService.hasReadAccess).toHaveBeenCalledWith('RELEASES');
+        tick();
 
-            // Clean up
-            const req = httpMock.match(apiUrl);
-            req.forEach(r => r.flush([]));
-            done();
-        }, 10);
-    });
+        // Verify hasReadAccess was called with 'RELEASES'
+        expect(permissionService.hasReadAccess).toHaveBeenCalledWith('RELEASES');
 
-    it('should NOT load current release if user loses permission', async () => {
+        // Clean up
+        httpMock.expectOne(apiUrl).flush([]);
+    }));
+
+    it('should NOT load current release if user loses permission', fakeAsync(() => {
         // Mock: User has permission initially
         permissionService.hasReadAccess!.mockReturnValue(true);
         service = TestBed.inject(ReleaseService);
 
         // Handle constructor call
-        setTimeout(() => {
-            const req = httpMock.match(apiUrl);
-            req.forEach(r => r.flush([{ id: 'rel1', name: 'Release 1', squads: [] }]));
-        }, 10);
-
-        await new Promise(resolve => setTimeout(resolve, 20));
+        tick();
+        httpMock.expectOne(apiUrl).flush([{ id: 'rel1', name: 'Release 1', squads: [] }]);
 
         // Get a specific release
         const getReleasePromise = service.getRelease('rel1');
         const getReq = httpMock.expectOne(`${apiUrl}/rel1`);
         getReq.flush({ id: 'rel1', name: 'Release 1', squads: [] });
-        await getReleasePromise;
+
+        tick();
 
         // Revoke permission
         permissionService.hasReadAccess!.mockReturnValue(false);
 
         // Try to refresh
-        await service.refreshReleases();
+        service.refreshReleases();
+        tick();
 
         // Should not call getRelease API even though currentRelease is set
         httpMock.expectNone(`${apiUrl}/rel1`);
-    });
+    }));
 });

@@ -51,7 +51,7 @@ interface Widget {
             <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-900/5 dark:via-white/10 to-transparent"></div>
           </div>
 
-          <div id="apps-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 perspective-1000">
+          <div id="apps-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 perspective-1000" [class.pointer-events-none]="isTourActive">
             <!-- Calendrier Card -->
             <div *ngIf="canAccess('CALENDAR')" (click)="navigateToCalendar()"
                  class="group relative cursor-pointer h-72 rounded-3xl p-1 transition-all duration-500 hover:transform hover:scale-[1.02] hover:-translate-y-1">
@@ -194,7 +194,7 @@ interface Widget {
             cdkDropList
             [cdkDropListAutoScrollDisabled]="false"
             (cdkDropListDropped)="onWidgetDrop($event)"
-            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [class.pointer-events-none]="isTourActive">
 
             <ng-container *ngFor="let widget of orderedWidgets">
               <div cdkDrag class="relative group">
@@ -287,7 +287,8 @@ interface Widget {
                                   <p class="text-sm text-teal-600 dark:text-teal-400 font-mono">{{ formatDate(nextMep.releaseDate) }}</p>
                                </div>
 
-                               <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
+                               <!-- Bottom Actions (Settings, etc) -->
+    <div id="sidebar-bottom" class="p-4 border-t border-gray-100 dark:border-gray-800" [class.pointer-events-none]="isTourActive">
                                   <div class="flex items-center justify-between">
                                      <span class="text-xs text-slate-400 dark:text-slate-500">J-{{ getDaysUntilMep(nextMep.releaseDate) }}</span>
                                      <button class="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium flex items-center transition-colors">
@@ -432,6 +433,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Animation state for new playground
   isPlaygroundNew = false;
+  isTourActive = false;
 
 
   // Stats pour compteurs animés
@@ -512,6 +514,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private startTour(): void {
+    this.isTourActive = true;
     const tourDriver = driver({
       showProgress: true,
       animate: true,
@@ -520,6 +523,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       nextBtnText: 'Suivant',
       prevBtnText: 'Précédent',
       onDestroyed: () => {
+        this.isTourActive = false;
         // Mark tour as seen when finished or skipped via X
         this.onboardingService.markAsSeen('TOUR_HOME');
       },
@@ -733,13 +737,12 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.animateCounter('releases', this.activeReleases);
       this.animateCounter('completion', this.completionRate);
       this.animateCounter('hotfix', this.hotfixCount);
-      this.animateCounter('hotfix', this.hotfixCount);
     });
 
     // Load absences - Only if user has permission
     const currentUser = this.authService.getCurrentUser();
     if (currentUser && currentUser.permissions &&
-        (currentUser.permissions.ABSENCE === 'READ' || currentUser.permissions.ABSENCE === 'WRITE')) {
+      (currentUser.permissions.ABSENCE === 'READ' || currentUser.permissions.ABSENCE === 'WRITE')) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const fifteenDaysFromNow = new Date(today);

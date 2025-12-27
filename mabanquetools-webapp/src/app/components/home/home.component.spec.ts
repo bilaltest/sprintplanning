@@ -33,17 +33,22 @@ describe('HomeComponent', () => {
         };
 
         eventService = {
-            events$: new BehaviorSubject([])
+            events$: new BehaviorSubject([]),
+            loading$: new BehaviorSubject(false),
+            error$: new BehaviorSubject(null)
         };
 
         releaseService = {
-            releases$: new BehaviorSubject([])
+            releases$: new BehaviorSubject([]),
+            loading$: new BehaviorSubject(false),
+            error$: new BehaviorSubject(null)
         };
 
         authService = {
             getWidgetOrder: jest.fn().mockReturnValue([]),
             updateWidgetOrder: jest.fn(),
-            getCurrentUser: jest.fn().mockReturnValue({ id: '123', firstName: 'John' })
+            getCurrentUser: jest.fn().mockReturnValue({ id: '123', firstName: 'John' }),
+            playgroundUnlocked$: new BehaviorSubject(false)
         };
 
         absenceService = {

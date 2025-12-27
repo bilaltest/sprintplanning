@@ -59,7 +59,7 @@ type Stage = 'HIDDEN' | 'PROFESSOR' | 'TRANSITION' | 'BATTLE' | 'CAUGHT';
       <div *ngIf="stage === 'BATTLE' || stage === 'CAUGHT'" class="h-full w-full bg-[#f8f8f8] relative font-sans">
         
         <!-- BATTLE SCENE -->
-        <div class="h-[60%] w-full relative bg-green-100 border-b-4 border-black box-content">
+        <div class="h-[60%] w-full relative bg-cover bg-center border-b-4 border-black box-content" style="background-image: url('assets/images/pokemon_battle_bg.png');">
            <!-- ENEMY HUD -->
            <div class="absolute top-10 left-10 bg-[#f8f8f8] border-4 border-gray-700 rounded-lg p-4 shadow-lg w-72 z-10">
              <div class="flex justify-between items-baseline mb-1">
@@ -75,19 +75,16 @@ type Stage = 'HIDDEN' | 'PROFESSOR' | 'TRANSITION' | 'BATTLE' | 'CAUGHT';
            <!-- ENEMY SPRITE (Top Right) -->
            <div class="absolute right-10 md:right-32 top-12 animate-bounce-custom transition-opacity duration-500"
                 [ngClass]="{'opacity-0': throwState === 'SHAKING' || throwState === 'CAUGHT'}">
-             <div class="w-48 h-48 bg-purple-600 rounded-full flex items-center justify-center border-4 border-purple-800 shadow-2xl relative">
-                <!-- Question Mark Icon -->
-                <span class="material-icons text-9xl text-white">sports_esports</span>
+             <div class="w-80 h-80 flex items-center justify-center relative">
+                <img src="assets/images/playground_monster.png" alt="Playground Monster" class="w-full h-full object-contain filter drop-shadow-2xl">
              </div>
-             <div class="absolute -bottom-4 left-4 w-40 h-8 bg-black opacity-20 rounded-[100%] blur-md"></div>
+             <div class="absolute -bottom-4 left-10 w-60 h-8 bg-black opacity-20 rounded-[100%] blur-md"></div>
            </div>
            
            <!-- PLAYER SPRITE (Bottom Left) -->
-           <div class="absolute left-10 md:left-32 -bottom-12 z-20 transition-all duration-1000" [ngClass]="{'translate-x-[-500px]': throwState !== 'NONE'}">
-              <div class="w-56 h-56 relative">
-                 <!-- Back of a developer head/shoulders -->
-                 <div class="w-32 h-32 bg-blue-600 rounded-t-3xl mx-auto mt-24 border-4 border-blue-800"></div>
-                 <div class="w-20 h-20 bg-amber-200 rounded-full mx-auto -mt-40 border-4 border-amber-600"></div>
+           <div class="absolute left-10 md:left-32 -bottom-0 z-20 transition-all duration-1000" [ngClass]="{'translate-x-[-500px]': throwState !== 'NONE'}">
+              <div class="w-64 h-64 relative">
+                 <img src="assets/images/asset_sacha.png" alt="Dresseur" class="w-full h-full object-contain">
               </div>
            </div>
 
@@ -218,7 +215,7 @@ type Stage = 'HIDDEN' | 'PROFESSOR' | 'TRANSITION' | 'BATTLE' | 'CAUGHT';
 
     /* POKEBALL THROW */
     .animate-throw {
-        animation: throwBall 1s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
+        animation: throwBall 3s forwards cubic-bezier(0.2, 0.8, 0.2, 1);
     }
     @keyframes throwBall {
         0% { transform: translate(0, 0) scale(1); }
@@ -233,7 +230,7 @@ type Stage = 'HIDDEN' | 'PROFESSOR' | 'TRANSITION' | 'BATTLE' | 'CAUGHT';
 
     /* SHAKE */
     .animate-shake {
-        animation: shake 1.5s 3 ease-in-out forwards;
+        animation: shake 2s 3 ease-in-out forwards;
     }
     @keyframes shake {
         0%, 100% { transform: rotate(0deg); }
@@ -266,9 +263,11 @@ export class EasterEggModalComponent {
   showBag = false;
 
   private audio = new Audio('assets/sons/asset_easter_egg.mp3');
+  private audioCaptured = new Audio('assets/sons/easter_egg_captured.mp3');
 
   constructor(public authService: AuthService) {
     this.audio.volume = 0.4; // Reasonable volume
+    this.audioCaptured.volume = 0.4;
   }
 
   open() {
@@ -294,6 +293,8 @@ export class EasterEggModalComponent {
     // Stop audio
     this.audio.pause();
     this.audio.currentTime = 0;
+    this.audioCaptured.pause();
+    this.audioCaptured.currentTime = 0;
 
     this.stage = 'HIDDEN';
     this.closed.emit();
@@ -322,6 +323,12 @@ export class EasterEggModalComponent {
       // Animation
       this.throwState = 'THROWING';
 
+      // Change audio immediately when throwing
+      this.audio.pause();
+      this.audio.currentTime = 0;
+      this.audioCaptured.currentTime = 0;
+      this.audioCaptured.play().catch(e => console.error("Audio capture play failed", e));
+
       // Wait for throw to land
       setTimeout(() => {
         this.throwState = 'SHAKING';
@@ -335,9 +342,9 @@ export class EasterEggModalComponent {
 
           // Unlock permission in backend
           await this.authService.unlockPlayground();
-        }, 3000); // 3 seconds shake enough
+        }, 7500); // 5 shakes * 1.5s
 
-      }, 1000);
+      }, 2000);
     }, 1000);
   }
 }
